@@ -1,0 +1,36 @@
+# ══════════════════════════════════════════════════════════
+# Projeto Contábil — Perfil de Testes
+# ══════════════════════════════════════════════════════════
+
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  # ── JPA (test) ──
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+
+  # ── Flyway desabilitado em testes unitários ──
+  flyway:
+    enabled: false
+
+  # ── RabbitMQ desabilitado em testes ──
+  rabbitmq:
+    listener:
+      simple:
+        auto-startup: false
+
+  # ── Spring AI desabilitado em testes ──
+  ai:
+    openai:
+      enabled: false
+
+logging:
+  level:
+    com.projetocontabil: WARN
