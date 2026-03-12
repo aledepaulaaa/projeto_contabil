@@ -1,4 +1,3 @@
-# projeto_contabil
 Repositório de um projeto contábil para um Software em construção.
 # Accounting System - Enterprise Core 2026
 
