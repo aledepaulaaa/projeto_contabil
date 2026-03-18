@@ -1,6 +1,5 @@
-/**
- * Entidades JPA mapeadas para o banco de dados.
- * Estas NÃO são entidades de domínio — são representações de persistência.
- * Mappers convertem entre JPA Entity ↔ Domain Model.
- */
+@FilterDef(name = "tenantFilter", parameters = @ParamDef(name = "empresaLocatariaId", type = String.class))
 package com.projetocontabil.infra.persistence.entity;
+
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;

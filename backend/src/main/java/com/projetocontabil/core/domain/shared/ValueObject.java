@@ -6,7 +6,7 @@ package com.projetocontabil.core.domain.shared;
  * Devem ser implementados como Java Records para garantir imutabilidade
  * e igualdade por valor automática.
  *
- * Exemplos: TenantId, Email, CNPJ, RegimeTributario.
+ * Exemplos: EmpresaLocatariaId, Email, CNPJ, RegimeTributario.
  */
 public interface ValueObject {
 }

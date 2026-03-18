@@ -22,3 +22,14 @@ build/
 # OS
 .DS_Store
 Thumbs.db
+
+# Documentações e instruções
+.agents/
+GEMINI.md
+implementation_plan.md
+rascunho_projeto_contabil.md
+resumo_tecnico_frontend.md
+resumo_tecnico_backend.md
+walkthrough.md
+PROMPT.md
+/documentacoes_externas

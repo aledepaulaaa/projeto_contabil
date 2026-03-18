@@ -1,5 +1,5 @@
 /**
  * Configurações do Spring AI Assistant.
- * Contexto do Tenant é injetado para sugestões proativas.
+ * Contexto do EmpresaLocataria é injetado para sugestões proativas.
  */
 package com.projetocontabil.infra.ai;

@@ -3,6 +3,6 @@
  * para acessar recursos externos (repositórios, gateways, publishers).
  * A infraestrutura implementa estas interfaces.
  *
- * Ex: TenantRepository, LeadRepository, AssinaturaGateway, EventPublisher.
+ * Ex: EmpresaLocatariaRepository, LeadRepository, AssinaturaGateway, EventPublisher.
  */
 package com.projetocontabil.core.ports.driven;

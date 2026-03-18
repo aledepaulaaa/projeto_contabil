@@ -3,6 +3,7 @@ package com.projetocontabil.core.domain.shared;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Classe base para Aggregate Roots do domínio.
@@ -13,7 +14,16 @@ import java.util.List;
  */
 public abstract class AggregateRoot {
 
+    private final UUID id;
     private final List<DomainEvent> domainEvents = new ArrayList<>();
+
+    protected AggregateRoot(UUID id) {
+        this.id = id;
+    }
+
+    public UUID getId() {
+        return id;
+    }
 
     /**
      * Registra um evento de domínio para publicação futura.

@@ -3,6 +3,8 @@
 # ══════════════════════════════════════════════════════════
 
 spring:
+  profiles:
+    active: dev # <--- usar o arquivo "application-dev.yml" por padrão durante o desenvolvimento
   application:
     name: projeto-contabil
 
@@ -55,3 +57,52 @@ logging:
   level:
     com.projetocontabil: INFO
     org.hibernate.SQL: WARN
+
+# ── Integrações Externas ──
+contaazul:
+  api:
+    url: ${CONTAAZUL_API_URL:https://api-v2.contaazul.com/v1}
+    client_id: ${CONTAAZUL_CLIENT_ID:3thtqcrlvf6rlu2g21eprtu1db}
+    client_secret: ${CONTAAZUL_CLIENT_SECRET:1oavvg5jmvap3dvhd8ro3qtll8lubnqpji3q46hunpqo1c4a1jc}
+    token: ${CONTAAZUL_API_TOKEN:dummy_bearer_jwt}
+    refresh_token: ${CONTAAZUL_REFRESH_TOKEN:dummy_refresh_token}
+  auth:
+    url: ${CONTAAZUL_AUTH_URL:https://auth.contaazul.com/oauth2/token}
+  dev-mode:
+    enabled: ${CONTAAZUL_DEV_MODE_ENABLED:true}
+
+# ── Resilience4j ──
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        permittedNumberOfCallsInHalfOpenState: 3
+        waitDurationInOpenState: 5s
+        failureRateThreshold: 50
+    instances:
+      asaas:
+        baseConfig: default
+      zapsign:
+        baseConfig: default
+      contaazul:
+        baseConfig: default
+  retry:
+    configs:
+      default:
+        maxAttempts: 3
+        waitDuration: 2s
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2
+        retryExceptions:
+          - org.springframework.web.client.HttpClientErrorException.TooManyRequests
+          - org.springframework.web.client.HttpServerErrorException.ServiceUnavailable
+          - org.springframework.web.client.HttpServerErrorException.GatewayTimeout
+    instances:
+      asaas:
+        baseConfig: default
+      zapsign:
+        baseConfig: default
+      contaazul:
+        baseConfig: default

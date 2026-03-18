@@ -1,6 +1,7 @@
 /**
  * Implementação de Multi-tenancy.
- * TenantContext (ThreadLocal), TenantIdentifierResolver (Hibernate),
- * TenantFilter (Servlet — extrai tenant do header/JWT).
+ * EmpresaLocatariaContext (ThreadLocal), EmpresaLocatariaIdentifierResolver (Hibernate),
+ * EmpresaLocatariaFilter (Servlet — extrai EmpresaLocataria do header/JWT).
  */
 package com.projetocontabil.infra.tenancy;
+
