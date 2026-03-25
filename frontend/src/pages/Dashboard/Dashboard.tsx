@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useLocation } from 'wouter';
 import { BarraLateral } from '../../components/organisms/BarraLateral/BarraLateral';
 import { Header } from '../../components/organisms/Header/Header';
+import { ModalErroGlobal } from '../../components/organisms/ModalErroGlobal/ModalErroGlobal';
 import { ResumoDashboard } from './ResumoDashboard';
 import { CRM } from './CRM';
 import { Rotinas } from './Rotinas';
@@ -44,7 +45,7 @@ export const Dashboard: React.FC = () => {
   return (
     <div className="flex min-h-screen bg-transparent font-sans text-text-main transition-colors duration-300">
       <BarraLateral isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      
+
       <main className="flex-1 flex flex-col h-screen overflow-hidden relative">
         <Header onOpenSidebar={() => setSidebarOpen(true)} />
 
@@ -55,6 +56,9 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
       </main>
+
+      {/* Modal de Erro Global — acessível em todas as rotas */}
+      <ModalErroGlobal />
     </div>
   );
 };

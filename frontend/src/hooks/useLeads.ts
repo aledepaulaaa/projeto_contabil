@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
 import { LeadService } from '../services/LeadService';
-
 import { useAuthStore } from '../store/authStore';
 
 export interface LeadResponse {
@@ -9,6 +8,9 @@ export interface LeadResponse {
   email: string;
   nomeEmpresa: string;
   status: string;
+  origemLead: string | null;
+  tipoServico: string | null;
+  criadoEm: string | null;
 }
 
 /**
@@ -21,13 +23,11 @@ export function useLeads() {
   const { data, isLoading, error, refetch } = useQuery<LeadResponse[]>({
     queryKey: ['leads', tenantId],
     queryFn: async () => {
-      console.log('Fetching leads for tenant:', tenantId);
       const response = await LeadService.listarLeads();
-      console.log('Fetched leads:', response.length);
       return response;
     },
     enabled: !!tenantId,
-    staleTime: 1000 * 60 * 5, // 5 minutos
+    staleTime: 1000 * 60 * 5,
   });
 
   return {

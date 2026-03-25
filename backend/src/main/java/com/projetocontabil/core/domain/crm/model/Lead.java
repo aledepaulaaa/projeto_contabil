@@ -19,9 +19,14 @@ public class Lead extends AggregateRoot {
     private final Identificacao identificacao;
     private final String nomeEmpresa;
     private StatusLead status;
+    private final OrigemLead origemLead;
+    private final TipoServico tipoServico;
     private final LocalDateTime criadoEm;
 
-    private Lead(UUID id, EmpresaLocatariaId empresaLocatariaId, String nomeContato, Email email, Telefone telefone, Identificacao identificacao, String nomeEmpresa, StatusLead status, LocalDateTime criadoEm) {
+    private Lead(UUID id, EmpresaLocatariaId empresaLocatariaId, String nomeContato, Email email,
+                 Telefone telefone, Identificacao identificacao, String nomeEmpresa,
+                 StatusLead status, OrigemLead origemLead, TipoServico tipoServico,
+                 LocalDateTime criadoEm) {
         super(id);
         this.empresaLocatariaId = empresaLocatariaId;
         this.nomeContato = nomeContato;
@@ -30,15 +35,23 @@ public class Lead extends AggregateRoot {
         this.identificacao = identificacao;
         this.nomeEmpresa = nomeEmpresa;
         this.status = status;
+        this.origemLead = origemLead;
+        this.tipoServico = tipoServico;
         this.criadoEm = criadoEm;
     }
 
-    public static Lead criar(EmpresaLocatariaId id, String nome, Email email, Identificacao identificacao, String nomeEmpresa) {
-        return new Lead(UUID.randomUUID(), id, nome, email, null, identificacao, nomeEmpresa, StatusLead.NOVO, LocalDateTime.now());
+    public static Lead criar(EmpresaLocatariaId id, String nome, Email email,
+                              Identificacao identificacao, String nomeEmpresa,
+                              OrigemLead origem, TipoServico tipoServico) {
+        return new Lead(UUID.randomUUID(), id, nome, email, null, identificacao, nomeEmpresa,
+                StatusLead.NOVO, origem, tipoServico, LocalDateTime.now());
     }
 
-    public static Lead reconstituir(UUID id, EmpresaLocatariaId tid, String nome, Email email, Telefone tel, Identificacao ident, String emp, StatusLead status, LocalDateTime criado) {
-        return new Lead(id, tid, nome, email, tel, ident, emp, status, criado);
+    public static Lead reconstituir(UUID id, EmpresaLocatariaId tid, String nome, Email email,
+                                     Telefone tel, Identificacao ident, String emp,
+                                     StatusLead status, OrigemLead origem, TipoServico tipoServico,
+                                     LocalDateTime criado) {
+        return new Lead(id, tid, nome, email, tel, ident, emp, status, origem, tipoServico, criado);
     }
 
     public void qualificar() {

@@ -6,5 +6,7 @@ public record CriarLeadRequest(
     @NotBlank String nomeContato,
     @NotBlank String email,
     String cnpj,
-    @NotBlank String nomeEmpresa
+    @NotBlank String nomeEmpresa,
+    String origem,
+    String tipoServico
 ) {}

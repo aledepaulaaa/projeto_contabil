@@ -8,7 +8,7 @@ interface CardMetricaProps {
   titulo: string;
   valor: string | number;
   icone: ReactNode;
-  corDestaque?: 'blue' | 'emerald' | 'amber';
+  corDestaque?: 'blue' | 'emerald' | 'amber' | 'indigo';
   loading?: boolean;
 }
 
@@ -23,6 +23,7 @@ export const CardMetrica: React.FC<CardMetricaProps> = ({
     blue: 'text-blue-600 dark:text-blue-500 bg-blue-500/10 border-blue-500/20',
     emerald: 'text-emerald-600 dark:text-emerald-500 bg-emerald-500/10 border-emerald-500/20',
     amber: 'text-amber-600 dark:text-amber-500 bg-amber-500/10 border-amber-500/20',
+    indigo: 'text-indigo-600 dark:text-indigo-500 bg-indigo-500/10 border-indigo-500/20',
   };
 
   const currentColors = colorMap[corDestaque];

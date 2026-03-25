@@ -15,4 +15,5 @@ public interface LeadRepository {
     List<Lead> findAllByEmpresaLocatariaId(EmpresaLocatariaId id);
     boolean existsByIdentificacaoAndEmpresaLocatariaId(Identificacao identificacao, EmpresaLocatariaId id);
     long countByEmpresaLocatariaIdAndStatus(EmpresaLocatariaId id, StatusLead status);
+    Optional<Lead> findByGoogleLeadId(String googleLeadId);
 }

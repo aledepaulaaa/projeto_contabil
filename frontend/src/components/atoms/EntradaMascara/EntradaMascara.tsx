@@ -11,21 +11,23 @@ export const EntradaMascara: React.FC<EntradaMascaraProps> = ({ label, id, value
 
   const aplicarMascara = (v: string) => {
     // Remove tudo que não é dígito
-    const digitos = v.replace(/\D/g, '').slice(0, 14);
+    const digitos = v.replace(/\D/g, '');
     
     if (digitos.length <= 11) {
       // CPF: 000.000.000-00
       return digitos
         .replace(/(\d{3})(\d)/, '$1.$2')
         .replace(/(\d{3})(\d)/, '$1.$2')
-        .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+        .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+        .substring(0, 14);
     } else {
       // CNPJ: 00.000.000/0001-00
       return digitos
         .replace(/^(\d{2})(\d)/, '$1.$2')
         .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
         .replace(/\.(\d{3})(\d)/, '.$1/$2')
-        .replace(/(\d{4})(\d)/, '$1-$2');
+        .replace(/(\d{4})(\d{1,2})$/, '$1-$2')
+        .substring(0, 18);
     }
   };
 

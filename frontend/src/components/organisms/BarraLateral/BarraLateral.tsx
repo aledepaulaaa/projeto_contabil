@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard,
@@ -64,8 +64,18 @@ const ItemMenu: React.FC<ItemMenuProps> = ({ icon: Icon, label, active, expanded
 
 export const BarraLateral: React.FC<BarraLateralProps> = ({ isOpen, onClose }) => {
   const [expanded, setExpanded] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
   const [location, setLocation] = useLocation();
   const { theme, toggleTheme } = useTheme();
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const menuItems = [
     { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -93,19 +103,19 @@ export const BarraLateral: React.FC<BarraLateralProps> = ({ isOpen, onClose }) =
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-slate-950/60 dark:bg-slate-950/80 backdrop-blur-sm z-[60] lg:hidden"
+            className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[60] lg:hidden"
           />
         )}
       </AnimatePresence>
 
       <motion.aside
         initial={false}
-        animate={isOpen ? 'mobileOpen' : (typeof window !== 'undefined' && window.innerWidth < 1024 ? 'mobileClosed' : (expanded ? 'open' : 'closed'))}
+        animate={isMobile ? (isOpen ? 'mobileOpen' : 'mobileClosed') : (expanded ? 'open' : 'closed')}
         variants={sidebarVariants}
         className={`
           fixed inset-y-0 left-0 z-[70] lg:sticky lg:flex flex-col h-screen 
-          bg-white/80 dark:bg-slate-950/40 backdrop-blur-xl border-r border-slate-200 dark:border-slate-800/50 p-4 
-          transition-all duration-300 overflow-x-hidden shadow-xl lg:shadow-none
+          bg-white/80 dark:bg-slate-950/90 backdrop-blur-xl border-r border-slate-200 dark:border-white/5 p-4 
+          transition-all duration-300 overflow-x-hidden shadow-2xl lg:shadow-none
         `}
       >
         <div className="flex items-center justify-between mb-8 px-2">

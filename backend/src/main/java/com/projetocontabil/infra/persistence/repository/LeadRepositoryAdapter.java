@@ -50,6 +50,11 @@ public class LeadRepositoryAdapter implements LeadRepository {
         return jpaRepository.countByEmpresaLocatariaIdAndStatus(id.value(), status);
     }
 
+    @Override
+    public Optional<Lead> findByGoogleLeadId(String googleLeadId) {
+        return jpaRepository.findByGoogleLeadId(googleLeadId).map(this::toDomain);
+    }
+
     private Lead toDomain(LeadJpaEntity entity) {
         return Lead.reconstituir(
                 entity.getId(),
@@ -60,20 +65,25 @@ public class LeadRepositoryAdapter implements LeadRepository {
                 new Identificacao(entity.getCnpj()),
                 entity.getNomeEmpresa(),
                 entity.getStatus(),
+                entity.getOrigemLead(),
+                entity.getTipoServico(),
                 entity.getCriadoEm()
         );
     }
 
     private LeadJpaEntity toEntity(Lead lead) {
-        return new LeadJpaEntity(
-                lead.getId(),
-                lead.getEmpresaLocatariaId().value(),
-                lead.getNomeContato(),
-                lead.getEmail() != null ? lead.getEmail().value() : null,
-                lead.getIdentificacao().value(),
-                lead.getNomeEmpresa(),
-                lead.getStatus(),
-                lead.getCriadoEm()
-        );
+        var entity = new LeadJpaEntity();
+        entity.setId(lead.getId());
+        entity.setEmpresaLocatariaId(lead.getEmpresaLocatariaId().value());
+        entity.setNomeContato(lead.getNomeContato());
+        entity.setEmail(lead.getEmail() != null ? lead.getEmail().value() : null);
+        entity.setCnpj(lead.getIdentificacao().value());
+        entity.setNomeEmpresa(lead.getNomeEmpresa());
+        entity.setStatus(lead.getStatus());
+        entity.setOrigemLead(lead.getOrigemLead());
+        entity.setTipoServico(lead.getTipoServico());
+        entity.setCriadoEm(lead.getCriadoEm());
+        // Se o domínio for extendido no futuro com googleLeadId, adicionar aqui
+        return entity;
     }
 }

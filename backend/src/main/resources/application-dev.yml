@@ -46,6 +46,33 @@ spring:
           auth: true
           starttls:
             enable: true
+  # ── Google OAuth2 ──
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - openid
+              - profile
+              - email
+              - https://www.googleapis.com/auth/adwords
+        provider:
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
+            token-uri: https://oauth2.googleapis.com/token
+            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+            user-name-attribute: email
+# ── Google Ads API ──
+api:
+  google-ads:
+    developer-token: ${GOOGLE_ADS_DEVELOPER_TOKEN}
+    client-customer-id: ${GOOGLE_ADS_CLIENT_CUSTOMER_ID}
+    client-id: ${GOOGLE_CLIENT_ID}
+    client-secret: ${GOOGLE_CLIENT_SECRET}
+    redirect-uri: http://localhost:8080/api/v1/integrations/google-ads/callback
 
 # ── Logging (dev) ──
 logging:

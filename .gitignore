@@ -23,7 +23,7 @@ build/
 .DS_Store
 Thumbs.db
 
-# Documentações e instruções
+# Documentações, Testes e instruções
 .agents/
 GEMINI.md
 implementation_plan.md
@@ -31,5 +31,11 @@ rascunho_projeto_contabil.md
 resumo_tecnico_frontend.md
 resumo_tecnico_backend.md
 walkthrough.md
-PROMPT.md
 /documentacoes_externas
+/elaboracao_projeto
+task.md
+ANOTACOES.md
+PROJETO_MASTER_INSTRUCTIONS.md
+PROMPTS.md
+/arquivos_modelos
+mascara-cpf-cnpj.md

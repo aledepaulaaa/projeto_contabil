@@ -1,5 +1,8 @@
 package com.projetocontabil.core.usecases.crm;
 
+import com.projetocontabil.core.domain.crm.model.Contrato;
+import com.projetocontabil.core.domain.crm.model.EventoHistoricoLead;
+import com.projetocontabil.core.domain.crm.model.HistoricoVidaLead;
 import com.projetocontabil.core.domain.crm.model.Lead;
 import com.projetocontabil.core.domain.empresalocataria.model.EmpresaLocataria;
 import com.projetocontabil.core.domain.rotinas.model.RegimeTributario;
@@ -20,6 +23,8 @@ public class FinalizarOnboardingUseCase {
     private final LeadRepository leadRepository;
     private final EmpresaLocatariaRepository empresaRepository;
     private final ObrigacaoRepository obrigacaoRepository;
+    private final ContratoRepository contratoRepository;
+    private final HistoricoVidaLeadRepository historicoRepository;
     private final GeradorObrigacaoStrategy geradorStrategy;
     private final EventPublisher eventPublisher;
     private final PaymentGateway paymentGateway;
@@ -29,6 +34,8 @@ public class FinalizarOnboardingUseCase {
     public FinalizarOnboardingUseCase(LeadRepository leadRepository,
                                       EmpresaLocatariaRepository empresaRepository,
                                       ObrigacaoRepository obrigacaoRepository,
+                                      ContratoRepository contratoRepository,
+                                      HistoricoVidaLeadRepository historicoRepository,
                                       GeradorObrigacaoStrategy geradorStrategy,
                                       EventPublisher eventPublisher,
                                       PaymentGateway paymentGateway,
@@ -37,6 +44,8 @@ public class FinalizarOnboardingUseCase {
         this.leadRepository = leadRepository;
         this.empresaRepository = empresaRepository;
         this.obrigacaoRepository = obrigacaoRepository;
+        this.contratoRepository = contratoRepository;
+        this.historicoRepository = historicoRepository;
         this.geradorStrategy = geradorStrategy;
         this.eventPublisher = eventPublisher;
         this.paymentGateway = paymentGateway;
@@ -59,6 +68,23 @@ public class FinalizarOnboardingUseCase {
         // Gerar Obrigações Iniciais baseadas no Regime
         List<Obrigacao> iniciais = geradorStrategy.gerarIniciais(novaEmpresa);
         iniciais.forEach(obrigacaoRepository::save);
+
+        // Criar Contrato AGUARDANDO_ASSINATURA
+        var contrato = Contrato.criar(leadId, lead.getEmpresaLocatariaId());
+        contratoRepository.save(contrato);
+
+        // Registrar eventos no histórico de vida do Lead
+        var historico = historicoRepository.findByLeadId(leadId)
+                .orElse(HistoricoVidaLead.criar(leadId, lead.getEmpresaLocatariaId()));
+        historico.registrarEvento("LEAD_QUALIFICADO", "Lead qualificado e aprovado para conversão",
+                EventoHistoricoLead.MarcadorEvento.SUCESSO);
+        historico.registrarEvento("LEAD_CONVERTIDO", "Lead convertido para empresa ativa. Regime: " + regime.name(),
+                EventoHistoricoLead.MarcadorEvento.SUCESSO);
+        historico.registrarEvento("CONTRATO_GERADO", "Contrato de prestação de serviços gerado (Aguardando Assinatura)",
+                EventoHistoricoLead.MarcadorEvento.ATENCAO);
+        historico.registrarEvento("OBRIGACOES_GERADAS", "Obrigações fiscais iniciais geradas para regime " + regime.name(),
+                EventoHistoricoLead.MarcadorEvento.NEUTRO);
+        historicoRepository.save(historico);
 
         // Gateway calls...
         signatureGateway.createDocumentForSignature(lead.getEmpresaLocatariaId(), "Contrato de Prestação de Serviços Contábeis", "url", List.of());
