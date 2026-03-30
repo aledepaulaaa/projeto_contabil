@@ -25,29 +25,3 @@ Os módulos operam de forma interligada, onde a saída de um é o gatilho (trigg
 * **Comunicação entre Módulos (Domain Events)**: Utilizar `ApplicationEventPublisher` do Spring. Quando um alvará vence, o módulo de Alvarás emite um `AlvaraVencidoEvent`. O módulo de Processos escuta esse evento e inicia o workflow de renovação sem acoplamento direto de classes.
 * **Dica de Performance**: Implementar **Connection Pooling (HikariCP)** ajustado e índices parciais no PostgreSQL para consultas de "obrigações pendentes".
 * **IA Contextual**: O serviço de IA deve receber um "Context Snapshot" do Tenant (Regime, pendências, histórico) para que o assistente sugira ações proativas baseadas em dados reais.
-
-* **Estrutura de diretórios**: Você deve seguir rigorosamente a estrutura de pastas indicada abaixo conforme o desenho da estruturado.
-
-backend/
-├── src/main/java/com/projeto_contabil/
-│   ├── 🏛️ core/                    # Camada Domain e Application
-│   │   ├── 🧩 domain/              # Entidades puras, Value Objects e Exceções de Negócio
-│   │   │   ├── crm/                # Lead, Proposta
-│   │   │   ├── rotinas/            # Obrigacao, Regime
-│   │   │   ├── alvaras/            # Alvara, Processo
-│   │   │   └── tenant/             # Tenant/Assinante (Isolamento)
-│   │   ├── 🛡️ usecases/             # Casos de Uso (Interligação dos Módulos)
-│   │   │   ├── FinalizarOnboarding.java
-│   │   │   ├── CalcularObrigacaoTributaria.java
-│   │   │   └── AbrirProcessoRenovacao.java
-│   │   └── 🛠️ shared/               # Utilitários e Interfaces de Domínio (ex: Repositories)
-│   ├── 💻 infra/                   # Camada de Implementação (Infraestrutura)
-│   │   ├── 📊 persistence/         # Implementações JPA, Entidades de Banco e Repositories
-│   │   ├── 🌐 integrations/        # Clientes de APIs (ZapSign, Conta Azul, Z-API)
-│   │   ├── 🤖 ai/                  # Configurações do Spring AI Assistant
-│   │   ├── 🛡️ tenancy/             # Implementação do TenantIdentifierResolver
-│   │   └── 🔧 config/              # Configurações do Spring Boot, RabbitMQ, Redis, Swagger
-│   └── 🌐 interfaces/              # Camada Web/Presentation (Controllers)
-│       ├── 📦 dtos/                # Data Transfer Objects (HATEOAS-Ready)
-│       └── 🎮 controllers/         # Endpoints REST e Swagger Annotations
-└── src/test/java/com/projeto_contabil/  # Estrutura espelhada para TDD
