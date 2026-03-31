@@ -4,6 +4,7 @@ import com.projetocontabil.core.domain.crm.model.Lead;
 import com.projetocontabil.core.domain.crm.model.StatusLead;
 import com.projetocontabil.core.domain.crm.vo.Email;
 import com.projetocontabil.core.domain.crm.vo.Identificacao;
+import com.projetocontabil.core.domain.crm.vo.Telefone;
 import com.projetocontabil.core.domain.empresalocataria.EmpresaLocatariaId;
 import com.projetocontabil.core.ports.driven.LeadRepository;
 import com.projetocontabil.infra.persistence.entity.LeadJpaEntity;
@@ -55,18 +56,24 @@ public class LeadRepositoryAdapter implements LeadRepository {
         return jpaRepository.findByGoogleLeadId(googleLeadId).map(this::toDomain);
     }
 
+    @Override
+    public void deleteById(UUID id) {
+        jpaRepository.deleteById(id);
+    }
+
     private Lead toDomain(LeadJpaEntity entity) {
         return Lead.reconstituir(
                 entity.getId(),
                 EmpresaLocatariaId.of(entity.getEmpresaLocatariaId()),
                 entity.getNomeContato(),
                 entity.getEmail() != null ? new Email(entity.getEmail()) : null,
-                null, // Telefone não mapeado no MVP
-                new Identificacao(entity.getCnpj()),
+                entity.getTelefone() != null ? new Telefone(entity.getTelefone()) : null,
+                entity.getCnpj() != null ? new Identificacao(entity.getCnpj()) : null,
                 entity.getNomeEmpresa(),
                 entity.getStatus(),
                 entity.getOrigemLead(),
                 entity.getTipoServico(),
+                entity.getGoogleLeadId(),
                 entity.getCriadoEm()
         );
     }
@@ -77,13 +84,14 @@ public class LeadRepositoryAdapter implements LeadRepository {
         entity.setEmpresaLocatariaId(lead.getEmpresaLocatariaId().value());
         entity.setNomeContato(lead.getNomeContato());
         entity.setEmail(lead.getEmail() != null ? lead.getEmail().value() : null);
-        entity.setCnpj(lead.getIdentificacao().value());
+        entity.setTelefone(lead.getTelefone() != null ? lead.getTelefone().value() : null);
+        entity.setCnpj(lead.getIdentificacao() != null ? lead.getIdentificacao().value() : null);
         entity.setNomeEmpresa(lead.getNomeEmpresa());
         entity.setStatus(lead.getStatus());
         entity.setOrigemLead(lead.getOrigemLead());
         entity.setTipoServico(lead.getTipoServico());
         entity.setCriadoEm(lead.getCriadoEm());
-        // Se o domínio for extendido no futuro com googleLeadId, adicionar aqui
+        entity.setGoogleLeadId(lead.getGoogleLeadId());
         return entity;
     }
 }

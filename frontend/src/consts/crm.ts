@@ -2,15 +2,7 @@ import { FileCheck, Handshake, Target, Users, Clock, XCircle } from "lucide-reac
 
 // Mapeamento de status para etapas do funil (compatibilidade backend)
 export const statusParaEtapa = (status: string): string => {
-    switch (status) {
-        case 'NOVO': return 'LEAD';
-        case 'QUALIFICADO': return 'QUALIFICACAO';
-        case 'NEGOCIACAO': return 'PROPOSTA';
-        case 'CONVERTIDO': return 'FECHAMENTO';
-        case 'AGUARDANDO_APROVACAO': return 'AGUARDANDO';
-        case 'PERDIDO': return 'NAO_FECHOU';
-        default: return 'LEAD';
-    }
+    return status; // Backend agora usa os mesmos IDs do Funil
 };
 
 export const etapas = [

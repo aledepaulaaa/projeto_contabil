@@ -4,11 +4,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNotificacoes } from '../../../hooks/useNotificacoes';
 
 interface BadgeNotificacaoProps {
-  tenantId: string | null;
+  empresaLocatariaId: string | null;
 }
 
-export const BadgeNotificacao: React.FC<BadgeNotificacaoProps> = ({ tenantId }) => {
-  const { notificacoes, limparNotificacoes } = useNotificacoes(tenantId);
+export const BadgeNotificacao: React.FC<BadgeNotificacaoProps> = ({ empresaLocatariaId }) => {
+  const { notificacoes, limparNotificacoes } = useNotificacoes(empresaLocatariaId);
   const [open, setOpen] = useState(false);
 
   return (

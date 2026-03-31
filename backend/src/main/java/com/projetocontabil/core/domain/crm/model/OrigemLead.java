@@ -9,5 +9,6 @@ public enum OrigemLead {
     ORGANICO,
     INDICACAO,
     GOOGLE_ADS,
-    PLANILHA
+    PLANILHA,
+    DIGITAL
 }

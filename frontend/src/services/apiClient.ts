@@ -10,15 +10,15 @@ export const apiClient = axios.create({
   },
 });
 
-// Interceptor de Request: injeta Token e TenantId
+// Interceptor de Request: injeta Token e EmpresaLocatariaId
 apiClient.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
-  const tenantId = localStorage.getItem('tenantId');
+  const empresaLocatariaId = localStorage.getItem('empresaLocatariaId');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
-  if (tenantId) {
-    config.headers['X-EmpresaLocataria-Id'] = tenantId;
+  if (empresaLocatariaId) {
+    config.headers['X-EmpresaLocataria-Id'] = empresaLocatariaId;
   }
   return config;
 });

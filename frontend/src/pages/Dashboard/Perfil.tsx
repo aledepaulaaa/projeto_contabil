@@ -6,7 +6,7 @@ import { Texto } from '../../components/atoms/Texto/Texto';
 import { Card } from '../../components/atoms/Card/Card';
 
 export const Perfil: React.FC = () => {
-  const { tenantId } = useAuthStore();
+  const { empresaLocatariaId } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [avatar, setAvatar] = useState<string | null>(null);
   
@@ -63,7 +63,7 @@ export const Perfil: React.FC = () => {
               </label>
             </div>
             <Texto variant="corpo" className="mt-4 font-bold">{formData.nome}</Texto>
-            <Texto variant="detalhe" className="mt-1 uppercase font-bold scale-90">{tenantId?.substring(0, 12)}</Texto>
+            <Texto variant="detalhe" className="mt-1 uppercase font-bold scale-90">{empresaLocatariaId?.substring(0, 12)}</Texto>
           </Card>
         </div>
 

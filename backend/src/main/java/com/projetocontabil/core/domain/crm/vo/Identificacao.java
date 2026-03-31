@@ -4,6 +4,9 @@ import com.projetocontabil.core.domain.shared.ValueObject;
 
 public record Identificacao(String value) implements ValueObject {
     public Identificacao {
+        if (value != null) {
+            value = value.replaceAll("\\D", ""); // Remove tudo que não é dígito
+        }
         if (value == null || (value.length() != 11 && value.length() != 14)) {
             throw new IllegalArgumentException("CPF/CNPJ inválido: deve ter 11 ou 14 dígitos.");
         }

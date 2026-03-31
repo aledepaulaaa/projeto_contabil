@@ -39,6 +39,9 @@ public class HistoricoVidaLeadJpaEntity {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String eventos;
 
+    @Column(name = "arquivado", nullable = false)
+    private boolean arquivado = false;
+
     @Column(name = "criado_em", nullable = false)
     private LocalDateTime criadoEm;
 }

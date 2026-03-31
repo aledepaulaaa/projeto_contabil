@@ -9,13 +9,9 @@ import {
   AlertCircle,
   FileText,
   Building2,
-  ExternalLink,
-  FileSearch
+  ExternalLink
 } from 'lucide-react';
 import { Botao } from '../../components/atoms/Botao/Botao';
-import { GradeDocumentos } from '../../components/organisms/GradeDocumentos/GradeDocumentos';
-import { UploadArea } from '../../components/atoms/UploadArea/UploadArea';
-import { useDocumentos } from '../../hooks/useDocumentos';
 import { Texto } from '../../components/atoms/Texto/Texto';
 import { Card } from '../../components/atoms/Card/Card';
 
@@ -28,17 +24,9 @@ interface Obrigacao {
   status: 'A FAZER' | 'ATRASADA' | 'ENTREGUE';
 }
 
-const obrigacoesIniciais: Obrigacao[] = [
-  { id: '1', empresa: 'Lanchonete Silva', regime: 'MEI', tipo: 'DAS', vencimento: '2024-03-20', status: 'A FAZER' },
-  { id: '2', empresa: 'Oficina Mecânica', regime: 'SIMPLES', tipo: 'DARF', vencimento: '2024-03-15', status: 'ATRASADA' },
-  { id: '3', empresa: 'Consultoria Tech', regime: 'PRESUMIDO', tipo: 'ISS', vencimento: '2024-03-25', status: 'A FAZER' },
-  { id: '4', empresa: 'Mercado Central', regime: 'REAL', tipo: 'FGTS', vencimento: '2024-03-10', status: 'ENTREGUE' },
-];
-
 export const Rotinas: React.FC = () => {
-  const [obrigacoes] = useState<Obrigacao[]>(obrigacoesIniciais);
+  const [obrigacoes] = useState<Obrigacao[]>([]);
   const [regimeFiltro, setRegimeFiltro] = useState<string>('TODOS');
-  const { documentos, isLoading, uploadDocumento, isUploading } = useDocumentos();
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -182,26 +170,6 @@ export const Rotinas: React.FC = () => {
           </div>
         )}
       </Card>
-
-      {/* Seção de Homologação de Documentos */}
-      <div className="space-y-6 pt-8 border-t border-slate-200 dark:border-slate-800 transition-colors">
-        <div>
-          <Texto variant="subtitulo" className="flex items-center gap-3">
-            <FileSearch size={22} className="text-blue-600 dark:text-blue-500" />
-            Homologação de Guias (PDF)
-          </Texto>
-          <Texto variant="corpo" className="text-text-secondary mt-1">Carregue as guias geradas para validação e envio automático ao cliente</Texto>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-1">
-            <UploadArea onFileSelect={uploadDocumento} isUploading={isUploading} />
-          </div>
-          <div className="lg:col-span-2">
-            <GradeDocumentos documentos={documentos || []} isLoading={isLoading} />
-          </div>
-        </div>
-      </div>
     </div>
   );
 };

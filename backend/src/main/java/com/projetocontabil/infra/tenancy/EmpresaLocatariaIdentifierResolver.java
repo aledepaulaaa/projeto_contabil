@@ -11,8 +11,8 @@ public class EmpresaLocatariaIdentifierResolver implements CurrentTenantIdentifi
 
     @Override
     public String resolveCurrentTenantIdentifier() {
-        String tenantId = EmpresaLocatariaContext.getCurrentTenant();
-        return (tenantId != null) ? tenantId : "EmpresaLocataria-dev-mode";
+        String empresaId = EmpresaLocatariaContext.getEmpresaLocatariaId();
+        return (empresaId != null) ? empresaId : "tenant-dev-mode";
     }
 
     @Override

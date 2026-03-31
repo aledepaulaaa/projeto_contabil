@@ -1,13 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Key, LogOut, ChevronDown, Shield } from 'lucide-react';
+import { User, Key, LogOut, ChevronDown, Shield, Settings } from 'lucide-react';
 import { useAuthStore } from '../../../store/authStore';
 import { useLocation } from 'wouter';
 
 export const MenuUsuario: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [, setLocation] = useLocation();
-  const { logout, tenantId } = useAuthStore();
+  const { logout, empresaLocatariaId } = useAuthStore();
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -31,7 +31,7 @@ export const MenuUsuario: React.FC = () => {
         </div>
         <div className="hidden sm:block text-left">
           <p className="text-sm font-semibold text-slate-900 dark:text-white leading-none">Usuário Master</p>
-          <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 uppercase font-bold tracking-tight">{tenantId?.substring(0, 10)}...</p>
+          <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 uppercase font-bold tracking-tight">{empresaLocatariaId?.substring(0, 10)}...</p>
         </div>
         <ChevronDown size={16} className={`text-slate-400 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
@@ -52,8 +52,15 @@ export const MenuUsuario: React.FC = () => {
               onClick={() => { setLocation('/dashboard/perfil'); setIsOpen(false); }}
               className="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-sm text-slate-700 dark:text-slate-200 transition-all font-medium"
             >
-              <User size={18} className="text-blue-600 dark:text-blue-400" />
+              <User size={18} className="text-slate-600 dark:text-slate-400" />
               Meu Perfil
+            </button>
+            <button 
+              onClick={() => { setLocation('/dashboard/configuracoes'); setIsOpen(false); }}
+              className="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-sm text-slate-700 dark:text-slate-200 transition-all font-medium"
+            >
+              <Settings size={18} className="text-blue-600 dark:text-blue-400" />
+              Configurações
             </button>
             <button 
               onClick={() => { setLocation('/assinaturas'); setIsOpen(false); }}

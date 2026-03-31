@@ -6,5 +6,5 @@ import lombok.Data;
 public class AutenticacaoRequest {
     private String username;
     private String password;
-    private String tenantId;
+    private String empresaLocatariaId;
 }

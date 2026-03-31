@@ -1,6 +1,9 @@
 package com.projetocontabil.core.domain.crm.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.AccessLevel;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -15,6 +18,8 @@ import java.util.UUID;
  * - NEUTRO (Cinza): Progresso incremental, atualização de status
  */
 @Getter
+@NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
+@AllArgsConstructor
 public class EventoHistoricoLead {
 
     private final UUID id;
@@ -29,14 +34,6 @@ public class EventoHistoricoLead {
         this.descricao = descricao;
         this.marcador = marcador;
         this.ocorridoEm = LocalDateTime.now();
-    }
-
-    public EventoHistoricoLead(UUID id, String tipo, String descricao, MarcadorEvento marcador, LocalDateTime ocorridoEm) {
-        this.id = id;
-        this.tipo = tipo;
-        this.descricao = descricao;
-        this.marcador = marcador;
-        this.ocorridoEm = ocorridoEm;
     }
 
     public enum MarcadorEvento {

@@ -9,14 +9,20 @@ import com.projetocontabil.core.ports.driven.ContratoRepository;
 import com.projetocontabil.core.ports.driven.HistoricoVidaLeadRepository;
 import com.projetocontabil.core.ports.driven.LeadRepository;
 import com.projetocontabil.core.usecases.crm.FinalizarOnboardingUseCase;
+import com.projetocontabil.core.usecases.crm.HistoricoExportService;
 import com.projetocontabil.infra.tenancy.EmpresaLocatariaContext;
 import com.projetocontabil.interfaces.rest.dto.CriarLeadRequest;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import com.projetocontabil.core.usecases.crm.ImportarLeadsUseCase;
+import com.projetocontabil.core.ports.driven.AuditoriaRepository;
+import com.projetocontabil.core.domain.shared.AuditoriaAtividade;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.*;
 
@@ -29,24 +35,34 @@ public class LeadController {
     private final HistoricoVidaLeadRepository historicoRepository;
     private final FinalizarOnboardingUseCase finalizarOnboardingUseCase;
     private final ImportarLeadsUseCase importarLeadsUseCase;
+    private final HistoricoExportService exportService;
+    private final AuditoriaRepository auditoriaRepository;
 
     public LeadController(LeadRepository leadRepository,
                          ContratoRepository contratoRepository,
                          HistoricoVidaLeadRepository historicoRepository,
                          FinalizarOnboardingUseCase finalizarOnboardingUseCase,
-                         ImportarLeadsUseCase importarLeadsUseCase) {
+                         ImportarLeadsUseCase importarLeadsUseCase,
+                         HistoricoExportService exportService,
+                         AuditoriaRepository auditoriaRepository) {
         this.leadRepository = leadRepository;
         this.contratoRepository = contratoRepository;
         this.historicoRepository = historicoRepository;
         this.finalizarOnboardingUseCase = finalizarOnboardingUseCase;
         this.importarLeadsUseCase = importarLeadsUseCase;
+        this.exportService = exportService;
+        this.auditoriaRepository = auditoriaRepository;
     }
 
     @PostMapping("/import")
     public ResponseEntity<List<Map<String, Object>>> importar(@RequestParam("file") MultipartFile file) {
         try {
-            String tenantId = EmpresaLocatariaContext.getCurrentTenant();
-            var leads = importarLeadsUseCase.executar(file.getInputStream(), tenantId);
+            String empresaIdStr = EmpresaLocatariaContext.getEmpresaLocatariaId();
+            var leads = importarLeadsUseCase.executar(file.getInputStream(), empresaIdStr);
+            
+            auditoriaRepository.salvar(AuditoriaAtividade.registrar(EmpresaLocatariaId.of(empresaIdStr), "admin", "LEAD_IMPORT", 
+                "Importação de " + leads.size() + " leads via arquivo CSV", null));
+
             return ResponseEntity.ok(leads.stream().map(this::toResponse).toList());
         } catch (Exception e) {
             return ResponseEntity.status(500).body(null);
@@ -55,23 +71,24 @@ public class LeadController {
 
     @PostMapping
     public ResponseEntity<Map<String, Object>> cadastrar(@RequestBody @Valid CriarLeadRequest request) {
-        var tenantId = EmpresaLocatariaId.of(EmpresaLocatariaContext.getCurrentTenant());
+        var empresaId = EmpresaLocatariaId.of(EmpresaLocatariaContext.getEmpresaLocatariaId());
 
-        if (leadRepository.existsByIdentificacaoAndEmpresaLocatariaId(new Identificacao(request.cnpj()), tenantId)) {
+        if (leadRepository.existsByIdentificacaoAndEmpresaLocatariaId(new Identificacao(request.cnpj()), empresaId)) {
             return ResponseEntity.badRequest().body(Map.of("erro", "Lead já cadastrado"));
         }
 
-        // Converte strings de origem e tipo de serviço para enums (com fallback)
         OrigemLead origem = parseOrigem(request.origem());
         TipoServico tipoServico = parseTipoServico(request.tipoServico());
 
-        var lead = Lead.criar(tenantId, request.nomeContato(), new Email(request.email()),
+        var lead = Lead.criar(empresaId, request.nomeContato(), new Email(request.email()),
                 new Identificacao(request.cnpj()), request.nomeEmpresa(), origem, tipoServico);
         var salvo = leadRepository.save(lead);
 
-        // Cria o histórico de vida do lead automaticamente
-        var historico = HistoricoVidaLead.criar(salvo.getId(), tenantId);
+        var historico = HistoricoVidaLead.criar(salvo.getId(), empresaId);
         historicoRepository.save(historico);
+
+        auditoriaRepository.salvar(AuditoriaAtividade.registrar(empresaId, "admin", "LEAD_CRIADO", 
+            "Novo lead cadastrado: " + salvo.getNomeContato() + " (" + salvo.getNomeEmpresa() + ")", null));
 
         return ResponseEntity.created(URI.create("/api/leads/" + salvo.getId())).body(toResponse(salvo));
     }
@@ -79,27 +96,118 @@ public class LeadController {
     @PostMapping("/{id}/converter")
     public ResponseEntity<Map<String, Object>> converter(@PathVariable UUID id, @RequestParam RegimeTributario regime) {
         Lead convertido = finalizarOnboardingUseCase.executar(id, regime);
+        
+        auditoriaRepository.salvar(AuditoriaAtividade.registrar(convertido.getEmpresaLocatariaId(), "admin", "LEAD_CONVERTIDO", 
+            "Lead " + convertido.getNomeContato() + " convertido para cliente (Onboarding Finalizado)", null));
+
         return ResponseEntity.ok(toResponse(convertido));
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<Map<String, Object>> mudarStatus(@PathVariable UUID id, @RequestParam String status) {
+        var existente = leadRepository.findById(id);
+        if (existente.isEmpty()) return ResponseEntity.notFound().build();
+
+        var lead = existente.get();
+        StatusLead novoStatus = StatusLead.valueOf(status.toUpperCase());
+        String statusAntigo = lead.getStatus().name();
+        lead.mudarStatus(novoStatus);
+        
+        leadRepository.save(lead);
+
+        var historico = historicoRepository.findByLeadId(id).orElseGet(() -> {
+            var newH = HistoricoVidaLead.criar(id, lead.getEmpresaLocatariaId());
+            historicoRepository.save(newH);
+            return newH;
+        });
+
+        historico.registrarEvento("MOVIMENTACAO_ETAPA", 
+            "Lead movido de " + statusAntigo + " para " + novoStatus.name(), 
+                EventoHistoricoLead.MarcadorEvento.NEUTRO);
+        historicoRepository.save(historico);
+
+        auditoriaRepository.salvar(AuditoriaAtividade.registrar(lead.getEmpresaLocatariaId(), "admin", "LEAD_MOVIDO", 
+            "Lead " + lead.getNomeContato() + " movido para " + novoStatus.name(), null));
+
+        return ResponseEntity.ok(toResponse(lead));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Map<String, Object>> atualizar(@PathVariable UUID id, @RequestBody @Valid CriarLeadRequest request) {
+        var existente = leadRepository.findById(id);
+        if (existente.isEmpty()) return ResponseEntity.notFound().build();
+
+        var lead = existente.get();
+        lead.atualizarDados(request.nomeContato(), new Email(request.email()), request.nomeEmpresa(), 
+                           new Identificacao(request.cnpj()), parseOrigem(request.origem()), parseTipoServico(request.tipoServico()));
+        
+        var salvo = leadRepository.save(lead);
+
+        var historico = historicoRepository.findByLeadId(id).orElseGet(() -> {
+            var newH = HistoricoVidaLead.criar(id, lead.getEmpresaLocatariaId());
+            historicoRepository.save(newH);
+            return newH;
+        });
+
+        historico.registrarEvento("DADOS_ATUALIZADOS", "Dados cadastrais do lead foram atualizados", EventoHistoricoLead.MarcadorEvento.NEUTRO);
+        historicoRepository.save(historico);
+
+        auditoriaRepository.salvar(AuditoriaAtividade.registrar(lead.getEmpresaLocatariaId(), "admin", "LEAD_ATUALIZADO", 
+            "Dados do lead " + lead.getNomeContato() + " atualizados", null));
+
+        return ResponseEntity.ok(toResponse(salvo));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> excluir(@PathVariable UUID id) {
+        var lead = leadRepository.findById(id);
+        if (lead.isPresent()) {
+            var l = lead.get();
+            auditoriaRepository.salvar(AuditoriaAtividade.registrar(l.getEmpresaLocatariaId(), "admin", "LEAD_EXCLUIDO", 
+                "Lead " + l.getNomeContato() + " foi removido do sistema", null));
+            leadRepository.deleteById(id);
+        }
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping
     public ResponseEntity<List<Map<String, Object>>> listar() {
-        var tenantId = EmpresaLocatariaId.of(EmpresaLocatariaContext.getCurrentTenant());
-        return ResponseEntity.ok(leadRepository.findAllByEmpresaLocatariaId(tenantId).stream().map(this::toResponse).toList());
+        var empresaId = EmpresaLocatariaId.of(EmpresaLocatariaContext.getEmpresaLocatariaId());
+        return ResponseEntity.ok(leadRepository.findAllByEmpresaLocatariaId(empresaId).stream().map(this::toResponse).toList());
     }
 
-    /**
-     * Endpoint para a Timeline Lateral: retorna o histórico de vida do Lead como JSON.
-     */
+    @GetMapping("/historico")
+    public ResponseEntity<List<Map<String, Object>>> listarHistoricoGeral() {
+        var empresaId = EmpresaLocatariaId.of(EmpresaLocatariaContext.getEmpresaLocatariaId());
+        var atividades = auditoriaRepository.buscarPorEmpresa(empresaId);
+        
+        List<Map<String, Object>> result = atividades.stream().map(a -> {
+            Map<String, Object> map = new LinkedHashMap<>();
+            map.put("id", a.getId().toString());
+            map.put("tipo", a.getTipo());
+            map.put("descricao", a.getDescricao());
+            map.put("ocorridoEm", a.getCriadoEm().toString());
+            map.put("marcador", "NEUTRO");
+            return map;
+        }).toList();
+
+        return ResponseEntity.ok(result);
+    }
+
     @GetMapping("/{id}/historico")
     public ResponseEntity<?> buscarHistorico(@PathVariable UUID id) {
-        var historico = historicoRepository.findByLeadId(id);
-        if (historico.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
+        var empresaId = EmpresaLocatariaId.of(EmpresaLocatariaContext.getEmpresaLocatariaId());
+        var leadOpt = leadRepository.findById(id);
+        
+        if (leadOpt.isEmpty()) return ResponseEntity.notFound().build();
 
-        var h = historico.get();
-        var eventosMap = h.getEventosOrdenados().stream().map(e -> Map.of(
+        var h = historicoRepository.findByLeadId(id).orElseGet(() -> {
+            var newH = HistoricoVidaLead.criar(id, empresaId);
+            historicoRepository.save(newH);
+            return newH;
+        });
+
+        var eventosMap = h.getEventos() == null ? new ArrayList<>() : h.getEventosOrdenados().stream().map(e -> Map.of(
                 "id", e.getId().toString(),
                 "tipo", e.getTipo(),
                 "descricao", e.getDescricao(),
@@ -109,13 +217,61 @@ public class LeadController {
 
         return ResponseEntity.ok(Map.of(
                 "leadId", h.getLeadId(),
+                "arquivado", h.isArquivado(),
                 "eventos", eventosMap
         ));
     }
 
-    /**
-     * Endpoint para criar um contrato vinculado ao Lead.
-     */
+    @DeleteMapping("/{id}/historico")
+    public ResponseEntity<Void> limparHistorico(@PathVariable UUID id) {
+        historicoRepository.findByLeadId(id).ifPresent(h -> {
+            h.limparHistorico();
+            historicoRepository.save(h);
+        });
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/historico")
+    public ResponseEntity<Void> limparHistoricoGeral() {
+        var empresaId = EmpresaLocatariaId.of(EmpresaLocatariaContext.getEmpresaLocatariaId());
+        auditoriaRepository.limparPorEmpresa(empresaId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/historico/arquivar")
+    public ResponseEntity<Void> arquivarHistorico(@PathVariable UUID id, @RequestParam boolean arquivar) {
+        historicoRepository.findByLeadId(id).ifPresent(h -> {
+            if (arquivar) h.arquivar();
+            else h.desarquivar();
+            historicoRepository.save(h);
+        });
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{id}/historico/export/csv")
+    public ResponseEntity<byte[]> exportarHistoricoCsv(@PathVariable UUID id) throws IOException {
+        var lead = leadRepository.findById(id).orElseThrow();
+        var historico = historicoRepository.findByLeadId(id).orElseThrow();
+        byte[] csv = exportService.exportarParaCsv(historico);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=historico_" + lead.getNomeContato() + ".csv")
+                .contentType(MediaType.parseMediaType("text/csv"))
+                .body(csv);
+    }
+
+    @GetMapping("/{id}/historico/export/pdf")
+    public ResponseEntity<byte[]> exportarHistoricoPdf(@PathVariable UUID id) throws IOException {
+        var lead = leadRepository.findById(id).orElseThrow();
+        var historico = historicoRepository.findByLeadId(id).orElseThrow();
+        byte[] pdf = exportService.exportarParaPdf(historico, lead.getNomeContato());
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=historico_" + lead.getNomeContato() + ".pdf")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
+    }
+
     @PostMapping("/{id}/contrato")
     public ResponseEntity<Map<String, Object>> criarContrato(@PathVariable UUID id) {
         var lead = leadRepository.findById(id);
@@ -123,7 +279,6 @@ public class LeadController {
             return ResponseEntity.notFound().build();
         }
 
-        // Verifica se já existe contrato para este lead
         var existente = contratoRepository.findByLeadId(id);
         if (existente.isPresent()) {
             return ResponseEntity.badRequest().body(Map.of("erro", "Lead já possui contrato"));
@@ -132,7 +287,6 @@ public class LeadController {
         var contrato = Contrato.criar(id, lead.get().getEmpresaLocatariaId());
         var salvo = contratoRepository.save(contrato);
 
-        // Registra evento no histórico
         var historico = historicoRepository.findByLeadId(id).orElse(null);
         if (historico != null) {
             historico.registrarEvento("CONTRATO_GERADO",

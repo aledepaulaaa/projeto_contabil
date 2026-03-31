@@ -5,17 +5,17 @@ package com.projetocontabil.infra.tenancy;
  */
 public class EmpresaLocatariaContext {
 
-    private static final ThreadLocal<String> CURRENT_TENANT = new ThreadLocal<>();
+    private static final ThreadLocal<String> CURRENT_CONTEXT = new ThreadLocal<>();
 
-    public static void setCurrentTenant(String tenantId) {
-        CURRENT_TENANT.set(tenantId);
+    public static void setEmpresaLocatariaId(String empresaId) {
+        CURRENT_CONTEXT.set(empresaId);
     }
 
-    public static String getCurrentTenant() {
-        return CURRENT_TENANT.get();
+    public static String getEmpresaLocatariaId() {
+        return CURRENT_CONTEXT.get();
     }
 
     public static void clear() {
-        CURRENT_TENANT.remove();
+        CURRENT_CONTEXT.remove();
     }
 }

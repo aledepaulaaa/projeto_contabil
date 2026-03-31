@@ -26,9 +26,9 @@ public class DocumentoController {
     @PostMapping("/upload")
     public ResponseEntity<DocumentoJpaEntity> upload(
             @RequestParam("file") MultipartFile file,
-            @RequestHeader(value = "X-EmpresaLocataria-Id", required = false) String tenantIdHeader) {
+            @RequestHeader(value = "X-EmpresaLocataria-Id", required = false) String empresaIdHeader) {
         
-        String empresaLocatariaId = (tenantIdHeader != null) ? tenantIdHeader : "EmpresaLocataria-dev-mode";
+        String empresaLocatariaId = (empresaIdHeader != null) ? empresaIdHeader : "tenant-dev-mode";
 
         try {
             String caminho = storageService.store(file.getOriginalFilename(), file.getInputStream(), empresaLocatariaId);
@@ -52,9 +52,9 @@ public class DocumentoController {
 
     @GetMapping
     public ResponseEntity<List<DocumentoJpaEntity>> listar(
-            @RequestHeader(value = "X-EmpresaLocataria-Id", required = false) String tenantIdHeader) {
+            @RequestHeader(value = "X-EmpresaLocataria-Id", required = false) String empresaIdHeader) {
         
-        String empresaLocatariaId = (tenantIdHeader != null) ? tenantIdHeader : "EmpresaLocataria-dev-mode";
+        String empresaLocatariaId = (empresaIdHeader != null) ? empresaIdHeader : "tenant-dev-mode";
         List<DocumentoJpaEntity> documentos = repository.findAllByEmpresaLocatariaId(empresaLocatariaId);
         return ResponseEntity.ok(documentos);
     }

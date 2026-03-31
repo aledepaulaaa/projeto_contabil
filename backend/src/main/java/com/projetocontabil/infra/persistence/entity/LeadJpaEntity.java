@@ -30,6 +30,7 @@ public class LeadJpaEntity {
 
     private String nomeContato;
     private String email;
+    private String telefone;
     private String cnpj;
     private String nomeEmpresa;
 

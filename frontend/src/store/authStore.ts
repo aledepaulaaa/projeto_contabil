@@ -2,24 +2,24 @@ import { create } from 'zustand';
 
 interface AuthState {
   token: string | null;
-  tenantId: string | null;
+  empresaLocatariaId: string | null;
   isAuthenticated: boolean;
-  login: (token: string, tenantId: string) => void;
+  login: (token: string, empresaLocatariaId: string) => void;
   logout: () => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
   token: localStorage.getItem('token'),
-  tenantId: localStorage.getItem('tenantId'),
+  empresaLocatariaId: localStorage.getItem('empresaLocatariaId'),
   isAuthenticated: !!localStorage.getItem('token'),
-  login: (token, tenantId) => {
+  login: (token, empresaLocatariaId) => {
     localStorage.setItem('token', token);
-    localStorage.setItem('tenantId', tenantId);
-    set({ token, tenantId, isAuthenticated: true });
+    localStorage.setItem('empresaLocatariaId', empresaLocatariaId);
+    set({ token, empresaLocatariaId, isAuthenticated: true });
   },
   logout: () => {
     localStorage.removeItem('token');
-    localStorage.removeItem('tenantId');
-    set({ token: null, tenantId: null, isAuthenticated: false });
+    localStorage.removeItem('empresaLocatariaId');
+    set({ token: null, empresaLocatariaId: null, isAuthenticated: false });
   },
 }));

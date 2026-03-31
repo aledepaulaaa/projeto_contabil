@@ -3,7 +3,7 @@ import { apiClient } from './apiClient';
 export interface AutenticacaoResponse {
   token: string;
   type?: string;
-  tenantId?: string;
+  empresaLocatariaId?: string;
 }
 
 export interface AutenticacaoData {
@@ -13,18 +13,19 @@ export interface AutenticacaoData {
 
 export const AutenticacaoService = {
   login: async (dados: AutenticacaoData): Promise<AutenticacaoResponse> => {
-    // A API mapeia /api/auth/login e espera username, password, tenantId
+    // A API mapeia /api/auth/login e espera username, password, empresaLocatariaId
     const payload = {
       username: dados.usuario,
       password: dados.senha || '',
-      tenantId: dados.usuario, // Mapeado no identificador para atender multi-tenant
+      empresaLocatariaId: dados.usuario, // Mapeado no identificador para atender multi-tenant
     };
 
     const response = await apiClient.post<AutenticacaoResponse>('/api/auth/login', payload);
 
+    // Ajusta o retorno para usar a nomenclatura correta
     return {
       token: response.data.token,
-      tenantId: dados.usuario,
+      empresaLocatariaId: response.data.empresaLocatariaId || dados.usuario,
     };
   },
 };

@@ -14,7 +14,7 @@ export function useAutenticacao() {
     clearError();
     try {
       const resp = await AutenticacaoService.login({ usuario, senha });
-      login(resp.token, resp.tenantId || usuario);
+      login(resp.token, resp.empresaLocatariaId || usuario);
       return true;
     } catch (e) {
       if (e instanceof AxiosError) {

@@ -12,6 +12,7 @@ import { Processos } from './Processos';
 import { Perfil } from './Perfil';
 import { AlterarSenha } from './AlterarSenha';
 import { Configuracoes } from './Configuracoes';
+import { FloatingHistoryIndicator } from '../../components/molecules/FloatingHistoryIndicator/FloatingHistoryIndicator';
 
 export const Dashboard: React.FC = () => {
   const [location] = useLocation();
@@ -59,6 +60,9 @@ export const Dashboard: React.FC = () => {
 
       {/* Modal de Erro Global — acessível em todas as rotas */}
       <ModalErroGlobal />
+
+      {/* Histórico Geral Flutuante — Acessível em todos os módulos */}
+      <FloatingHistoryIndicator />
     </div>
   );
 };

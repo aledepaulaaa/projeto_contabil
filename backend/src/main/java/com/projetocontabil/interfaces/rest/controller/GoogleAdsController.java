@@ -16,8 +16,8 @@ public class GoogleAdsController {
     private final GoogleAdsOAuthService authService;
 
     @GetMapping("/authorize")
-    public ResponseEntity<Void> authorize(@RequestParam String tenant_id) {
-        String url = authService.generateAuthorizationUrl(tenant_id);
+    public ResponseEntity<Void> authorize(@RequestParam String empresa_locataria_id) {
+        String url = authService.generateAuthorizationUrl(empresa_locataria_id);
         return ResponseEntity.status(HttpStatus.FOUND).location(URI.create(url)).build();
     }
 
@@ -28,8 +28,8 @@ public class GoogleAdsController {
     }
 
     @GetMapping("/status")
-    public ResponseEntity<ConnectionStatusResponse> getStatus(@RequestParam String tenant_id) {
-        var status = authService.getConnectionStatus(tenant_id);
+    public ResponseEntity<ConnectionStatusResponse> getStatus(@RequestParam String empresa_locataria_id) {
+        var status = authService.getConnectionStatus(empresa_locataria_id);
         return ResponseEntity.ok(new ConnectionStatusResponse(status != null, status));
     }
 

@@ -16,15 +16,15 @@ public class EmpresaLocatariaFilter implements Filter {
             throws IOException, ServletException {
         
         HttpServletRequest httpRequest = (HttpServletRequest) request;
-        String tenantId = httpRequest.getHeader("X-EmpresaLocataria-Id");
+        String empresaId = httpRequest.getHeader("X-EmpresaLocataria-Id");
 
         // Fallback para desenvolvimento
-        if (tenantId == null) {
-            tenantId = "EmpresaLocataria-dev-mode";
+        if (empresaId == null) {
+            empresaId = "tenant-dev-mode";
         }
 
         try {
-            EmpresaLocatariaContext.setCurrentTenant(tenantId);
+            EmpresaLocatariaContext.setEmpresaLocatariaId(empresaId);
             chain.doFilter(request, response);
         } finally {
             EmpresaLocatariaContext.clear();

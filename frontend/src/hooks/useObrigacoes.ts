@@ -13,15 +13,15 @@ export interface Obrigacao {
 }
 
 export const useObrigacoes = () => {
-  const { tenantId } = useAuthStore();
+  const { empresaLocatariaId } = useAuthStore();
 
   const { data: obrigacoes, isLoading, error, refetch } = useQuery({
-    queryKey: ['obrigacoes', 'pendentes', tenantId],
+    queryKey: ['obrigacoes', 'pendentes', empresaLocatariaId],
     queryFn: async () => {
       const response = await apiClient.get<Obrigacao[]>('/api/obrigacoes/pendentes');
       return response.data;
     },
-    enabled: !!tenantId,
+    enabled: !!empresaLocatariaId,
     staleTime: 120000, // 2 minutos
   });
 

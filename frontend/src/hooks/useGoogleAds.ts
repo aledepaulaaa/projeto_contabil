@@ -7,18 +7,18 @@ import { useAuthStore } from '../store/authStore';
  * Hook para gerenciar o estado da integração com Google Ads.
  */
 export function useGoogleAds() {
-  const { tenantId } = useAuthStore();
+  const { empresaLocatariaId } = useAuthStore();
 
   const { data, isLoading, refetch } = useQuery<GoogleAdsStatusResponse>({
-    queryKey: ['google-ads-status', tenantId],
-    queryFn: () => GoogleAdsService.buscarStatus(tenantId!),
-    enabled: !!tenantId,
+    queryKey: ['google-ads-status', empresaLocatariaId],
+    queryFn: () => GoogleAdsService.buscarStatus(empresaLocatariaId!),
+    enabled: !!empresaLocatariaId,
     staleTime: 1000 * 60 * 5, // 5 minutos
   });
 
   const conectar = () => {
-    if (tenantId) {
-      GoogleAdsService.conectar(tenantId);
+    if (empresaLocatariaId) {
+      GoogleAdsService.conectar(empresaLocatariaId);
     }
   };
 

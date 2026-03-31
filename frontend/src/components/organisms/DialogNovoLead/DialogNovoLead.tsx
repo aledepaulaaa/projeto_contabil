@@ -47,6 +47,7 @@ interface DialogNovoLeadProps {
   aberto: boolean;
   onFechar: () => void;
   onSucesso: () => void;
+  leadParaEdicao?: any; // Usando any para simplificar ou tipar adequadamente
 }
 
 const tiposServico = [
@@ -63,9 +64,17 @@ const origens = ['CAMPANHA', 'ORGANICO', 'INDICACAO'];
  * Passo 2: Campos condicionais baseados no tipo (Abertura/Troca/Regularização)
  * Passo 3: Revisão e confirmação
  */
-export const DialogNovoLead: React.FC<DialogNovoLeadProps> = ({ aberto, onFechar, onSucesso }) => {
-  const [passo, setPasso] = useState(0); // 0: Seleção de Serviço, 1: Dados, 2: Detalhes, 3: Revisão
-  const [dados, setDados] = useState<DadosLead>(dadosIniciais);
+export const DialogNovoLead: React.FC<DialogNovoLeadProps> = ({ aberto, onFechar, onSucesso, leadParaEdicao }) => {
+  const [passo, setPasso] = useState(leadParaEdicao ? 1 : 0); 
+  const [dados, setDados] = React.useState<DadosLead>(leadParaEdicao ? {
+    ...dadosIniciais,
+    nomeContato: leadParaEdicao.nomeContato || '',
+    email: leadParaEdicao.email || '',
+    nomeEmpresa: leadParaEdicao.nomeEmpresa || '',
+    cnpj: leadParaEdicao.cnpj || '',
+    tipoServico: leadParaEdicao.tipoServico as any,
+    origem: leadParaEdicao.origemLead || ''
+  } : dadosIniciais);
   const [enviando, setEnviando] = useState(false);
 
   const totalPassos = 3;
@@ -98,14 +107,25 @@ export const DialogNovoLead: React.FC<DialogNovoLeadProps> = ({ aberto, onFechar
   const enviar = async () => {
     setEnviando(true);
     try {
-      await LeadService.criarConta({
-        nome: dados.nomeContato,
-        email: dados.email,
-        cnpj: dados.cnpj,
-        nomeEmpresa: dados.nomeEmpresa,
-        origem: dados.origem || undefined,
-        tipoServico: dados.tipoServico || undefined,
-      });
+      if (leadParaEdicao) {
+        await LeadService.atualizarLead(leadParaEdicao.id, {
+           nome: dados.nomeContato,
+           email: dados.email,
+           cnpj: dados.cnpj,
+           nomeEmpresa: dados.nomeEmpresa,
+           origem: dados.origem,
+           tipoServico: dados.tipoServico as any
+        });
+      } else {
+        await LeadService.cadastrarLead({
+          nome: dados.nomeContato,
+          email: dados.email,
+          cnpj: dados.cnpj,
+          nomeEmpresa: dados.nomeEmpresa,
+          origem: dados.origem,
+          tipoServico: dados.tipoServico as any
+        });
+      }
       onSucesso();
       fechar();
     } catch {
@@ -160,7 +180,8 @@ export const DialogNovoLead: React.FC<DialogNovoLeadProps> = ({ aberto, onFechar
               {/* Header */}
               <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-white/10 sticky top-0 bg-primary-bg z-10">
                 <div>
-                  <Texto variant="subtitulo">Novo Lead Manual</Texto>
+                  <Texto variant="subtitulo" className="mb-1">{leadParaEdicao ? 'Editar Lead' : 'Novo Lead'}</Texto>
+                  <Texto variant="detalhe" className="text-slate-500">{leadParaEdicao ? 'Atualize as informações do lead selecionado' : 'Siga os passos para cadastrar uma nova oportunidade'}</Texto>
                   <Texto variant="detalhe" className="mt-0.5">
                     {passo === 0 ? 'Selecione o serviço' : `Passo ${passo} de ${totalPassos}`}
                   </Texto>
@@ -183,7 +204,10 @@ export const DialogNovoLead: React.FC<DialogNovoLeadProps> = ({ aberto, onFechar
                 {/* PASSO 0: Tipo de Serviço */}
                 {passo === 0 && (
                   <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-                    <label className={labelClass}>Qual o serviço principal? *</label>
+                    <Texto variant="subtitulo" className="mb-2 text-center">{leadParaEdicao ? 'Atualizar Serviço' : 'Qual o tipo de serviço?'}</Texto>
+                    <Texto variant="detalhe" className="text-slate-500 text-center mb-10">
+                      {leadParaEdicao ? 'Altere a categoria se necessário' : 'Selecione abaixo para personalizar os próximos campos'}
+                    </Texto>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-2">
                       {tiposServico.map(tipo => (
                         <button
@@ -368,7 +392,7 @@ export const DialogNovoLead: React.FC<DialogNovoLeadProps> = ({ aberto, onFechar
                     disabled={enviando}
                     className="px-10 flex items-center gap-2 h-11"
                   >
-                    {enviando ? 'Cadastrando...' : 'Finalizar Cadastro'}
+                    {enviando ? (leadParaEdicao ? 'Salvando...' : 'Cadastrando...') : (leadParaEdicao ? 'Salvar Alterações' : 'Finalizar Cadastro')}
                     <Send size={16} />
                   </Botao>
                 )}

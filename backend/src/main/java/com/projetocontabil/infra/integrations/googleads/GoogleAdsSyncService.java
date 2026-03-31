@@ -33,13 +33,13 @@ public class GoogleAdsSyncService {
             try {
                 syncForConnection(connection);
             } catch (Exception e) {
-                log.error("Erro ao sincronizar tenant {}: {}", connection.getEmpresaLocatariaId(), e.getMessage());
+                log.error("Erro ao sincronizar empresa {}: {}", connection.getEmpresaLocatariaId(), e.getMessage());
             }
         }
     }
 
     private void syncForConnection(ExternalConnectionJpaEntity connection) {
-        log.debug("Sincronizando Google Ads para o tenant: {}", connection.getEmpresaLocatariaId());
+        log.debug("Sincronizando Google Ads para a empresa: {}", connection.getEmpresaLocatariaId());
         // Aqui entraria a query via GoogleAdsServiceClient
         // Por enquanto, o motor está estruturado para receber a lógica de busca real.
     }

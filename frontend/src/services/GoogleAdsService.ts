@@ -7,11 +7,11 @@ export interface GoogleAdsStatusResponse {
 
 export const GoogleAdsService = {
   /**
-   * Verifica o status da conexão com Google Ads para o tenant atual.
+   * Verifica o status da conexão com Google Ads para a empresa atual.
    */
-  buscarStatus: async (tenantId: string): Promise<GoogleAdsStatusResponse> => {
+  buscarStatus: async (empresaLocatariaId: string): Promise<GoogleAdsStatusResponse> => {
     const { data } = await apiClient.get<GoogleAdsStatusResponse>(`/api/v1/integrations/google-ads/status`, {
-      params: { tenant_id: tenantId }
+      params: { empresa_locataria_id: empresaLocatariaId }
     });
     return data;
   },
@@ -19,8 +19,8 @@ export const GoogleAdsService = {
   /**
    * Inicia o fluxo de autorização OAuth2 redirecionando para o Google.
    */
-  conectar: (tenantId: string) => {
+  conectar: (empresaLocatariaId: string) => {
     // Redirecionamento direto via browser para o endpoint de autorização do backend
-    window.location.href = `http://localhost:8080/api/v1/integrations/google-ads/authorize?tenant_id=${tenantId}`;
+    window.location.href = `http://localhost:8080/api/v1/integrations/google-ads/authorize?empresa_locataria_id=${empresaLocatariaId}`;
   }
 };

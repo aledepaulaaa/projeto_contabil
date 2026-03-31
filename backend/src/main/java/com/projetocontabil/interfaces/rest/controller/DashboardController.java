@@ -33,10 +33,10 @@ public class DashboardController {
 
     @GetMapping("/metrics")
     public ResponseEntity<Map<String, Object>> getMetrics() {
-        var id = EmpresaLocatariaId.of(EmpresaLocatariaContext.getCurrentTenant());
+        var id = EmpresaLocatariaId.of(EmpresaLocatariaContext.getEmpresaLocatariaId());
 
-        long leadsNovos = leadRepository.countByEmpresaLocatariaIdAndStatus(id, StatusLead.NOVO);
-        long leadsConvertidos = leadRepository.countByEmpresaLocatariaIdAndStatus(id, StatusLead.CONVERTIDO);
+        long leadsNovos = leadRepository.countByEmpresaLocatariaIdAndStatus(id, StatusLead.LEAD);
+        long leadsConvertidos = leadRepository.countByEmpresaLocatariaIdAndStatus(id, StatusLead.FECHAMENTO);
         long obrigacoesPendentes = obrigacaoRepository.countByEmpresaLocatariaIdAndStatus(id, Obrigacao.StatusObrigacao.A_FAZER);
         long alvarasVencidos = alvaraRepository.countVencidosByEmpresaLocatariaId(id);
 

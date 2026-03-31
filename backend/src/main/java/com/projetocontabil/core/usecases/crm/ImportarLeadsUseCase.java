@@ -9,6 +9,9 @@ import com.projetocontabil.core.domain.crm.vo.Email;
 import com.projetocontabil.core.domain.crm.vo.Identificacao;
 import com.projetocontabil.core.domain.empresalocataria.EmpresaLocatariaId;
 import com.projetocontabil.core.ports.driven.LeadRepository;
+import com.projetocontabil.core.ports.driven.HistoricoVidaLeadRepository;
+import com.projetocontabil.core.domain.crm.model.HistoricoVidaLead;
+import com.projetocontabil.core.domain.crm.model.EventoHistoricoLead;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,35 +30,46 @@ import java.util.List;
 public class ImportarLeadsUseCase {
 
     private final LeadRepository leadRepository;
+    private final HistoricoVidaLeadRepository historicoRepository;
 
-    public ImportarLeadsUseCase(LeadRepository leadRepository) {
+    public ImportarLeadsUseCase(LeadRepository leadRepository, HistoricoVidaLeadRepository historicoRepository) {
         this.leadRepository = leadRepository;
+        this.historicoRepository = historicoRepository;
     }
 
     @Transactional
-    public List<Lead> executar(InputStream inputStream, String tenantId) {
+    public List<Lead> executar(InputStream inputStream, String empresaIdExterno) {
         List<Lead> leadsImportados = new ArrayList<>();
-        EmpresaLocatariaId empresaId = new EmpresaLocatariaId(tenantId);
+        EmpresaLocatariaId empresaId = new EmpresaLocatariaId(empresaIdExterno);
 
         try (CSVReader reader = new CSVReaderBuilder(new InputStreamReader(inputStream))
+                .withCSVParser(new com.opencsv.CSVParserBuilder().withSeparator(',').build())
                 .withSkipLines(1) // Pular o cabeçalho
                 .build()) {
 
             String[] line;
+            int rowNumber = 1;
             while ((line = reader.readNext()) != null) {
+                rowNumber++;
                 try {
-                    if (line.length < 2 || line[0].isBlank() || line[1].isBlank()) {
-                        log.warn("Linha inválida ou incompleta no CSV: {}", (Object) line);
+                    log.debug("Processando linha {}: {}", rowNumber, (Object) line);
+                    
+                    if (line.length < 2 || line[0].isBlank()) {
+                        log.warn("Linha {} ignorada: incompleta ou vazia.", rowNumber);
                         continue;
                     }
 
                     String nome = line[0].trim();
-                    Email email = new Email(line[1].trim());
+                    Email email = (line.length > 1 && !line[1].isBlank()) ? new Email(line[1].trim()) : null;
                     
-                    // Tratamento de documento (remove tudo que não é dígito)
-                    String docRaw = line.length > 2 ? line[2].replaceAll("[^0-9]", "") : "";
-                    Identificacao ident = (!docRaw.isBlank() && (docRaw.length() == 11 || docRaw.length() == 14)) 
-                            ? new Identificacao(docRaw) : null;
+                    // Tratamento de documento (resiliente)
+                    String docRaw = (line.length > 2 && line[2] != null) ? line[2].replaceAll("\\D", "") : "";
+                    Identificacao ident = null;
+                    try {
+                        if (!docRaw.isBlank()) ident = new Identificacao(docRaw);
+                    } catch (Exception e) {
+                        log.warn("Linha {}: Documento '{}' inválido, prosseguindo sem identificação.", rowNumber, docRaw);
+                    }
 
                     String empresaNome = (line.length > 3 && !line[3].isBlank()) ? line[3].trim() : nome;
                     
@@ -64,18 +78,22 @@ public class ImportarLeadsUseCase {
 
                     Lead lead = Lead.criar(empresaId, nome, email, ident, empresaNome, origem, tipoServico);
                     
-                    // Opcional: Verificar duplicidade antes de salvar (por e-mail no mesmo tenant, por exemplo)
-                    // Por simplicidade, seguiremos as regras do repositório
-                    
                     leadRepository.save(lead);
+                    
+                    var historico = HistoricoVidaLead.criar(lead.getId(), empresaId);
+                    historico.registrarEvento("IMPORTACAO", "Lead importado via arquivo CSV", EventoHistoricoLead.MarcadorEvento.NEUTRO);
+                    historicoRepository.save(historico);
+
                     leadsImportados.add(lead);
+                    log.info("Linha {} importada com sucesso: {}", rowNumber, nome);
                     
                 } catch (Exception e) {
-                    log.error("Erro ao processar linha do CSV: {}. Erro: {}", line, e.getMessage());
+                    log.error("Erro fatal na linha {}: {}. Erro: {}", rowNumber, line, e.getMessage());
                 }
             }
         } catch (Exception e) {
-            throw new RuntimeException("Falha crítica ao processar arquivo de importação: " + e.getMessage(), e);
+            log.error("Falha crítica no processamento do CSV", e);
+            throw new RuntimeException("Falha ao ler arquivo CSV: " + e.getMessage());
         }
 
         return leadsImportados;

@@ -22,7 +22,7 @@ public class AlvaraController {
 
     @GetMapping
     public ResponseEntity<List<Alvara>> listar() {
-        var id = EmpresaLocatariaId.of(EmpresaLocatariaContext.getCurrentTenant());
+        var id = EmpresaLocatariaId.of(EmpresaLocatariaContext.getEmpresaLocatariaId());
         return ResponseEntity.ok(repository.findAllAlvarasByEmpresaLocatariaId(id));
     }
 

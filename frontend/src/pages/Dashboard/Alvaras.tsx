@@ -23,15 +23,8 @@ interface Alvara {
   controlaAlvara: boolean;
 }
 
-const alvarasIniciais: Alvara[] = [
-  { id: '1', empresa: 'Padaria Modelo', tipo: 'Funcionamento', vencimento: '2024-05-15', status: 'VIGENTE', controlaAlvara: true },
-  { id: '2', empresa: 'Lanchonete Express', tipo: 'Sanitário', vencimento: '2024-03-10', status: 'VENCIDO', controlaAlvara: true },
-  { id: '3', empresa: 'Tech Hub', tipo: 'Bombeiros', vencimento: '2024-08-22', status: 'VIGENTE', controlaAlvara: true },
-  { id: '4', empresa: 'Auto Peças Silva', tipo: 'Ambiental', vencimento: '2024-04-01', status: 'EM_RENOVACAO', controlaAlvara: true },
-];
-
 export const Alvaras: React.FC = () => {
-  const [alvaras] = useState<Alvara[]>(alvarasIniciais);
+  const [alvaras] = useState<Alvara[]>([]);
   const [filtroStatus, setFiltroStatus] = useState<string>('TODOS');
 
   const getStatusBadge = (status: string) => {
@@ -42,6 +35,8 @@ export const Alvaras: React.FC = () => {
       default: return 'bg-slate-500/10 text-slate-600 dark:text-slate-500 border-slate-500/20';
     }
   };
+
+  const filteredAlvaras = alvaras.filter((a: Alvara) => filtroStatus === 'TODOS' || a.status === filtroStatus);
 
   return (
     <div className="space-y-8">
@@ -72,7 +67,7 @@ export const Alvaras: React.FC = () => {
           { label: 'Total Ativos', value: alvaras.length, icon: ShieldCheck, color: 'text-blue-600 dark:text-blue-500', bgColor: 'bg-blue-100 dark:bg-slate-800' },
           { label: 'Vencidos', value: alvaras.filter((a: Alvara) => a.status === 'VENCIDO').length, icon: AlertTriangle, color: 'text-red-600 dark:text-red-500', bgColor: 'bg-red-100 dark:bg-slate-800' },
           { label: 'Em Renovação', value: alvaras.filter((a: Alvara) => a.status === 'EM_RENOVACAO').length, icon: Clock, color: 'text-amber-600 dark:text-amber-500', bgColor: 'bg-amber-100 dark:bg-slate-800' },
-          { label: 'A Vencer (30d)', value: 2, icon: Clock, color: 'text-indigo-600 dark:text-indigo-500', bgColor: 'bg-indigo-100 dark:bg-slate-800' },
+          { label: 'A Vencer (30d)', value: 0, icon: Clock, color: 'text-indigo-600 dark:text-indigo-500', bgColor: 'bg-indigo-100 dark:bg-slate-800' },
         ].map((stat, i) => (
           <Card key={i} className="flex items-center gap-4 py-4 px-4">
             <div className={`p-2 rounded-lg ${stat.bgColor} ${stat.color} transition-colors`}>
@@ -127,9 +122,7 @@ export const Alvaras: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 transition-colors">
-              {alvaras
-                .filter((a: Alvara) => filtroStatus === 'TODOS' || a.status === filtroStatus)
-                .map((alvara: Alvara) => (
+              {filteredAlvaras.map((alvara: Alvara) => (
                 <tr key={alvara.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors group">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
@@ -162,6 +155,16 @@ export const Alvaras: React.FC = () => {
               ))}
             </tbody>
           </table>
+          
+          {filteredAlvaras.length === 0 && (
+            <div className="p-12 text-center">
+              <div className="w-16 h-16 bg-slate-50 dark:bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300 transition-colors">
+                <FileText size={32} />
+              </div>
+              <Texto variant="corpo" className="font-semibold text-slate-500">Nenhum registro encontrado</Texto>
+              <Texto variant="detalhe" className="mt-1">Use o botão "Novo Registro" para começar.</Texto>
+            </div>
+          )}
         </div>
       </Card>
     </div>

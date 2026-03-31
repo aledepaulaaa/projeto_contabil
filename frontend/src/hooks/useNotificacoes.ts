@@ -10,12 +10,12 @@ export interface Notificacao {
   data: number;
 }
 
-export const useNotificacoes = (tenantId: string | null) => {
+export const useNotificacoes = (empresaLocatariaId: string | null) => {
   const [notificacoes, setNotificacoes] = useState<Notificacao[]>([]);
   const [conectado, setConectado] = useState(false);
 
   useEffect(() => {
-    if (!tenantId) return;
+    if (!empresaLocatariaId) return;
 
     const socket = new SockJS(SOCKET_URL);
     const client = new Client({
@@ -30,7 +30,7 @@ export const useNotificacoes = (tenantId: string | null) => {
       setConectado(true);
       console.log('[STOMP] Conectado ao WebSocket');
       
-      client.subscribe(`/topic/leads/${tenantId}`, (message) => {
+      client.subscribe(`/topic/leads/${empresaLocatariaId}`, (message) => {
         const payload = JSON.parse(message.body) as Notificacao;
         setNotificacoes((prev) => [payload, ...prev]);
         
@@ -51,7 +51,7 @@ export const useNotificacoes = (tenantId: string | null) => {
     return () => {
       client.deactivate();
     };
-  }, [tenantId]);
+  }, [empresaLocatariaId]);
 
   const limparNotificacoes = () => setNotificacoes([]);
 

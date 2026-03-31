@@ -51,6 +51,7 @@ public class HistoricoVidaLeadRepositoryAdapter implements HistoricoVidaLeadRepo
                 entity.getLeadId(),
                 EmpresaLocatariaId.of(entity.getEmpresaLocatariaId()),
                 eventos,
+                entity.isArquivado(),
                 entity.getCriadoEm()
         );
     }
@@ -61,6 +62,7 @@ public class HistoricoVidaLeadRepositoryAdapter implements HistoricoVidaLeadRepo
                 historico.getLeadId(),
                 historico.getEmpresaLocatariaId().value(),
                 serializarEventos(historico.getEventos()),
+                historico.isArquivado(),
                 historico.getCriadoEm()
         );
     }

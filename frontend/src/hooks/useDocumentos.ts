@@ -12,16 +12,16 @@ export interface Documento {
 }
 
 export const useDocumentos = () => {
-  const { tenantId } = useAuthStore();
+  const { empresaLocatariaId } = useAuthStore();
   const queryClient = useQueryClient();
 
   const { data: documentos, isLoading, error } = useQuery({
-    queryKey: ['documentos', tenantId],
+    queryKey: ['documentos', empresaLocatariaId],
     queryFn: async () => {
       const response = await apiClient.get<Documento[]>('/api/documentos');
       return response.data;
     },
-    enabled: !!tenantId,
+    enabled: !!empresaLocatariaId,
   });
 
   const uploadMutation = useMutation({
@@ -37,7 +37,7 @@ export const useDocumentos = () => {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['documentos', tenantId] });
+      queryClient.invalidateQueries({ queryKey: ['documentos', empresaLocatariaId] });
     },
   });
 

@@ -158,28 +158,28 @@ export const ResumoDashboard: React.FC = () => {
           <Card className="p-5">
             <div className="flex items-center justify-between mb-2">
               <div className="p-2 rounded-lg bg-amber-500/10 text-amber-600"><AlertCircle size={18} /></div>
-              <Texto variant="titulo" className="text-2xl">12</Texto>
+              <Texto variant="titulo" className="text-2xl">0</Texto>
             </div>
             <Texto variant="label">Guias Pendentes</Texto>
           </Card>
           <Card className="p-5">
             <div className="flex items-center justify-between mb-2">
               <div className="p-2 rounded-lg bg-blue-500/10 text-blue-600"><Clock size={18} /></div>
-              <Texto variant="titulo" className="text-2xl">08</Texto>
+              <Texto variant="titulo" className="text-2xl">0</Texto>
             </div>
             <Texto variant="label">Aguardando Cliente</Texto>
           </Card>
           <Card className="p-5">
             <div className="flex items-center justify-between mb-2">
               <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600"><CheckCircle2 size={18} /></div>
-              <Texto variant="titulo" className="text-2xl">45</Texto>
+              <Texto variant="titulo" className="text-2xl">0</Texto>
             </div>
             <Texto variant="label">Concluídas</Texto>
           </Card>
           <Card className="p-5">
             <div className="flex items-center justify-between mb-2">
               <div className="p-2 rounded-lg bg-red-500/10 text-red-600"><AlertCircle size={18} /></div>
-              <Texto variant="titulo" className="text-2xl">02</Texto>
+              <Texto variant="titulo" className="text-2xl">0</Texto>
             </div>
             <Texto variant="label">Vencidas</Texto>
           </Card>
@@ -191,21 +191,21 @@ export const ResumoDashboard: React.FC = () => {
           <Card className="p-5">
             <div className="flex items-center justify-between mb-2">
               <div className="p-2 rounded-lg bg-blue-500/10 text-blue-600"><FileText size={18} /></div>
-              <Texto variant="titulo" className="text-2xl">24</Texto>
+              <Texto variant="titulo" className="text-2xl">0</Texto>
             </div>
             <Texto variant="label">Total de Licenças</Texto>
           </Card>
           <Card className="p-5">
             <div className="flex items-center justify-between mb-2">
               <div className="p-2 rounded-lg bg-amber-500/10 text-amber-600"><Clock size={18} /></div>
-              <Texto variant="titulo" className="text-2xl">05</Texto>
+              <Texto variant="titulo" className="text-2xl">0</Texto>
             </div>
             <Texto variant="label">Próximos Vencimentos</Texto>
           </Card>
           <Card className="p-5">
             <div className="flex items-center justify-between mb-2">
               <div className="p-2 rounded-lg bg-red-500/10 text-red-600"><AlertCircle size={18} /></div>
-              <Texto variant="titulo" className="text-2xl">01</Texto>
+              <Texto variant="titulo" className="text-2xl">0</Texto>
             </div>
             <Texto variant="label">Irregular</Texto>
           </Card>

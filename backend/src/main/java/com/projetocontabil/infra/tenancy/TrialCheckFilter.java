@@ -32,7 +32,7 @@ public class TrialCheckFilter extends OncePerRequestFilter {
             return;
         }
 
-        String tenantId = EmpresaLocatariaContext.getCurrentTenant();
+        String tenantId = EmpresaLocatariaContext.getEmpresaLocatariaId();
         if (tenantId != null) {
             var empresa = repository.findByEmpresaLocatariaId(EmpresaLocatariaId.of(tenantId));
             if (empresa.isPresent() && empresa.get().isTrialVencido()) {

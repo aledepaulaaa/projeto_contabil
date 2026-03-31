@@ -10,5 +10,5 @@ import lombok.NoArgsConstructor;
 public class AutenticacaoResponse {
     private String token;
     private String type;
-    private String tenantId;
+    private String empresaLocatariaId;
 }

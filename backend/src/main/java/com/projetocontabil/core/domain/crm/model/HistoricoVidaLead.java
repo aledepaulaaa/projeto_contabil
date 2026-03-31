@@ -20,15 +20,17 @@ public class HistoricoVidaLead {
     private final UUID id;
     private final UUID leadId;
     private final EmpresaLocatariaId empresaLocatariaId;
-    private final List<EventoHistoricoLead> eventos;
+    private List<EventoHistoricoLead> eventos;
+    private boolean arquivado;
     private final LocalDateTime criadoEm;
 
     private HistoricoVidaLead(UUID id, UUID leadId, EmpresaLocatariaId empresaLocatariaId,
-                               List<EventoHistoricoLead> eventos, LocalDateTime criadoEm) {
+                               List<EventoHistoricoLead> eventos, boolean arquivado, LocalDateTime criadoEm) {
         this.id = id;
         this.leadId = leadId;
         this.empresaLocatariaId = empresaLocatariaId;
         this.eventos = new ArrayList<>(eventos);
+        this.arquivado = arquivado;
         this.criadoEm = criadoEm;
     }
 
@@ -37,7 +39,7 @@ public class HistoricoVidaLead {
      */
     public static HistoricoVidaLead criar(UUID leadId, EmpresaLocatariaId empresaLocatariaId) {
         var historico = new HistoricoVidaLead(UUID.randomUUID(), leadId, empresaLocatariaId,
-                new ArrayList<>(), LocalDateTime.now());
+                new ArrayList<>(), false, LocalDateTime.now());
         historico.registrarEvento("LEAD_CRIADO", "Lead cadastrado no sistema",
                 EventoHistoricoLead.MarcadorEvento.NEUTRO);
         return historico;
@@ -47,8 +49,8 @@ public class HistoricoVidaLead {
      * Reconstitui a entidade a partir da persistência.
      */
     public static HistoricoVidaLead reconstituir(UUID id, UUID leadId, EmpresaLocatariaId empresaLocatariaId,
-                                                   List<EventoHistoricoLead> eventos, LocalDateTime criadoEm) {
-        return new HistoricoVidaLead(id, leadId, empresaLocatariaId, eventos, criadoEm);
+                                                   List<EventoHistoricoLead> eventos, boolean arquivado, LocalDateTime criadoEm) {
+        return new HistoricoVidaLead(id, leadId, empresaLocatariaId, eventos, arquivado, criadoEm);
     }
 
     /**
@@ -56,6 +58,24 @@ public class HistoricoVidaLead {
      */
     public void registrarEvento(String tipo, String descricao, EventoHistoricoLead.MarcadorEvento marcador) {
         this.eventos.add(new EventoHistoricoLead(tipo, descricao, marcador));
+    }
+
+    public void limparHistorico() {
+        this.eventos.clear();
+        this.registrarEvento("HISTORICO_LIMPO", "Histórico de operações foi limpo pelo usuário", 
+                EventoHistoricoLead.MarcadorEvento.ATENCAO);
+    }
+
+    public void arquivar() {
+        this.arquivado = true;
+        this.registrarEvento("HISTORICO_ARQUIVADO", "Histórico arquivado para consulta posterior",
+                EventoHistoricoLead.MarcadorEvento.NEUTRO);
+    }
+
+    public void desarquivar() {
+        this.arquivado = false;
+        this.registrarEvento("HISTORICO_DESARQUIVADO", "Histórico desarquivado e restaurado para a timeline ativa",
+                EventoHistoricoLead.MarcadorEvento.NEUTRO);
     }
 
     /**
