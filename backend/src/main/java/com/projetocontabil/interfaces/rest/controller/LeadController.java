@@ -272,6 +272,30 @@ public class LeadController {
                 .body(pdf);
     }
 
+    @GetMapping("/historico/export/csv")
+    public ResponseEntity<byte[]> exportarHistoricoGeralCsv() throws IOException {
+        var empresaId = EmpresaLocatariaId.of(EmpresaLocatariaContext.getEmpresaLocatariaId());
+        var atividades = auditoriaRepository.buscarPorEmpresa(empresaId);
+        byte[] csv = exportService.exportarGeralParaCsv(atividades);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=historico_geral.csv")
+                .contentType(MediaType.parseMediaType("text/csv"))
+                .body(csv);
+    }
+
+    @GetMapping("/historico/export/pdf")
+    public ResponseEntity<byte[]> exportarHistoricoGeralPdf() throws IOException {
+        var empresaId = EmpresaLocatariaId.of(EmpresaLocatariaContext.getEmpresaLocatariaId());
+        var atividades = auditoriaRepository.buscarPorEmpresa(empresaId);
+        byte[] pdf = exportService.exportarGeralParaPdf(atividades);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=historico_geral.pdf")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
+    }
+
     @PostMapping("/{id}/contrato")
     public ResponseEntity<Map<String, Object>> criarContrato(@PathVariable UUID id) {
         var lead = leadRepository.findById(id);

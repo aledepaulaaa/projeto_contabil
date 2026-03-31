@@ -128,6 +128,29 @@ export const LeadService = {
     link.setAttribute('download', `historico_${id}.pdf`);
     document.body.appendChild(link);
     link.click();
+    link.remove();
+  },
+
+  exportarHistoricoGeralCsv: async () => {
+    const response = await apiClient.get('/api/leads/historico/export/csv', { responseType: 'blob' });
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'historico_geral.csv');
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  },
+
+  exportarHistoricoGeralPdf: async () => {
+    const response = await apiClient.get('/api/leads/historico/export/pdf', { responseType: 'blob' });
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'historico_geral.pdf');
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
   },
 
   /** Cria um contrato vinculado ao Lead */

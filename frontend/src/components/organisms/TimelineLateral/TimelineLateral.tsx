@@ -34,7 +34,7 @@ const marcadorConfig: Record<string, { icon: React.FC<{ className?: string; size
 
 export const TimelineLateral: React.FC<TimelineLateralProps> = ({ leadId, nomeContato, aberta, onFechar }) => {
   const { eventos, isLoading, refreshHistorico, arquivado } = useHistoricoLead(aberta ? leadId : null);
-  const { clearHistory, archiveHistory, exportCsv, exportPdf } = useLeads();
+  const { clearHistory, archiveHistory, exportCsv, exportPdf, exportarGeralCsv, exportarGeralPdf } = useLeads();
   const [confirmLimpar, setConfirmLimpar] = useState(false);
   const [isActionLoading, setIsActionLoading] = useState(false);
 
@@ -110,7 +110,7 @@ export const TimelineLateral: React.FC<TimelineLateralProps> = ({ leadId, nomeCo
             <div className="px-6 py-3 border-b border-slate-100 dark:border-white/5 flex items-center justify-between gap-2 overflow-x-auto no-scrollbar">
               <div className="flex items-center gap-2">
                 <button 
-                  onClick={() => leadId && exportCsv(leadId)}
+                  onClick={() => leadId ? exportCsv(leadId) : exportarGeralCsv()}
                   className="px-3 py-1.5 flex items-center gap-2 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-all border border-transparent hover:border-emerald-200 dark:hover:border-emerald-800"
                   title="Exportar CSV/Excel"
                 >
@@ -118,7 +118,7 @@ export const TimelineLateral: React.FC<TimelineLateralProps> = ({ leadId, nomeCo
                   <span className="text-[10px] font-black uppercase tracking-tighter px-1.5 py-0.5 bg-emerald-500/10 text-emerald-600 rounded-md">Excel / CSV</span>
                 </button>
                 <button 
-                  onClick={() => leadId && exportPdf(leadId)}
+                  onClick={() => leadId ? exportPdf(leadId) : exportarGeralPdf()}
                   className="px-3 py-1.5 flex items-center gap-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-all border border-transparent hover:border-rose-200 dark:hover:border-rose-800"
                   title="Exportar PDF"
                 >

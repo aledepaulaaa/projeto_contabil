@@ -78,6 +78,8 @@ export function useLeads() {
     clearHistory: clearHistoryMutation.mutateAsync,
     archiveHistory: archiveHistoryMutation.mutateAsync,
     exportCsv: LeadService.exportarCsv,
-    exportPdf: LeadService.exportarPdf
+    exportPdf: LeadService.exportarPdf,
+    exportarGeralCsv: LeadService.exportarHistoricoGeralCsv,
+    exportarGeralPdf: LeadService.exportarHistoricoGeralPdf
   };
 }
