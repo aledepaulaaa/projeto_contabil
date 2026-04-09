@@ -12,4 +12,5 @@ public interface ContratoRepository {
     Optional<Contrato> findById(UUID id);
     Optional<Contrato> findByLeadId(UUID leadId);
     List<Contrato> findAllByEmpresaLocatariaId(EmpresaLocatariaId id);
+    void delete(Contrato contrato);
 }

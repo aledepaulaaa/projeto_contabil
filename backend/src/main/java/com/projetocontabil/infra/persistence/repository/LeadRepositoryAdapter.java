@@ -8,23 +8,27 @@ import com.projetocontabil.core.domain.crm.vo.Telefone;
 import com.projetocontabil.core.domain.empresalocataria.EmpresaLocatariaId;
 import com.projetocontabil.core.ports.driven.LeadRepository;
 import com.projetocontabil.infra.persistence.entity.LeadJpaEntity;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @Component
+@RequiredArgsConstructor
+@Slf4j
 public class LeadRepositoryAdapter implements LeadRepository {
+
 
     private final LeadJpaRepository jpaRepository;
 
-    public LeadRepositoryAdapter(LeadJpaRepository jpaRepository) {
-        this.jpaRepository = jpaRepository;
-    }
-
     @Override
+    @Transactional
     public Lead save(Lead lead) {
+        log.info("REPOSITORY: Salvando lead {}. Telefone no domínio: {}", lead.getId(), lead.getTelefone() != null ? lead.getTelefone().value() : "NULL");
         var entity = toEntity(lead);
         var salva = jpaRepository.save(entity);
         return toDomain(salva);
@@ -33,6 +37,11 @@ public class LeadRepositoryAdapter implements LeadRepository {
     @Override
     public Optional<Lead> findById(UUID id) {
         return jpaRepository.findById(id).map(this::toDomain);
+    }
+
+    @Override
+    public Optional<Lead> findByTelefone(String telefone) {
+        return jpaRepository.findByTelefone(telefone).map(this::toDomain);
     }
 
     @Override
@@ -66,17 +75,49 @@ public class LeadRepositoryAdapter implements LeadRepository {
                 entity.getId(),
                 EmpresaLocatariaId.of(entity.getEmpresaLocatariaId()),
                 entity.getNomeContato(),
-                entity.getEmail() != null ? new Email(entity.getEmail()) : null,
-                entity.getTelefone() != null ? new Telefone(entity.getTelefone()) : null,
-                entity.getCnpj() != null ? new Identificacao(entity.getCnpj()) : null,
+                safeEmail(entity.getEmail()),
+                safeTelefone(entity.getTelefone()),
+                safeIdentificacao(entity.getCnpj()),
                 entity.getNomeEmpresa(),
                 entity.getStatus(),
                 entity.getOrigemLead(),
                 entity.getTipoServico(),
+                entity.getObservacaoNaoFechamento(),
                 entity.getGoogleLeadId(),
-                entity.getCriadoEm()
+                entity.getCriadoEm(),
+                entity.getQuantidadeMensagensNaoLidas() != null ? entity.getQuantidadeMensagensNaoLidas() : 0
         );
     }
+
+    private Email safeEmail(String email) {
+        if (email == null || email.isBlank() || !email.contains("@")) return null;
+        try {
+            return new Email(email);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private Telefone safeTelefone(String fone) {
+        if (fone == null || fone.isBlank() || fone.length() < 10) return null;
+        try {
+            return new Telefone(fone);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private Identificacao safeIdentificacao(String cnpj) {
+        if (cnpj == null || cnpj.isBlank()) return null;
+        String digits = cnpj.replaceAll("\\D", "");
+        if (digits.length() != 11 && digits.length() != 14) return null;
+        try {
+            return new Identificacao(cnpj);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
 
     private LeadJpaEntity toEntity(Lead lead) {
         var entity = new LeadJpaEntity();
@@ -92,6 +133,8 @@ public class LeadRepositoryAdapter implements LeadRepository {
         entity.setTipoServico(lead.getTipoServico());
         entity.setCriadoEm(lead.getCriadoEm());
         entity.setGoogleLeadId(lead.getGoogleLeadId());
+        entity.setObservacaoNaoFechamento(lead.getObservacaoNaoFechamento());
+        entity.setQuantidadeMensagensNaoLidas(lead.getQuantidadeMensagensNaoLidas());
         return entity;
     }
 }

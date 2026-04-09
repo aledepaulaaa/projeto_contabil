@@ -11,7 +11,9 @@ import {
   ChevronRight,
   Sun,
   Moon,
-  X
+  X,
+  FileSignature,
+  MessageSquare
 } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { useTheme } from '../../../contexts/ThemeContext';
@@ -80,6 +82,8 @@ export const BarraLateral: React.FC<BarraLateralProps> = ({ isOpen, onClose }) =
   const menuItems = [
     { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/dashboard/crm', label: 'CRM / Leads', icon: Users },
+    { path: '/dashboard/contratos', label: 'Contratos', icon: FileSignature },
+    { path: '/dashboard/atendimento', label: 'Atendimento', icon: MessageSquare },
     { path: '/dashboard/onboarding', label: 'Onboarding', icon: Rocket },
     { path: '/dashboard/rotinas', label: 'Rotinas', icon: Calendar },
     { path: '/dashboard/alvaras', label: 'Alvarás', icon: FileText },

@@ -1,0 +1,40 @@
+{
+  "name": "whatsapp-whapi-gateway",
+  "version": "1.0.0",
+  "description": "Gateway WhatsApp via Whapi Cloud API — Projeto Contábil SaaS",
+  "main": "dist/app.js",
+  "scripts": {
+    "dev": "nodemon",
+    "build": "tsc",
+    "start": "node dist/app.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "keywords": ["whatsapp", "whapi", "gateway", "typescript"],
+  "author": "Projeto Contábil",
+  "license": "ISC",
+  "dependencies": {
+    "amqplib": "^0.10.5",
+    "axios": "^1.14.0",
+    "cors": "^2.8.6",
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0",
+    "socket.io": "^4.8.3",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "@types/amqplib": "^0.10.6",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.2",
+    "@types/node": "^22.15.2",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.7",
+    "nodemon": "^3.1.14",
+    "supertest": "^7.2.2",
+    "@types/supertest": "^6.0.2",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3",
+    "vitest": "^3.1.1"
+  }
+}

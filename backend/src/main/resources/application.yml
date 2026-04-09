@@ -59,6 +59,15 @@ logging:
     org.hibernate.SQL: WARN
 
 # ── Integrações Externas ──
+zapsign:
+  sandbox_mode: ${ZAPSIGN_SANDBOX_MODE:true}
+  username: ${ZAPSIGN_SANDBOX_USERNAME:contatoaledev@gmail.com}
+  password: ${ZAPSIGN_SANDBOX_PASSWORD:Musicagk@025}
+  api_token: ${ZAPSIGN_SANDBOX_API_TOKEN:8e7f73d4-c618-41f2-8957-bc2e7710e58be9ab0e07-6850-4c03-b953-f87460b6cb34}
+  api_base_url: ${ZAPSIGN_SANDBOX_API_URL:https://sandbox.api.zapsign.com.br/api/v1}
+  id_organization: ${ZAPSIGN_SANDBOX_ID_ORGANIZATION:5615}
+  refresh_url: ${ZAPSIGN_SANDBOX_API_URL_REFRESH_TOKEN:https://sandbox.api.zapsign.com.br/api/v1/auth/token-refresh/}
+
 contaazul:
   api:
     url: ${CONTAAZUL_API_URL:https://api-v2.contaazul.com/v1}
@@ -106,3 +115,10 @@ resilience4j:
         baseConfig: default
       contaazul:
         baseConfig: default
+
+# ── Mailtrap ──
+mailtrap:
+  api-token: ${MAILTRAP_API_TOKEN:fake-token-for-dev}
+  sender-email: ${MAILTRAP_SENDER_EMAIL:noreply@contabilpro.com.br}
+  sandbox: ${MAILTRAP_SANDBOX:false}
+  inbox-id: ${MAILTRAP_INBOX_ID:0}

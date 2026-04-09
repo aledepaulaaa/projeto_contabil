@@ -6,12 +6,12 @@ export const statusParaEtapa = (status: string): string => {
 };
 
 export const etapas = [
-    { id: 'LEAD', label: 'Lead', icon: Users, color: 'text-slate-500' },
-    { id: 'QUALIFICACAO', label: 'Qualificação', icon: Target, color: 'text-orange-500' },
-    { id: 'PROPOSTA', label: 'Proposta', icon: FileCheck, color: 'text-blue-500' },
-    { id: 'AGUARDANDO', label: 'Aguardando Aprovação', icon: Clock, color: 'text-amber-500' },
-    { id: 'FECHAMENTO', label: 'Fechamento', icon: Handshake, color: 'text-emerald-500' },
-    { id: 'NAO_FECHOU', label: 'Não Fechou', icon: XCircle, color: 'text-rose-500' },
+    { id: 'LEAD', label: 'Lead', icon: Users, color: 'text-slate-500', tendency: '' },
+    { id: 'QUALIFICACAO', label: 'Qualificação', icon: Target, color: 'text-orange-500', tendency: '' },
+    { id: 'PROPOSTA', label: 'Proposta', icon: FileCheck, color: 'text-blue-500', tendency: '' },
+    { id: 'AGUARDANDO', label: 'Aguardando Aprovação', icon: Clock, color: 'text-amber-500', tendency: '' },
+    { id: 'FECHAMENTO', label: 'Fechamento', icon: Handshake, color: 'text-emerald-500', tendency: '' },
+    { id: 'NAO_FECHOU', label: 'Não Fechou', icon: XCircle, color: 'text-rose-500', tendency: '' },
 ];
 
 export const origemLabel = (origem: string | null) => {

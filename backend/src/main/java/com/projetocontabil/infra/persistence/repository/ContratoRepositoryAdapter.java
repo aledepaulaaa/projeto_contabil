@@ -42,6 +42,11 @@ public class ContratoRepositoryAdapter implements ContratoRepository {
                 .stream().map(this::toDomain).toList();
     }
 
+    @Override
+    public void delete(Contrato contrato) {
+        jpaRepository.deleteById(contrato.getId());
+    }
+
     private Contrato toDomain(ContratoJpaEntity entity) {
         return Contrato.reconstituir(
                 entity.getId(),
@@ -49,6 +54,9 @@ public class ContratoRepositoryAdapter implements ContratoRepository {
                 EmpresaLocatariaId.of(entity.getEmpresaLocatariaId()),
                 entity.getStatus(),
                 entity.getMotivoCancelamento(),
+                entity.getUrlDocumentoZapSign(),
+                entity.getNomeContato(),
+                entity.getEmailContato(),
                 entity.getCriadoEm(),
                 entity.getAtualizadoEm()
         );
@@ -61,6 +69,9 @@ public class ContratoRepositoryAdapter implements ContratoRepository {
                 contrato.getEmpresaLocatariaId().value(),
                 contrato.getStatus(),
                 contrato.getMotivoCancelamento(),
+                contrato.getUrlDocumentoZapSign(),
+                contrato.getNomeContato(),
+                contrato.getEmailContato(),
                 contrato.getCriadoEm(),
                 contrato.getAtualizadoEm()
         );

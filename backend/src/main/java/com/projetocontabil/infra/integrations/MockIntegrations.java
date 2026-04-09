@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Component
@@ -29,8 +30,19 @@ public class MockIntegrations implements PaymentGateway, SignatureGateway, ErpSi
 
     // --- SignatureGateway ---
     @Override
-    public void createDocumentForSignature(EmpresaLocatariaId tid, String title, String url, List<Signer> signers) {
-        log.info("[MOCK] Criando documento para assinatura: '{}' para a empresa {}", title, tid.value());
+    public String createDocumentOneClick(UUID contratoId, EmpresaLocatariaId tid, String title, String base64Content, List<Signer> signers) {
+        String signerToken = UUID.randomUUID().toString();
+        String oneClickUrl = "https://app.zapsign.com.br/verificar/oneclick/" + signerToken;
+        log.info("[MOCK] Criando documento OneClick: '{}'. URL: {}", title, oneClickUrl);
+        return oneClickUrl;
+    }
+
+    @Override
+    @Deprecated
+    public String createDocumentForSignature(UUID contratoId, EmpresaLocatariaId tid, String title, String url, List<Signer> signers) {
+        String internalUrl = "http://localhost:8080/api/contratos/" + contratoId + "/documento";
+        log.info("[MOCK] Criando documento clássico (Deprecated): '{}' → URL: {}", title, internalUrl);
+        return internalUrl;
     }
 
     // --- ErpSincronizadorGateway ---

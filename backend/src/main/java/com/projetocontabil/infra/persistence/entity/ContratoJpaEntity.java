@@ -36,6 +36,15 @@ public class ContratoJpaEntity {
     @Column(name = "motivo_cancelamento")
     private String motivoCancelamento;
 
+    @Column(name = "url_documento_zapsign")
+    private String urlDocumentoZapSign;
+
+    @Column(name = "nome_contato")
+    private String nomeContato;
+
+    @Column(name = "email_contato")
+    private String emailContato;
+
     @Column(name = "criado_em", nullable = false)
     private LocalDateTime criadoEm;
 

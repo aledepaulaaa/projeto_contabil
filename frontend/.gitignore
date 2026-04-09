@@ -22,3 +22,16 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+
+# Env files
+.env
+.env.local
+
+# Instruções, pastas de documentação, pasta de testes
+playwright-report
+/playwright-report
+/tests
+test-results
+/test-results
+

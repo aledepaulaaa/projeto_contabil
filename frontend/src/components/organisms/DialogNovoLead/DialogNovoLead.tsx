@@ -70,6 +70,7 @@ export const DialogNovoLead: React.FC<DialogNovoLeadProps> = ({ aberto, onFechar
     ...dadosIniciais,
     nomeContato: leadParaEdicao.nomeContato || '',
     email: leadParaEdicao.email || '',
+    telefone: leadParaEdicao.telefone || '',
     nomeEmpresa: leadParaEdicao.nomeEmpresa || '',
     cnpj: leadParaEdicao.cnpj || '',
     tipoServico: leadParaEdicao.tipoServico as any,
@@ -112,6 +113,7 @@ export const DialogNovoLead: React.FC<DialogNovoLeadProps> = ({ aberto, onFechar
            nome: dados.nomeContato,
            email: dados.email,
            cnpj: dados.cnpj,
+           telefone: dados.telefone,
            nomeEmpresa: dados.nomeEmpresa,
            origem: dados.origem,
            tipoServico: dados.tipoServico as any
@@ -121,6 +123,7 @@ export const DialogNovoLead: React.FC<DialogNovoLeadProps> = ({ aberto, onFechar
           nome: dados.nomeContato,
           email: dados.email,
           cnpj: dados.cnpj,
+          telefone: dados.telefone,
           nomeEmpresa: dados.nomeEmpresa,
           origem: dados.origem,
           tipoServico: dados.tipoServico as any
@@ -157,12 +160,24 @@ export const DialogNovoLead: React.FC<DialogNovoLeadProps> = ({ aberto, onFechar
     return v;
   };
 
+  // Máscara Telefone: (99) 99999-9999 (max 11 dígitos)
+  const mascaraTelefone = (v: string) => {
+    v = v.replace(/\D/g, '').slice(0, 11);
+    if (v.length > 2) v = `(${v.slice(0, 2)}) ${v.slice(2)}`;
+    if (v.length > 9) v = `${v.slice(0, 10)}-${v.slice(10)}`;
+    return v;
+  };
+
   const handleDocumentoChange = (valor: string) => {
     const digitos = valor.replace(/\D/g, '');
     const formatado = dados.tipoServico === 'ABERTURA'
       ? mascaraCpf(digitos)
       : mascaraCnpj(digitos);
     mudarCampo('cnpj', formatado);
+  };
+
+  const handleTelefoneChange = (valor: string) => {
+    mudarCampo('telefone', mascaraTelefone(valor));
   };
 
   return (
@@ -257,8 +272,8 @@ export const DialogNovoLead: React.FC<DialogNovoLeadProps> = ({ aberto, onFechar
                         <input className={inputClass} placeholder="contato@empresa.com" type="email" value={dados.email} onChange={e => mudarCampo('email', e.target.value)} />
                       </div>
                       <div>
-                        <label className={labelClass}>Telefone</label>
-                        <input className={inputClass} placeholder="(11) 99999-8888" value={dados.telefone} onChange={e => mudarCampo('telefone', e.target.value)} />
+                        <label className={labelClass}>Telefone *</label>
+                        <input className={inputClass} placeholder="(11) 99999-9999" value={dados.telefone} onChange={e => handleTelefoneChange(e.target.value)} maxLength={15} />
                       </div>
 
                       <div>

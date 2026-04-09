@@ -20,7 +20,7 @@ export const Botao: React.FC<BotaoProps> = ({
   const getVariantStyles = () => {
     switch (variant) {
       case 'outline':
-        return 'bg-transparent border border-slate-700 hover:bg-slate-800 text-slate-200';
+        return 'bg-transparent border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-text-main font-semibold shadow-sm';
       case 'danger':
         return 'bg-rose-500 hover:bg-rose-600 border-none text-white font-bold';
       case 'primary':

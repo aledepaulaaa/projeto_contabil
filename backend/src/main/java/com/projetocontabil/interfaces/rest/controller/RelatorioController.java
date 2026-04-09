@@ -11,8 +11,15 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequestMapping("/api/relatorios")
 public class RelatorioController {
 
-    // Simulação de banco de dados de notificações em memória para este exemplo
+    // Simulação de banco de dados de notificações em memória
     private static final Map<String, List<NotificacaoDownload>> notificacoesPorEmpresa = new ConcurrentHashMap<>();
+
+    /**
+     * Permite que outros serviços (ex: GerarContratoUseCase) adicionem notificações
+     */
+    public static void adicionarNotificacao(String empresaId, NotificacaoDownload notificacao) {
+        notificacoesPorEmpresa.computeIfAbsent(empresaId, k -> new ArrayList<>()).add(0, notificacao);
+    }
 
     @PostMapping("/gerar")
     public ResponseEntity<Map<String, String>> solicitarRelatorio(
@@ -32,8 +39,8 @@ public class RelatorioController {
                 NotificacaoDownload notificacao = NotificacaoDownload.criar(nome, formato, url);
                 
                 // Em um cenário real, pegaríamos o empresaId do contexto
-                String empresaId = "default"; 
-                notificacoesPorEmpresa.computeIfAbsent(empresaId, k -> new ArrayList<>()).add(0, notificacao);
+                String empresaId = "tenant-dev-mode"; // Ajustado para bater com o dev-mode
+                adicionarNotificacao(empresaId, notificacao);
                 
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
@@ -45,17 +52,24 @@ public class RelatorioController {
 
     @GetMapping("/notificacoes")
     public ResponseEntity<List<NotificacaoDownload>> listarNotificacoes() {
-        String empresaId = "default";
+        String empresaId = "tenant-dev-mode"; // Ajustado para o tenant padrão de desenvolvimento
         return ResponseEntity.ok(notificacoesPorEmpresa.getOrDefault(empresaId, new ArrayList<>()));
     }
 
     @PostMapping("/notificacoes/{id}/ler")
     public ResponseEntity<Void> marcarComoLido(@PathVariable UUID id) {
-        String empresaId = "default";
+        String empresaId = "tenant-dev-mode";
         List<NotificacaoDownload> lista = notificacoesPorEmpresa.get(empresaId);
         if (lista != null) {
             lista.stream().filter(n -> n.getId().equals(id)).findFirst().ifPresent(NotificacaoDownload::marcarComoLido);
         }
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/notificacoes")
+    public ResponseEntity<Void> limparNotificacoes() {
+        String empresaId = "tenant-dev-mode";
+        notificacoesPorEmpresa.remove(empresaId);
         return ResponseEntity.ok().build();
     }
 }

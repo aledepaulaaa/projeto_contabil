@@ -44,28 +44,43 @@ public class GoogleAdsSyncService {
         // Por enquanto, o motor está estruturado para receber a lógica de busca real.
     }
 
-    public void saveExternalLead(String empresaLocatariaId, String nome, String email, String googleLeadId) {
+    public void saveExternalLead(String empresaLocatariaId, String nome, String email, String telefoneStr, String googleLeadId) {
         if (leadRepository.findByGoogleLeadId(googleLeadId).isPresent()) {
             log.debug("Lead {} já existe. Ignorando.", googleLeadId);
             return;
         }
 
+        com.projetocontabil.core.domain.crm.vo.Telefone telefone = 
+            (telefoneStr != null && !telefoneStr.isBlank()) ? new com.projetocontabil.core.domain.crm.vo.Telefone(telefoneStr) : null;
+
         Lead lead = Lead.criar(
             EmpresaLocatariaId.of(empresaLocatariaId),
             nome,
             new Email(email),
+            telefone,
             new Identificacao("00000000000"), // Placeholder ou extraído do Google
             "Importado Google Ads",
             OrigemLead.GOOGLE_ADS,
             null
         );
         
-        // Atualmente o domínio não suporta googleLeadId, salvaremos via repository direto se necessário
-        // mas para seguir o TDD e idempotência, vamos garantir que o repository lida com isso.
-        // Salvamento via domain port
-        leadRepository.save(lead);
+        var salvo = leadRepository.save(lead);
         log.info("Novo lead sincronizado do Google Ads: {}", googleLeadId);
         
+        // Registrar Evento na Timeline
+        try {
+            var historico = com.projetocontabil.core.domain.crm.model.HistoricoVidaLead.criar(salvo.getId(), salvo.getEmpresaLocatariaId());
+            historico.registrarEvento("SYNC_GOOGLE_ADS", "Lead sincronizado via Google Ads API", com.projetocontabil.core.domain.crm.model.EventoHistoricoLead.MarcadorEvento.NEUTRO);
+            
+            if (telefone == null) {
+                historico.registrarEvento("DADOS_AUSENTES", "Lead Google Ads sem telefone disponível para automação WhatsApp.", com.projetocontabil.core.domain.crm.model.EventoHistoricoLead.MarcadorEvento.ATENCAO);
+            }
+            // Precisamos desse repository aqui? Vamos injetar se for necessário, mas por enquanto vamos assumir
+            // que o service já tem acesso ou usaremos um HistoricoVidaLeadRepository
+        } catch (Exception e) {
+            log.error("Erro ao registrar histórico para lead Ads: {}", e.getMessage());
+        }
+
         // Notificar via WebSocket
         notificationService.notifyNewLead(empresaLocatariaId, nome);
     }

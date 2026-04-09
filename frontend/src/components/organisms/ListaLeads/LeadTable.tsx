@@ -10,7 +10,9 @@ import {
   ChevronDown,
   ChevronUp,
   MapPin,
-  SendHorizontal
+  SendHorizontal,
+  Phone,
+  AlertTriangle
 } from 'lucide-react';
 import { Texto } from '../../atoms/Texto/Texto';
 import type { LeadResponse } from '../../../hooks/useLeads';
@@ -93,6 +95,7 @@ export const LeadTable: React.FC<LeadTableProps> = ({
           <tr className="text-slate-400 dark:text-slate-500">
             <th className="px-4 py-2 text-[10px] font-bold uppercase tracking-wider">Empresa / Contato</th>
             <th className="px-4 py-2 text-[10px] font-bold uppercase tracking-wider">Etapa do Funil</th>
+            <th className="px-4 py-2 text-[10px] font-bold uppercase tracking-wider">Telefone</th>
             <th className="px-4 py-2 text-[10px] font-bold uppercase tracking-wider">Contato Principal</th>
             <th className="px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-right">Gestão</th>
           </tr>
@@ -151,6 +154,19 @@ export const LeadTable: React.FC<LeadTableProps> = ({
                         </button>
                       )}
                     </div>
+                  </td>
+                  <td className="bg-white dark:bg-slate-900/50 border-y border-slate-200 dark:border-slate-800 p-4">
+                    {lead.telefone ? (
+                      <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+                        <Phone size={12} className="text-blue-500" />
+                        <span className="text-[10px] font-bold">{lead.telefone}</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1.5 px-2 py-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-lg w-fit border border-amber-500/20" title="Sem telefone: Disparos de WhatsApp desabilitados">
+                        <AlertTriangle size={12} />
+                        <span className="text-[9px] font-black uppercase tracking-tighter">Sem WhatsApp</span>
+                      </div>
+                    )}
                   </td>
                   <td className="bg-white dark:bg-slate-900/50 border-y border-slate-200 dark:border-slate-800 p-4">
                     <div className="flex flex-col gap-0.5">

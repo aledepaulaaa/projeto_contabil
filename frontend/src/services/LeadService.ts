@@ -4,6 +4,7 @@ export interface LeadData {
   nome: string;
   email: string;
   cnpj: string;
+  telefone?: string;
   nomeEmpresa?: string;
   senha?: string;
   origem?: string;
@@ -38,6 +39,7 @@ export interface NotificacaoDownload {
   urlDownload: string;
   geradoEm: string;
   lido: boolean;
+  tipo: 'DOWNLOAD' | 'CONTRATO';
 }
 
 export const LeadService = {
@@ -50,6 +52,7 @@ export const LeadService = {
       nomeContato: dados.nome,
       email: dados.email,
       cnpj: dados.cnpj,
+      telefone: dados.telefone,
       nomeEmpresa: dados.nomeEmpresa || dados.nome,
       origem: dados.origem || null,
       tipoServico: dados.tipoServico || null,
@@ -70,6 +73,7 @@ export const LeadService = {
       nomeContato: dados.nome,
       email: dados.email,
       cnpj: dados.cnpj,
+      telefone: dados.telefone,
       nomeEmpresa: dados.nomeEmpresa || dados.nome,
       origem: dados.origem || null,
       tipoServico: dados.tipoServico || null
@@ -82,8 +86,12 @@ export const LeadService = {
     await apiClient.delete(`/api/leads/${id}`);
   },
 
-  moverLead: async (id: string, status: string) => {
-    const { data } = await apiClient.patch(`/api/leads/${id}/status?status=${status}`);
+  moverLead: async (id: string, status: string, observacao?: string) => {
+    let url = `/api/leads/${id}/status?status=${status}`;
+    if (observacao) {
+      url += `&observacao=${encodeURIComponent(observacao)}`;
+    }
+    const { data } = await apiClient.patch(url);
     return data;
   },
 
@@ -194,6 +202,11 @@ export const LeadService = {
     await apiClient.post(`/api/relatorios/notificacoes/${id}/ler`);
   },
 
+  /** Limpa todas as notificações do usuário */
+  limparNotificacoes: async () => {
+    await apiClient.delete('/api/relatorios/notificacoes');
+  },
+
   /** Baixa um arquivo a partir de uma URL */
   baixarArquivo: async (url: string, filename: string) => {
     const response = await apiClient.get(url, { responseType: 'blob' });
@@ -204,5 +217,28 @@ export const LeadService = {
     document.body.appendChild(link);
     link.click();
     link.remove();
-  }
+  },
+
+  /** Aciona a geração manual de contrato para um lead em FECHAMENTO */
+  gerarContrato: async (id: string): Promise<any> => {
+    const { data } = await apiClient.post(`/api/leads/${id}/gerar-contrato`);
+    return data;
+  },
+
+  /** Busca a lista de contatos (Leads) formatados para o módulo de Atendimento */
+  getContatosAtendimento: async (): Promise<any[]> => {
+    const { data } = await apiClient.get('/api/leads/contatos');
+    return data;
+  },
+
+  /** Busca o histórico de chat do Lead */
+  getChatHistory: async (leadId: string): Promise<any[]> => {
+    const { data } = await apiClient.get(`/api/whatsapp/webhook/${leadId}`);
+    return data;
+  },
+
+  /** Marca as mensagens do WhatsApp como lidas */
+  marcarMensagensLidas: async (leadId: string): Promise<void> => {
+    await apiClient.patch(`/api/whatsapp/leads/${leadId}/read`);
+  },
 };

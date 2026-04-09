@@ -3,6 +3,7 @@ package com.projetocontabil.interfaces.rest.controller;
 import com.projetocontabil.core.domain.crm.model.*;
 import com.projetocontabil.core.domain.crm.vo.Identificacao;
 import com.projetocontabil.core.domain.crm.vo.Email;
+import com.projetocontabil.core.domain.crm.vo.Telefone;
 import com.projetocontabil.core.domain.rotinas.model.RegimeTributario;
 import com.projetocontabil.core.domain.empresalocataria.EmpresaLocatariaId;
 import com.projetocontabil.core.ports.driven.ContratoRepository;
@@ -28,6 +29,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/leads")
+@lombok.extern.slf4j.Slf4j
 public class LeadController {
 
     private final LeadRepository leadRepository;
@@ -37,6 +39,9 @@ public class LeadController {
     private final ImportarLeadsUseCase importarLeadsUseCase;
     private final HistoricoExportService exportService;
     private final AuditoriaRepository auditoriaRepository;
+    private final com.projetocontabil.infra.messaging.ContratoProducer contratoProducer;
+    private final com.projetocontabil.infra.integrations.whatsapp.WhatsAppIntegrationService whatsAppService;
+    private final com.projetocontabil.infra.integrations.email.EmailIntegrationService emailService;
 
     public LeadController(LeadRepository leadRepository,
                          ContratoRepository contratoRepository,
@@ -44,7 +49,10 @@ public class LeadController {
                          FinalizarOnboardingUseCase finalizarOnboardingUseCase,
                          ImportarLeadsUseCase importarLeadsUseCase,
                          HistoricoExportService exportService,
-                         AuditoriaRepository auditoriaRepository) {
+                         AuditoriaRepository auditoriaRepository,
+                         com.projetocontabil.infra.messaging.ContratoProducer contratoProducer,
+                         com.projetocontabil.infra.integrations.whatsapp.WhatsAppIntegrationService whatsAppService,
+                         com.projetocontabil.infra.integrations.email.EmailIntegrationService emailService) {
         this.leadRepository = leadRepository;
         this.contratoRepository = contratoRepository;
         this.historicoRepository = historicoRepository;
@@ -52,6 +60,9 @@ public class LeadController {
         this.importarLeadsUseCase = importarLeadsUseCase;
         this.exportService = exportService;
         this.auditoriaRepository = auditoriaRepository;
+        this.contratoProducer = contratoProducer;
+        this.whatsAppService = whatsAppService;
+        this.emailService = emailService;
     }
 
     @PostMapping("/import")
@@ -71,6 +82,7 @@ public class LeadController {
 
     @PostMapping
     public ResponseEntity<Map<String, Object>> cadastrar(@RequestBody @Valid CriarLeadRequest request) {
+        log.info("INTERCEPTOR: Recebendo requisição para cadastrar lead. Telefone: [{}]", request.telefone());
         var empresaId = EmpresaLocatariaId.of(EmpresaLocatariaContext.getEmpresaLocatariaId());
 
         if (leadRepository.existsByIdentificacaoAndEmpresaLocatariaId(new Identificacao(request.cnpj()), empresaId)) {
@@ -81,6 +93,7 @@ public class LeadController {
         TipoServico tipoServico = parseTipoServico(request.tipoServico());
 
         var lead = Lead.criar(empresaId, request.nomeContato(), new Email(request.email()),
+                request.telefone() != null ? new Telefone(request.telefone()) : null,
                 new Identificacao(request.cnpj()), request.nomeEmpresa(), origem, tipoServico);
         var salvo = leadRepository.save(lead);
 
@@ -104,14 +117,23 @@ public class LeadController {
     }
 
     @PatchMapping("/{id}/status")
-    public ResponseEntity<Map<String, Object>> mudarStatus(@PathVariable UUID id, @RequestParam String status) {
+    public ResponseEntity<Map<String, Object>> mudarStatus(
+            @PathVariable UUID id,
+            @RequestParam String status,
+            @RequestParam(required = false) String observacao) {
         var existente = leadRepository.findById(id);
         if (existente.isEmpty()) return ResponseEntity.notFound().build();
 
         var lead = existente.get();
         StatusLead novoStatus = StatusLead.valueOf(status.toUpperCase());
         String statusAntigo = lead.getStatus().name();
-        lead.mudarStatus(novoStatus);
+
+        // Fluxo especial: NAO_FECHOU requer observação
+        if (novoStatus == StatusLead.NAO_FECHOU && observacao != null && !observacao.isBlank()) {
+            lead.registrarNaoFechamento(observacao);
+        } else {
+            lead.mudarStatus(novoStatus);
+        }
         
         leadRepository.save(lead);
 
@@ -129,17 +151,62 @@ public class LeadController {
         auditoriaRepository.salvar(AuditoriaAtividade.registrar(lead.getEmpresaLocatariaId(), "admin", "LEAD_MOVIDO", 
             "Lead " + lead.getNomeContato() + " movido para " + novoStatus.name(), null));
 
+        // Fluxo especial: FECHAMENTO dispara geração de contrato assíncrona via RabbitMQ
+        if (novoStatus == StatusLead.FECHAMENTO) {
+            var contratoOpt = contratoRepository.findByLeadId(id);
+            boolean jaPossuiContratoValido = contratoOpt.isPresent() && 
+                (contratoOpt.get().getStatus() == StatusContrato.GERANDO || 
+                 contratoOpt.get().getStatus() == StatusContrato.AGUARDANDO_ASSINATURA ||
+                 contratoOpt.get().getStatus() == StatusContrato.ATIVO);
+
+            if (!jaPossuiContratoValido) {
+                contratoProducer.enviarParaGeracaoDeContrato(
+                    id.toString(),
+                    lead.getEmpresaLocatariaId().value(),
+                    lead.getNomeContato(),
+                    lead.getEmail() != null ? lead.getEmail().value() : ""
+                );
+            }
+        }
+
+        // DISPARO AUTOMÁTICO WHATSAPP & E-MAIL (ETAPA 2)
+        log.info("Gatilhos de automação acionados para o lead {} movido para {}", lead.getNomeContato(), novoStatus);
+        whatsAppService.enviarNotificacaoStatus(lead, novoStatus);
+        emailService.enviarNotificacaoStatus(lead, novoStatus);
+
         return ResponseEntity.ok(toResponse(lead));
     }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> atualizar(@PathVariable UUID id, @RequestBody @Valid CriarLeadRequest request) {
+    @PostMapping("/{id}/gerar-contrato")
+    public ResponseEntity<Map<String, Object>> forcarGeracaoContrato(@PathVariable UUID id) {
         var existente = leadRepository.findById(id);
         if (existente.isEmpty()) return ResponseEntity.notFound().build();
 
         var lead = existente.get();
-        lead.atualizarDados(request.nomeContato(), new Email(request.email()), request.nomeEmpresa(), 
-                           new Identificacao(request.cnpj()), parseOrigem(request.origem()), parseTipoServico(request.tipoServico()));
+        if (lead.getStatus() != StatusLead.FECHAMENTO) {
+            return ResponseEntity.badRequest().body(Map.of("erro", "Apenas leads na etapa de FECHAMENTO podem gerar contrato."));
+        }
+
+        contratoProducer.enviarParaGeracaoDeContrato(
+            id.toString(),
+            lead.getEmpresaLocatariaId().value(),
+            lead.getNomeContato(),
+            lead.getEmail() != null ? lead.getEmail().value() : ""
+        );
+
+        return ResponseEntity.ok(Map.of("mensagem", "Geração de contrato iniciada com sucesso."));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Map<String, Object>> atualizar(@PathVariable UUID id, @RequestBody @Valid CriarLeadRequest request) {
+        log.info("INTERCEPTOR: Recebendo requisição para atualizar lead {}. Telefone: [{}]", id, request.telefone());
+        var existente = leadRepository.findById(id);
+        if (existente.isEmpty()) return ResponseEntity.notFound().build();
+
+        var lead = existente.get();
+        lead.atualizarDados(request.nomeContato(), new Email(request.email()), 
+                           request.telefone() != null ? new Telefone(request.telefone()) : null,
+                           request.nomeEmpresa(), new Identificacao(request.cnpj()), 
+                           parseOrigem(request.origem()), parseTipoServico(request.tipoServico()));
         
         var salvo = leadRepository.save(lead);
 
@@ -172,8 +239,23 @@ public class LeadController {
 
     @GetMapping
     public ResponseEntity<List<Map<String, Object>>> listar() {
-        var empresaId = EmpresaLocatariaId.of(EmpresaLocatariaContext.getEmpresaLocatariaId());
-        return ResponseEntity.ok(leadRepository.findAllByEmpresaLocatariaId(empresaId).stream().map(this::toResponse).toList());
+        try {
+            String empresaIdStr = EmpresaLocatariaContext.getEmpresaLocatariaId();
+            if (empresaIdStr == null || empresaIdStr.isBlank()) {
+                log.warn("Tentativa de listar leads sem contexto de empresa");
+                return ResponseEntity.status(401).build();
+            }
+            var empresaId = EmpresaLocatariaId.of(empresaIdStr);
+            var leads = leadRepository.findAllByEmpresaLocatariaId(empresaId);
+            
+            return ResponseEntity.ok(leads.stream()
+                .map(this::toResponseSafe)
+                .filter(Objects::nonNull)
+                .toList());
+        } catch (Exception e) {
+            log.error("Erro interno ao listar leads: {}", e.getMessage(), e);
+            return ResponseEntity.status(500).build();
+        }
     }
 
     @GetMapping("/historico")
@@ -246,6 +328,62 @@ public class LeadController {
             historicoRepository.save(h);
         });
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/contatos")
+    public ResponseEntity<List<Map<String, Object>>> listarContatosAtendimento() {
+        try {
+            String empresaIdStr = EmpresaLocatariaContext.getEmpresaLocatariaId();
+            if (empresaIdStr == null || empresaIdStr.isBlank()) {
+                return ResponseEntity.status(401).build();
+            }
+            var empresaId = EmpresaLocatariaId.of(empresaIdStr);
+            var leads = leadRepository.findAllByEmpresaLocatariaId(empresaId);
+            
+            return ResponseEntity.ok(leads.stream()
+                .map(this::toAtendimentoResponseSafe)
+                .filter(Objects::nonNull)
+                .toList());
+        } catch (Exception e) {
+            log.error("Erro ao listar contatos de atendimento: {}", e.getMessage(), e);
+            return ResponseEntity.status(500).build();
+        }
+    }
+
+    private Map<String, Object> toAtendimentoResponseSafe(Lead lead) {
+        try {
+            return toAtendimentoResponse(lead);
+        } catch (Exception e) {
+            log.error("Falha ao processar lead {} para atendimento: {}", lead.getId(), e.getMessage());
+            return null;
+        }
+    }
+
+    private Map<String, Object> toAtendimentoResponse(Lead lead) {
+        var map = new LinkedHashMap<String, Object>();
+        map.put("id", lead.getId().toString());
+        map.put("nome", lead.getNomeContato());
+        map.put("empresa", lead.getNomeEmpresa());
+        map.put("whatsapp", lead.getTelefone() != null ? lead.getTelefone().value() : (lead.getIdentificacao() != null ? lead.getIdentificacao().value() : "")); 
+        map.put("espera", "10m"); // Mocked for UI
+        map.put("departamento", lead.getTipoServico() != null ? lead.getTipoServico().name() : "GERAL");
+        map.put("quantidadeMensagensNaoLidas", lead.getQuantidadeMensagensNaoLidas());
+        
+        // Mapeamento de Status CRM para Abas do Atendimento
+        String tabType = "contatos";
+        if (lead.getStatus() != null) {
+            tabType = switch (lead.getStatus()) {
+                case LEAD, QUALIFICACAO -> "contatos";
+                case PROPOSTA, AGUARDANDO -> "chats";
+                case FECHAMENTO -> "fila";
+                case NAO_FECHOU -> "contatos";
+            };
+        }
+        
+        map.put("tabType", tabType);
+        map.put("status", lead.getStatus() != null ? lead.getStatus().name() : "LEAD");
+        
+        return map;
     }
 
     @GetMapping("/{id}/historico/export/csv")
@@ -327,16 +465,39 @@ public class LeadController {
         ));
     }
 
+    private Map<String, Object> toResponseSafe(Lead lead) {
+        try {
+            return toResponse(lead);
+        } catch (Exception e) {
+            log.error("Falha ao processar lead {} para resposta: {}", lead.getId(), e.getMessage());
+            return null;
+        }
+    }
+
     private Map<String, Object> toResponse(Lead lead) {
         var response = new LinkedHashMap<String, Object>();
         response.put("id", lead.getId());
         response.put("nomeContato", lead.getNomeContato());
         response.put("email", lead.getEmail() != null ? lead.getEmail().value() : null);
+        response.put("telefone", lead.getTelefone() != null ? lead.getTelefone().value() : null);
         response.put("nomeEmpresa", lead.getNomeEmpresa());
-        response.put("status", lead.getStatus().name());
+        response.put("status", lead.getStatus() != null ? lead.getStatus().name() : "LEAD");
         response.put("origemLead", lead.getOrigemLead() != null ? lead.getOrigemLead().name() : null);
         response.put("tipoServico", lead.getTipoServico() != null ? lead.getTipoServico().name() : null);
+        response.put("observacaoNaoFechamento", lead.getObservacaoNaoFechamento());
         response.put("criadoEm", lead.getCriadoEm() != null ? lead.getCriadoEm().toString() : null);
+        response.put("quantidadeMensagensNaoLidas", lead.getQuantidadeMensagensNaoLidas());
+        
+        try {
+            contratoRepository.findByLeadId(lead.getId()).ifPresent(contrato -> {
+                response.put("contratoId", contrato.getId());
+                response.put("contratoStatus", contrato.getStatus() != null ? contrato.getStatus().name() : null);
+                response.put("contratoUrl", contrato.getUrlDocumentoZapSign());
+            });
+        } catch (Exception e) {
+            log.warn("Erro ao buscar contrato para lead {}: {}", lead.getId(), e.getMessage());
+        }
+        
         return response;
     }
 

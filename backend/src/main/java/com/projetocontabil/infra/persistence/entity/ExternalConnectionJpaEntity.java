@@ -14,8 +14,6 @@ import java.util.UUID;
 @Entity
 @Table(name = "crm_external_connections")
 @Audited
-@Getter
-@Setter
 public class ExternalConnectionJpaEntity {
 
     @Id
@@ -48,4 +46,31 @@ public class ExternalConnectionJpaEntity {
 
     @Column(name = "last_sync")
     private LocalDateTime lastSync;
+
+    public UUID getId() { return id; }
+    public void setId(UUID id) { this.id = id; }
+
+    public String getEmpresaLocatariaId() { return empresaLocatariaId; }
+    public void setEmpresaLocatariaId(String empresaLocatariaId) { this.empresaLocatariaId = empresaLocatariaId; }
+
+    public ConnectionProvider getProvider() { return provider; }
+    public void setProvider(ConnectionProvider provider) { this.provider = provider; }
+
+    public String getAccessToken() { return accessToken; }
+    public void setAccessToken(String accessToken) { this.accessToken = accessToken; }
+
+    public String getRefreshToken() { return refreshToken; }
+    public void setRefreshToken(String refreshToken) { this.refreshToken = refreshToken; }
+
+    public LocalDateTime getExpiresAt() { return expiresAt; }
+    public void setExpiresAt(LocalDateTime expiresAt) { this.expiresAt = expiresAt; }
+
+    public String getGoogleCustomerId() { return googleCustomerId; }
+    public void setGoogleCustomerId(String googleCustomerId) { this.googleCustomerId = googleCustomerId; }
+
+    public ConnectionStatus getStatus() { return status; }
+    public void setStatus(ConnectionStatus status) { this.status = status; }
+
+    public LocalDateTime getLastSync() { return lastSync; }
+    public void setLastSync(LocalDateTime lastSync) { this.lastSync = lastSync; }
 }

@@ -12,6 +12,7 @@ import java.util.UUID;
 public interface LeadRepository {
     Lead save(Lead lead);
     Optional<Lead> findById(UUID id);
+    Optional<Lead> findByTelefone(String telefone);
     List<Lead> findAllByEmpresaLocatariaId(EmpresaLocatariaId id);
     boolean existsByIdentificacaoAndEmpresaLocatariaId(Identificacao identificacao, EmpresaLocatariaId id);
     long countByEmpresaLocatariaIdAndStatus(EmpresaLocatariaId id, StatusLead status);

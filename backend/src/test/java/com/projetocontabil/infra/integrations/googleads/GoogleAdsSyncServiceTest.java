@@ -34,7 +34,7 @@ class GoogleAdsSyncServiceTest {
         when(leadRepository.findByGoogleLeadId(googleLeadId))
                 .thenReturn(Optional.of(mock(Lead.class)));
 
-        syncService.saveExternalLead("tenant-1", "João", "joao@email.com", googleLeadId);
+        syncService.saveExternalLead("tenant-1", "João", "joao@email.com", "11999999999", googleLeadId);
 
         verify(leadRepository, never()).save(any());
     }
@@ -46,7 +46,7 @@ class GoogleAdsSyncServiceTest {
         when(leadRepository.findByGoogleLeadId(googleLeadId))
                 .thenReturn(Optional.empty());
 
-        syncService.saveExternalLead("tenant-1", "Maria", "maria@email.com", googleLeadId);
+        syncService.saveExternalLead("tenant-1", "Maria", "maria@email.com", null, googleLeadId);
 
         verify(leadRepository, times(1)).save(any());
     }

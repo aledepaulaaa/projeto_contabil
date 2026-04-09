@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface LeadJpaRepository extends JpaRepository<LeadJpaEntity, UUID> {
+    Optional<LeadJpaEntity> findByTelefone(String telefone);
     List<LeadJpaEntity> findAllByEmpresaLocatariaId(String empresaLocatariaId);
     boolean existsByCnpjAndEmpresaLocatariaId(String cnpj, String empresaLocatariaId);
     long countByEmpresaLocatariaIdAndStatus(String empresaLocatariaId, StatusLead status);

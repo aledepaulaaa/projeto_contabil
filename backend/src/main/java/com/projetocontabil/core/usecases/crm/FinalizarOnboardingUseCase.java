@@ -30,6 +30,7 @@ public class FinalizarOnboardingUseCase {
     private final PaymentGateway paymentGateway;
     private final SignatureGateway signatureGateway;
     private final ErpSincronizadorGateway erpGateway;
+    private final ContratoTemplateService templateService;
 
     public FinalizarOnboardingUseCase(LeadRepository leadRepository,
                                       EmpresaLocatariaRepository empresaRepository,
@@ -40,7 +41,8 @@ public class FinalizarOnboardingUseCase {
                                       EventPublisher eventPublisher,
                                       PaymentGateway paymentGateway,
                                       SignatureGateway signatureGateway,
-                                      ErpSincronizadorGateway erpGateway) {
+                                      ErpSincronizadorGateway erpGateway,
+                                      ContratoTemplateService templateService) {
         this.leadRepository = leadRepository;
         this.empresaRepository = empresaRepository;
         this.obrigacaoRepository = obrigacaoRepository;
@@ -51,6 +53,7 @@ public class FinalizarOnboardingUseCase {
         this.paymentGateway = paymentGateway;
         this.signatureGateway = signatureGateway;
         this.erpGateway = erpGateway;
+        this.templateService = templateService;
     }
 
     @Transactional
@@ -87,7 +90,27 @@ public class FinalizarOnboardingUseCase {
         historicoRepository.save(historico);
 
         // Gateway calls...
-        signatureGateway.createDocumentForSignature(lead.getEmpresaLocatariaId(), "Contrato de Prestação de Serviços Contábeis", "url", List.of());
+        // 2. Gerar PDF do Contrato e Chamar ZapSign OneClick
+        var dados = new java.util.HashMap<String, String>();
+        dados.put("RAZAO_SOCIAL", lead.getNomeEmpresa());
+        dados.put("NOME_CONTATO", lead.getNomeContato());
+        dados.put("IDENTIFICACAO", lead.getIdentificacao().value());
+        dados.put("VALOR_MENSAL", "R$ 499,00");
+        dados.put("ENDERECO", "Endereço Coletado no Onboarding");
+
+        String htmlContrato = templateService.gerarHtmlContrato(dados);
+        String base64Pdf = java.util.Base64.getEncoder().encodeToString(htmlContrato.getBytes());
+
+        String urlDocumento = signatureGateway.createDocumentOneClick(
+                contrato.getId(),
+                lead.getEmpresaLocatariaId(),
+                "Contrato de Prestação de Serviços Contábeis — " + lead.getNomeEmpresa(),
+                base64Pdf,
+                List.of(new SignatureGateway.Signer(lead.getNomeContato(), lead.getEmail().value(), null))
+        );
+
+        contrato.vincularDocumentoZapSign(urlDocumento);
+        contratoRepository.save(contrato);
         String customerId = paymentGateway.createCustomer(lead.getEmpresaLocatariaId(), lead.getNomeEmpresa(), lead.getIdentificacao().value(), lead.getEmail().value());
         paymentGateway.createCharge(lead.getEmpresaLocatariaId(), customerId, "Mensalidade SaaS - Plano Profissional", new BigDecimal("499.00"), LocalDate.now().plusDays(7));
         erpGateway.syncSale(lead.getEmpresaLocatariaId(), customerId, new BigDecimal("499.00"), "Mensalidade Onboarding");

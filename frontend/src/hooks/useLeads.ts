@@ -12,7 +12,12 @@ export interface LeadResponse {
   status: string;
   origemLead: string | null;
   tipoServico: string | null;
+  observacaoNaoFechamento: string | null;
+  contratoId: string | null;
+  contratoStatus: string | null;
+  contratoUrl: string | null;
   criadoEm: string | null;
+  quantidadeMensagensNaoLidas: number;
 }
 
 export function useLeads() {
@@ -45,11 +50,20 @@ export function useLeads() {
   });
 
   const moveMutation = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: string }) => LeadService.moverLead(id, status),
+    mutationFn: ({ id, status, observacao }: { id: string; status: string; observacao?: string }) => LeadService.moverLead(id, status, observacao),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: ['leads'] });
       queryClient.invalidateQueries({ queryKey: ['historico', id] });
       queryClient.invalidateQueries({ queryKey: ['historico', null] });
+      queryClient.invalidateQueries({ queryKey: ['contratos'] });
+    },
+  });
+
+  const generateContratoMutation = useMutation({
+    mutationFn: (id: string) => LeadService.gerarContrato(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ['leads'] });
+      queryClient.invalidateQueries({ queryKey: ['historico', id] });
     },
   });
 
@@ -75,6 +89,7 @@ export function useLeads() {
     deleteLead: deleteMutation.mutateAsync,
     updateLead: updateMutation.mutateAsync,
     moveLead: moveMutation.mutateAsync,
+    gerarContrato: generateContratoMutation.mutateAsync,
     clearHistory: clearHistoryMutation.mutateAsync,
     archiveHistory: archiveHistoryMutation.mutateAsync,
     exportCsv: LeadService.exportarCsv,

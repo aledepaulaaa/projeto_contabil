@@ -59,10 +59,18 @@ public class AuthController {
         // Token JWT Mock para o frontend não quebrar
         String mockToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTYyMjUwMDAwMH0.mock_signature";
 
+        var permissoes = usuario.getPermissoes() != null
+                ? usuario.getPermissoes().stream().map(Enum::name).toList()
+                : java.util.List.<String>of();
+
         return ResponseEntity.ok(new AutenticacaoResponse(
                 mockToken,
                 "Bearer",
-                usuario.getEmpresaLocatariaId()
+                usuario.getEmpresaLocatariaId(),
+                usuario.getPapel() != null ? usuario.getPapel().name() : "ADMIN",
+                usuario.getNome(),
+                usuario.getDepartamentoId(),
+                permissoes
         ));
     }
 }

@@ -5,6 +5,8 @@ import { Header } from '../../components/organisms/Header/Header';
 import { ModalErroGlobal } from '../../components/organisms/ModalErroGlobal/ModalErroGlobal';
 import { ResumoDashboard } from './ResumoDashboard';
 import { CRM } from './CRM';
+import { Atendimento } from './Atendimento';
+import { Contratos } from './Contratos';
 import { Rotinas } from './Rotinas';
 import { Onboarding } from './Onboarding';
 import { Alvaras } from './Alvaras';
@@ -24,6 +26,10 @@ export const Dashboard: React.FC = () => {
         return <ResumoDashboard />;
       case '/dashboard/crm':
         return <CRM />;
+      case '/dashboard/atendimento':
+        return <Atendimento />;
+      case '/dashboard/contratos':
+        return <Contratos />;
       case '/dashboard/onboarding':
         return <Onboarding />;
       case '/dashboard/rotinas':
@@ -52,7 +58,7 @@ export const Dashboard: React.FC = () => {
 
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto p-8 xs:p-4 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-800 scrollbar-track-transparent bg-slate-50/50 dark:bg-transparent transition-colors">
-          <div className="max-w-7xl mx-auto">
+          <div className={`${location === '/dashboard/atendimento' ? 'max-w-full px-4 lg:px-8' : 'max-w-7xl'} mx-auto h-full`}>
             {renderContent()}
           </div>
         </div>

@@ -7,6 +7,7 @@ import com.projetocontabil.core.domain.crm.model.OrigemLead;
 import com.projetocontabil.core.domain.crm.model.TipoServico;
 import com.projetocontabil.core.domain.crm.vo.Email;
 import com.projetocontabil.core.domain.crm.vo.Identificacao;
+import com.projetocontabil.core.domain.crm.vo.Telefone;
 import com.projetocontabil.core.domain.empresalocataria.EmpresaLocatariaId;
 import com.projetocontabil.core.ports.driven.LeadRepository;
 import com.projetocontabil.core.ports.driven.HistoricoVidaLeadRepository;
@@ -23,7 +24,7 @@ import java.util.List;
 
 /**
  * Use Case para importação massiva de Leads via arquivo CSV.
- * O formato esperado é: nome_contato, email, cnpj, nome_empresa, origem, tipo_servico
+ * O formato esperado é: nome_contato, email, cnpj, nome_empresa, origem, tipo_servico, telefone
  */
 @Service
 @Slf4j
@@ -75,13 +76,21 @@ public class ImportarLeadsUseCase {
                     
                     OrigemLead origem = parseOrigem(line.length > 4 ? line[4] : null);
                     TipoServico tipoServico = parseServico(line.length > 5 ? line[5] : null);
+                    
+                    String telRaw = (line.length > 6 && line[6] != null) ? line[6].replaceAll("\\D", "") : "";
+                    Telefone telefone = (!telRaw.isBlank() && telRaw.length() >= 10) ? new Telefone(telRaw) : null;
 
-                    Lead lead = Lead.criar(empresaId, nome, email, ident, empresaNome, origem, tipoServico);
+                    Lead lead = Lead.criar(empresaId, nome, email, telefone, ident, empresaNome, origem, tipoServico);
                     
                     leadRepository.save(lead);
                     
                     var historico = HistoricoVidaLead.criar(lead.getId(), empresaId);
                     historico.registrarEvento("IMPORTACAO", "Lead importado via arquivo CSV", EventoHistoricoLead.MarcadorEvento.NEUTRO);
+                    
+                    if (telefone == null) {
+                        historico.registrarEvento("DADOS_AUSENTES", "Lead importado sem telefone. Automações de WhatsApp desativadas.", EventoHistoricoLead.MarcadorEvento.ATENCAO);
+                    }
+
                     historicoRepository.save(historico);
 
                     leadsImportados.add(lead);

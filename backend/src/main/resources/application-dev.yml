@@ -6,7 +6,6 @@ spring:
   autoconfigure:
     exclude:
       - org.springframework.ai.autoconfigure.openai.OpenAiAutoConfiguration
-      - org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
   datasource:
     url: jdbc:postgresql://localhost:5432/accounting_saas
     username: admin
@@ -36,10 +35,10 @@ spring:
 
   # ── E-mail (Dev/Mailtrap) ──
   mail:
-    host: ${MAIL_HOST:localhost}
-    port: ${MAIL_PORT:2525}
-    username: ${MAIL_USERNAME:user}
-    password: ${MAIL_PASSWORD:pass}
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
     properties:
       mail:
         smtp:
@@ -78,5 +77,6 @@ api:
 logging:
   level:
     com.projetocontabil: DEBUG
+    com.projetocontabil.infra.integrations: DEBUG
     org.hibernate.SQL: DEBUG
     org.hibernate.orm.jdbc.bind: TRACE

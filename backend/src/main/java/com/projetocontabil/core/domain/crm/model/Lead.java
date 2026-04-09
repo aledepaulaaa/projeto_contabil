@@ -21,13 +21,16 @@ public class Lead extends AggregateRoot {
     private StatusLead status;
     private OrigemLead origemLead;
     private TipoServico tipoServico;
+    private String observacaoNaoFechamento;
     private final String googleLeadId;
     private final LocalDateTime criadoEm;
+    private int quantidadeMensagensNaoLidas;
 
     private Lead(UUID id, EmpresaLocatariaId empresaLocatariaId, String nomeContato, Email email,
                  Telefone telefone, Identificacao identificacao, String nomeEmpresa,
                  StatusLead status, OrigemLead origemLead, TipoServico tipoServico,
-                 String googleLeadId, LocalDateTime criadoEm) {
+                 String observacaoNaoFechamento, String googleLeadId, LocalDateTime criadoEm,
+                 int quantidadeMensagensNaoLidas) {
         super(id);
         this.empresaLocatariaId = empresaLocatariaId;
         this.nomeContato = nomeContato;
@@ -38,36 +41,41 @@ public class Lead extends AggregateRoot {
         this.status = status;
         this.origemLead = origemLead;
         this.tipoServico = tipoServico;
+        this.observacaoNaoFechamento = observacaoNaoFechamento;
         this.googleLeadId = googleLeadId;
         this.criadoEm = criadoEm;
+        this.quantidadeMensagensNaoLidas = quantidadeMensagensNaoLidas;
     }
 
-    public static Lead criar(EmpresaLocatariaId id, String nome, Email email,
+    public static Lead criar(EmpresaLocatariaId id, String nome, Email email, Telefone telefone,
                               Identificacao identificacao, String nomeEmpresa,
                               OrigemLead origem, TipoServico tipoServico) {
-        return new Lead(UUID.randomUUID(), id, nome, email, null, identificacao, nomeEmpresa,
-                StatusLead.LEAD, origem, tipoServico, null, LocalDateTime.now());
+        return new Lead(UUID.randomUUID(), id, nome, email, telefone, identificacao, nomeEmpresa,
+                StatusLead.LEAD, origem, tipoServico, null, null, LocalDateTime.now(), 0);
     }
 
-    public static Lead criarComGoogleId(EmpresaLocatariaId id, String nome, Email email,
+    public static Lead criarComGoogleId(EmpresaLocatariaId id, String nome, Email email, Telefone telefone,
                                          Identificacao identificacao, String nomeEmpresa,
                                          OrigemLead origem, TipoServico tipoServico, String googleId) {
-        return new Lead(UUID.randomUUID(), id, nome, email, null, identificacao, nomeEmpresa,
-                StatusLead.LEAD, origem, tipoServico, googleId, LocalDateTime.now());
+        return new Lead(UUID.randomUUID(), id, nome, email, telefone, identificacao, nomeEmpresa,
+                StatusLead.LEAD, origem, tipoServico, null, googleId, LocalDateTime.now(), 0);
     }
 
     public static Lead reconstituir(UUID id, EmpresaLocatariaId empresaId, String nome, Email email,
                                      Telefone tel, Identificacao ident, String emp,
                                      StatusLead status, OrigemLead origem, TipoServico tipoServico,
-                                     String googleId, LocalDateTime criado) {
-        return new Lead(id, empresaId, nome, email, tel, ident, emp, status, origem, tipoServico, googleId, criado);
+                                     String observacaoNaoFechamento, String googleId, LocalDateTime criado,
+                                     int quantidadeMensagensNaoLidas) {
+        return new Lead(id, empresaId, nome, email, tel, ident, emp, status, origem, tipoServico, 
+                observacaoNaoFechamento, googleId, criado, quantidadeMensagensNaoLidas);
     }
 
-    public void atualizarDados(String nome, Email email, String nomeEmpresa, 
+    public void atualizarDados(String nome, Email email, Telefone telefone, String nomeEmpresa, 
                                Identificacao identificacao, OrigemLead origem, 
                                TipoServico tipoServico) {
         this.nomeContato = nome;
         this.email = email;
+        this.telefone = telefone;
         this.nomeEmpresa = nomeEmpresa;
         this.identificacao = identificacao;
         this.origemLead = origem;
@@ -87,6 +95,29 @@ public class Lead extends AggregateRoot {
     public void mudarStatus(StatusLead novoStatus) {
         if (novoStatus != null) {
             this.status = novoStatus;
+            // Limpar observação ao sair de NAO_FECHOU
+            if (novoStatus != StatusLead.NAO_FECHOU) {
+                this.observacaoNaoFechamento = null;
+            }
         }
+    }
+
+    /**
+     * Registra a observação do motivo de não fechamento e move o Lead para NAO_FECHOU.
+     */
+    public void registrarNaoFechamento(String observacao) {
+        if (observacao == null || observacao.isBlank()) {
+            throw new IllegalArgumentException("Observação de não fechamento é obrigatória.");
+        }
+        this.status = StatusLead.NAO_FECHOU;
+        this.observacaoNaoFechamento = observacao;
+    }
+
+    public void incrementarMensagensNaoLidas() {
+        this.quantidadeMensagensNaoLidas++;
+    }
+
+    public void resetarMensagensNaoLidas() {
+        this.quantidadeMensagensNaoLidas = 0;
     }
 }

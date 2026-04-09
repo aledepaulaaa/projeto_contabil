@@ -49,4 +49,10 @@ public class LeadJpaEntity {
 
     @Column(name = "google_lead_id", unique = true)
     private String googleLeadId;
+
+    @Column(name = "observacao_nao_fechamento")
+    private String observacaoNaoFechamento;
+
+    @Column(name = "quantidade_mensagens_nao_lidas")
+    private Integer quantidadeMensagensNaoLidas = 0;
 }

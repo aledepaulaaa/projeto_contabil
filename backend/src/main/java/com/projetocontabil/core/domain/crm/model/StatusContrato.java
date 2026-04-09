@@ -6,7 +6,10 @@ package com.projetocontabil.core.domain.crm.model;
  * AGUARDANDO_ASSINATURA | ATIVO → CANCELADO (requer motivo)
  */
 public enum StatusContrato {
+    GERANDO,
+    ERRO,
     AGUARDANDO_ASSINATURA,
     ATIVO,
-    CANCELADO
+    CANCELADO,
+    ARQUIVADO
 }

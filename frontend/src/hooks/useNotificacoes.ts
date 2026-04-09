@@ -33,10 +33,24 @@ export const useNotificacoes = (empresaLocatariaId: string | null) => {
       client.subscribe(`/topic/leads/${empresaLocatariaId}`, (message) => {
         const payload = JSON.parse(message.body) as Notificacao;
         setNotificacoes((prev) => [payload, ...prev]);
-        
-        // Alerta sonoro ou vibração opcional aqui
         if (Notification.permission === 'granted') {
-           new Notification('Novo Lead no ContábilPro', { body: payload.mensagem });
+          new Notification('Novo Lead', { body: payload.mensagem });
+        }
+      });
+
+      client.subscribe(`/topic/contratos/${empresaLocatariaId}`, (message) => {
+        const payload = JSON.parse(message.body) as Notificacao;
+        setNotificacoes((prev) => [payload, ...prev]);
+        if (Notification.permission === 'granted') {
+          new Notification('Contrato Disponível', { body: payload.mensagem });
+        }
+      });
+
+      client.subscribe(`/topic/whatsapp/${empresaLocatariaId}`, (message) => {
+        const payload = JSON.parse(message.body) as Notificacao;
+        setNotificacoes((prev) => [payload, ...prev]);
+        if (Notification.permission === 'granted') {
+          new Notification('WhatsApp Enviado', { body: payload.mensagem });
         }
       });
     };
