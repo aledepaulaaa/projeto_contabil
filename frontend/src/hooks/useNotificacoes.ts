@@ -7,12 +7,15 @@ const SOCKET_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8080/api')
 export interface Notificacao {
   tipo: string;
   mensagem: string;
+  leadId?: string;
   data: number;
 }
 
-export const useNotificacoes = (empresaLocatariaId: string | null) => {
+export const useNotificacoes = (empresaIdOverride?: string | null) => {
   const [notificacoes, setNotificacoes] = useState<Notificacao[]>([]);
   const [conectado, setConectado] = useState(false);
+  const empresaLocatariaId = empresaIdOverride || localStorage.getItem('empresaLocatariaId');
+  const departamentoId = localStorage.getItem('departamentoId');
 
   useEffect(() => {
     if (!empresaLocatariaId) return;
@@ -32,6 +35,14 @@ export const useNotificacoes = (empresaLocatariaId: string | null) => {
       
       client.subscribe(`/topic/leads/${empresaLocatariaId}`, (message) => {
         const payload = JSON.parse(message.body) as Notificacao;
+        
+        // SINCRONIZAÇÃO EM TEMPO REAL: Sinal para recarregar contatos
+        if (payload.tipo === 'RELOAD_CONTACTS') {
+          console.log('[STOMP] Recebido sinal RELOAD_CONTACTS');
+          window.dispatchEvent(new CustomEvent('reload-contacts'));
+          return; // Não exibe notificação visual para este sinal técnico
+        }
+
         setNotificacoes((prev) => [payload, ...prev]);
         if (Notification.permission === 'granted') {
           new Notification('Novo Lead', { body: payload.mensagem });
@@ -53,6 +64,17 @@ export const useNotificacoes = (empresaLocatariaId: string | null) => {
           new Notification('WhatsApp Enviado', { body: payload.mensagem });
         }
       });
+
+      // Subscrição SETORIAL (Notificações exclusivas do Departamento)
+      if (departamentoId) {
+        client.subscribe(`/topic/leads/${empresaLocatariaId}/${departamentoId}`, (message) => {
+          const payload = JSON.parse(message.body) as Notificacao;
+          setNotificacoes((prev) => [payload, ...prev]);
+          if (Notification.permission === 'granted') {
+            new Notification('Aviso do Setor', { body: payload.mensagem });
+          }
+        });
+      }
     };
 
     client.onStompError = (frame) => {

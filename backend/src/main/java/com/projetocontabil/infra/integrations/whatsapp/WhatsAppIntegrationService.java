@@ -4,6 +4,9 @@ import com.projetocontabil.core.domain.crm.model.Lead;
 import com.projetocontabil.core.domain.crm.model.StatusLead;
 import com.projetocontabil.core.domain.crm.model.EventoHistoricoLead;
 import com.projetocontabil.core.domain.crm.model.HistoricoVidaLead;
+import com.projetocontabil.core.domain.empresalocataria.EmpresaLocatariaId;
+import com.projetocontabil.core.domain.empresalocataria.model.EmpresaLocataria;
+import com.projetocontabil.core.ports.driven.EmpresaLocatariaRepository;
 import com.projetocontabil.core.ports.driven.HistoricoVidaLeadRepository;
 import com.projetocontabil.infra.messaging.NotificationService;
 import com.projetocontabil.infra.persistence.entity.MensagemChatJpaEntity;
@@ -26,6 +29,7 @@ public class WhatsAppIntegrationService {
     private final MensagemChatJpaRepository mensagemRepository;
     private final HistoricoVidaLeadRepository historicoRepository;
     private final NotificationService notificationService;
+    private final EmpresaLocatariaRepository empresaRepository;
 
     /**
      * Envia notificação automática baseada na mudança de status do Lead.
@@ -37,6 +41,16 @@ public class WhatsAppIntegrationService {
         String mensagem = gerarMensagemParaStatus(lead, status);
         if (mensagem == null) {
             log.debug("A mudança para o status {} não possui mensagem automática configurada.", status);
+            return;
+        }
+
+        // Verificar se Automação está Ativa para a Empresa
+        EmpresaLocatariaId empresaId = lead.getEmpresaLocatariaId();
+        EmpresaLocataria empresa = empresaRepository.findByEmpresaLocatariaId(empresaId)
+                .orElse(null);
+
+        if (empresa != null && !empresa.isWhatsappAutomacaoAtivo()) {
+            log.info("Automação de WhatsApp desativada para a empresa {}. Ignorando disparo.", empresa.getNome());
             return;
         }
 

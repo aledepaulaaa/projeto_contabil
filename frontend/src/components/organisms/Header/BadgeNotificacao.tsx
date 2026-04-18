@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLocation } from 'wouter';
 import { Bell, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNotificacoes } from '../../../hooks/useNotificacoes';
@@ -8,6 +9,7 @@ interface BadgeNotificacaoProps {
 }
 
 export const BadgeNotificacao: React.FC<BadgeNotificacaoProps> = ({ empresaLocatariaId }) => {
+  const [location, setLocation] = useLocation();
   const { notificacoes, limparNotificacoes } = useNotificacoes(empresaLocatariaId);
   const [open, setOpen] = useState(false);
 
@@ -57,7 +59,13 @@ export const BadgeNotificacao: React.FC<BadgeNotificacaoProps> = ({ empresaLocat
                   notificacoes.map((notificacao, index) => (
                     <div 
                       key={index}
-                      className="p-4 border-b border-slate-50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
+                      onClick={() => {
+                        if (notificacao.leadId) {
+                          setLocation(`/dashboard/atendimento?leadId=${notificacao.leadId}`);
+                          setOpen(false);
+                        }
+                      }}
+                      className={`p-4 border-b border-slate-50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors ${notificacao.leadId ? 'cursor-pointer' : ''}`}
                     >
                       <div className="flex gap-3">
                         <div className="w-2 h-2 mt-1.5 bg-blue-500 rounded-full shrink-0" />
@@ -67,7 +75,7 @@ export const BadgeNotificacao: React.FC<BadgeNotificacaoProps> = ({ empresaLocat
                           </p>
                           <span className="text-[10px] text-slate-400 mt-1 block">
                             {new Date(notificacao.data).toLocaleTimeString()}
-                          </span>
+                          </span >
                         </div>
                       </div>
                     </div>

@@ -9,4 +9,5 @@ import java.util.UUID;
 public interface DepartamentoJpaRepository extends JpaRepository<DepartamentoJpaEntity, UUID> {
     List<DepartamentoJpaEntity> findAllByEmpresaLocatariaId(String empresaLocatariaId);
     boolean existsByNomeAndEmpresaLocatariaId(String nome, String empresaLocatariaId);
+    java.util.Optional<DepartamentoJpaEntity> findByNomeAndEmpresaLocatariaId(String nome, String empresaLocatariaId);
 }

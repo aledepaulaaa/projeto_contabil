@@ -39,7 +39,9 @@ public class EmpresaLocatariaRepositoryAdapter implements EmpresaLocatariaReposi
                 entity.getCnpj(),
                 entity.getRegime(),
                 entity.getCriadoEm(),
-                entity.getDataFimTrial()
+                entity.getDataFimTrial(),
+                entity.isWhatsappAutomacaoAtivo(),
+                entity.isEmailAutomacaoAtivo()
         );
     }
 
@@ -51,7 +53,9 @@ public class EmpresaLocatariaRepositoryAdapter implements EmpresaLocatariaReposi
                 empresa.getCnpj(),
                 empresa.getRegimeTributario(),
                 empresa.getCriadoEm(),
-                empresa.getDataFimTrial()
+                empresa.getDataFimTrial(),
+                empresa.isWhatsappAutomacaoAtivo(),
+                empresa.isEmailAutomacaoAtivo()
         );
     }
 }

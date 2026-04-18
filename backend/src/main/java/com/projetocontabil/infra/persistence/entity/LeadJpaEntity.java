@@ -34,6 +34,9 @@ public class LeadJpaEntity {
     private String cnpj;
     private String nomeEmpresa;
 
+    @Column(name = "departamento_id")
+    private UUID departamentoId;
+
     @Enumerated(EnumType.STRING)
     private StatusLead status;
 
@@ -55,4 +58,7 @@ public class LeadJpaEntity {
 
     @Column(name = "quantidade_mensagens_nao_lidas")
     private Integer quantidadeMensagensNaoLidas = 0;
+
+    @Column(name = "conversa_privada")
+    private boolean conversaPrivada = false;
 }

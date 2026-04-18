@@ -82,10 +82,12 @@ public class LeadRepositoryAdapter implements LeadRepository {
                 entity.getStatus(),
                 entity.getOrigemLead(),
                 entity.getTipoServico(),
+                entity.getDepartamentoId(),
                 entity.getObservacaoNaoFechamento(),
                 entity.getGoogleLeadId(),
                 entity.getCriadoEm(),
-                entity.getQuantidadeMensagensNaoLidas() != null ? entity.getQuantidadeMensagensNaoLidas() : 0
+                entity.getQuantidadeMensagensNaoLidas() != null ? entity.getQuantidadeMensagensNaoLidas() : 0,
+                entity.isConversaPrivada()
         );
     }
 
@@ -131,10 +133,12 @@ public class LeadRepositoryAdapter implements LeadRepository {
         entity.setStatus(lead.getStatus());
         entity.setOrigemLead(lead.getOrigemLead());
         entity.setTipoServico(lead.getTipoServico());
+        entity.setDepartamentoId(lead.getDepartamentoId());
         entity.setCriadoEm(lead.getCriadoEm());
         entity.setGoogleLeadId(lead.getGoogleLeadId());
         entity.setObservacaoNaoFechamento(lead.getObservacaoNaoFechamento());
         entity.setQuantidadeMensagensNaoLidas(lead.getQuantidadeMensagensNaoLidas());
+        entity.setConversaPrivada(lead.isConversaPrivada());
         return entity;
     }
 }

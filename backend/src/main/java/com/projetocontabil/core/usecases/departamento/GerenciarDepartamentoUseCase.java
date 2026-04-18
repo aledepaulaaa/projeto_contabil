@@ -2,6 +2,7 @@ package com.projetocontabil.core.usecases.departamento;
 
 import com.projetocontabil.core.domain.departamento.model.Departamento;
 import com.projetocontabil.core.ports.driven.DepartamentoRepository;
+import com.projetocontabil.core.domain.empresalocataria.EmpresaLocatariaId;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -17,9 +18,12 @@ import java.util.UUID;
 public class GerenciarDepartamentoUseCase {
 
     private final DepartamentoRepository departamentoRepository;
+    private final com.projetocontabil.core.ports.driven.AtendimentoRepository atendimentoRepository;
 
-    public GerenciarDepartamentoUseCase(DepartamentoRepository departamentoRepository) {
+    public GerenciarDepartamentoUseCase(DepartamentoRepository departamentoRepository, 
+                                      com.projetocontabil.core.ports.driven.AtendimentoRepository atendimentoRepository) {
         this.departamentoRepository = departamentoRepository;
+        this.atendimentoRepository = atendimentoRepository;
     }
 
     public record CriarComando(String empresaLocatariaId, String nome, String descricao) {}
@@ -36,13 +40,22 @@ public class GerenciarDepartamentoUseCase {
     }
 
     public List<Departamento> listar(String empresaLocatariaId) {
-        return departamentoRepository.findAllByEmpresaLocatariaId(empresaLocatariaId);
+        return departamentoRepository.findAllByEmpresaLocatariaId(EmpresaLocatariaId.of(empresaLocatariaId));
     }
 
     public void excluir(UUID id) {
         log.info("[GerenciarDepartamento] Excluindo departamento {}", id);
+        
+        // Desvincular atendimentos órfãos
+        var atendimentos = atendimentoRepository.findAllByDepartamentoId(id);
+        for (var atendimento : atendimentos) {
+            atendimento.transferir(null, atendimento.getAtendenteId());
+            atendimentoRepository.save(atendimento);
+        }
+        
         departamentoRepository.deleteById(id);
     }
+
 
     /**
      * Inicializa os departamentos padrão para um tenant (caso não existam).

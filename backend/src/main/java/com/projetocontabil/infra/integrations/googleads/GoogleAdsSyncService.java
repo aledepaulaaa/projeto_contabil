@@ -11,15 +11,17 @@ import com.projetocontabil.infra.persistence.repository.ExternalConnectionReposi
 import com.projetocontabil.core.domain.crm.model.enums.ConnectionStatus;
 import com.projetocontabil.infra.messaging.NotificationService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class GoogleAdsSyncService {
+
+    private static final Logger log = LoggerFactory.getLogger(GoogleAdsSyncService.class);
 
     private final ExternalConnectionRepository connectionRepository;
     private final LeadRepository leadRepository;
@@ -82,6 +84,6 @@ public class GoogleAdsSyncService {
         }
 
         // Notificar via WebSocket
-        notificationService.notifyNewLead(empresaLocatariaId, nome);
+        notificationService.notifyNewLead(empresaLocatariaId, nome, salvo.getId().toString());
     }
 }

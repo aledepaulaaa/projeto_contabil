@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, Download, Clock, FileText, FileSpreadsheet, X, PenTool, MessageCircle } from 'lucide-react';
+import { Bell, Download, Clock, FileText, FileSpreadsheet, X, PenTool, MessageCircle, RefreshCcw, ArrowRight } from 'lucide-react';
+import { useLocation } from 'wouter';
 import { LeadService, type NotificacaoDownload } from '../../../services/LeadService';
 import { Texto } from '../../atoms/Texto/Texto';
 import { ModalAssinaturaContrato } from '../../organisms/CRM/ModalAssinaturaContrato';
@@ -11,9 +12,10 @@ export const NotificationCenter: React.FC = () => {
   const [notificacoes, setNotificacoes] = useState<NotificacaoDownload[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [hasNewContract, setHasNewContract] = useState(false);
+  const [, setLocation] = useLocation();
   
   // Integração com WebSockets (Tempo Real)
-  const { notificacoes: wsNotificacoes, conectado } = useNotificacoes('test-tenant'); // TODO: Pegar do contexto
+  const { notificacoes: wsNotificacoes, conectado } = useNotificacoes(); 
   
   const [modalAssinatura, setModalAssinatura] = useState<{
     isOpen: boolean;
@@ -42,7 +44,26 @@ export const NotificationCenter: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const handleClick = async (n: NotificacaoDownload) => {
+  const handleClick = async (n: any) => {
+    // 1. Navegação para Atendimento (Transferências ou Novos Leads)
+    if (n.tipo === 'TRANSFERENCIA_ATENDIMENTO' || n.tipo === 'NOVO_LEAD') {
+      if (n.leadId) {
+        setLocation(`/dashboard/atendimento?leadId=${n.leadId}`);
+        setAberto(false);
+      }
+      
+      // Marcar como lido se for persistido (ID não começa com ws-)
+      if (!n.lido && n.id && !n.id.startsWith('ws-')) {
+        try {
+          await LeadService.marcarNotificacaoLido(n.id);
+          fetchNotificacoes();
+        } catch (e) {
+          console.warn('Falha silenciosa ao marcar como lido:', e);
+        }
+      }
+      return;
+    }
+
     if (n.tipo === 'CONTRATO') {
       // Abre o modal de assinatura interno
       setModalAssinatura({
@@ -51,7 +72,7 @@ export const NotificationCenter: React.FC = () => {
         nome: n.nomeArquivo
       });
       
-      if (!n.lido) {
+      if (!n.lido && n.id && !n.id.startsWith('ws-')) {
         await LeadService.marcarNotificacaoLido(n.id);
         fetchNotificacoes();
       }
@@ -73,7 +94,7 @@ export const NotificationCenter: React.FC = () => {
         a.click();
       }
       
-      if (!n.lido) {
+      if (!n.lido && n.id && !n.id.startsWith('ws-')) {
         await LeadService.marcarNotificacaoLido(n.id);
         fetchNotificacoes();
       }
@@ -87,11 +108,13 @@ export const NotificationCenter: React.FC = () => {
     const wsMapped = wsNotificacoes.map(ws => ({
       id: `ws-${ws.data}`,
       nomeArquivo: ws.mensagem,
-      formato: ws.tipo.replace('_ENVIADO', ''),
+      mensagem: ws.mensagem,
+      formato: 'NOTIF',
       urlDownload: '#',
       geradoEm: new Date(ws.data).toISOString(),
       lido: false,
-      tipo: ws.tipo as any
+      tipo: ws.tipo,
+      leadId: (ws as any).leadId // Captura o leadId do payload do WebSocket
     }));
 
     return [...wsMapped, ...notificacoes].sort((a,b) => 
@@ -160,10 +183,12 @@ export const NotificationCenter: React.FC = () => {
                       <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
                         n.tipo === 'CONTRATO' ? 'bg-orange-500/10 text-orange-500' : 
                         n.tipo === 'WHATSAPP_ENVIADO' ? 'bg-emerald-500/10 text-emerald-500' :
+                        n.tipo === 'TRANSFERENCIA_ATENDIMENTO' ? 'bg-amber-500/10 text-amber-500' :
                         n.formato === 'PDF' ? 'bg-rose-500/10 text-rose-500' : 'bg-emerald-500/10 text-emerald-500'
                       }`}>
                         {n.tipo === 'CONTRATO' ? <PenTool size={20} /> : 
                          n.tipo === 'WHATSAPP_ENVIADO' ? <MessageCircle size={20} /> :
+                         (n.tipo === 'TRANSFERENCIA_ATENDIMENTO' || n.tipo === 'NOVO_LEAD') ? <ArrowRight size={20} /> :
                          n.formato === 'PDF' ? <FileText size={20} /> : <FileSpreadsheet size={20} />}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -171,20 +196,27 @@ export const NotificationCenter: React.FC = () => {
                           <Texto variant="corpo" className="font-bold text-[11px] truncate">{n.nomeArquivo}</Texto>
                           <span className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-tighter shrink-0 ${
                             n.tipo === 'CONTRATO' ? 'bg-orange-500/10 text-orange-600' :
+                            n.tipo === 'TRANSFERENCIA_ATENDIMENTO' ? 'bg-amber-500/10 text-amber-600' :
                             n.formato === 'PDF' ? 'bg-rose-500/10 text-rose-600' : 'bg-emerald-500/10 text-emerald-600'
                           }`}>
-                            {n.formato}
+                            {n.tipo === 'TRANSFERENCIA_ATENDIMENTO' ? 'TRANSF' : n.formato}
                           </span>
-                          {!n.lido && <div className={`w-2 h-2 rounded-full mt-1 shrink-0 ${n.tipo === 'CONTRATO' ? 'bg-orange-500' : 'bg-blue-500'}`} />}
+                          {!n.lido && <div className={`w-2 h-2 rounded-full mt-1 shrink-0 ${n.tipo === 'CONTRATO' ? 'bg-orange-500' : n.tipo === 'TRANSFERENCIA_ATENDIMENTO' ? 'bg-amber-500' : 'bg-blue-500'}`} />}
                         </div>
-                        <Texto variant="detalhe" className="text-[10px] text-slate-500 mt-0.5">
-                          {n.tipo === 'CONTRATO' ? 'Contrato disponível para assinatura' : 'Relatório disponível para download'}
+                        <Texto variant="detalhe" className="text-[10px] text-slate-500 mt-0.5 line-clamp-2">
+                          {n.mensagem || (n.tipo === 'CONTRATO' ? 'Contrato disponível para assinatura' : 
+                           n.tipo === 'TRANSFERENCIA_ATENDIMENTO' ? 'Atendimento transferido para seu setor' :
+                           'Relatório disponível para download')}
                         </Texto>
                         <div className="flex items-center gap-1.5 mt-2">
                            {n.tipo === 'CONTRATO' ? (
                              <span className="text-[9px] font-black uppercase tracking-tighter text-orange-600 flex items-center gap-1 bg-orange-50 dark:bg-orange-900/30 px-2 py-0.5 rounded-md">
                                 <PenTool size={10} /> Assinar Agora
                              </span>
+                           ) : (n.tipo === 'TRANSFERENCIA_ATENDIMENTO' || n.tipo === 'NOVO_LEAD') ? (
+                            <span className="text-[9px] font-black uppercase tracking-tighter text-amber-600 flex items-center gap-1 bg-amber-50 dark:bg-amber-900/30 px-2 py-0.5 rounded-md">
+                               <ArrowRight size={10} /> Ver Atendimento
+                            </span>
                            ) : (
                              <span className="text-[9px] font-black uppercase tracking-tighter text-blue-600 flex items-center gap-1 bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded-md">
                                 <Download size={10} /> Baixar {n.formato}

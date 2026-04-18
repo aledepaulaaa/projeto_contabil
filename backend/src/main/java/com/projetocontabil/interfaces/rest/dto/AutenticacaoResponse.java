@@ -16,6 +16,10 @@ public class AutenticacaoResponse {
     private String empresaLocatariaId;
     private String papel;
     private String nome;
+    private String email;
+    private String nomeEmpresa;
     private UUID departamentoId;
+    private String departamentoNome;
+    private UUID usuarioId;
     private List<String> permissoes;
 }

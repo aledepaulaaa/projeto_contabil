@@ -5,6 +5,7 @@ import com.projetocontabil.core.domain.usuario.model.Permissao;
 import com.projetocontabil.core.usecases.usuario.AlterarPermissoesUseCase;
 import com.projetocontabil.core.usecases.usuario.ConvidarUsuarioUseCase;
 import com.projetocontabil.core.usecases.usuario.ListarUsuariosUseCase;
+import com.projetocontabil.core.usecases.usuario.RemoverUsuarioUseCase;
 import com.projetocontabil.interfaces.rest.dto.AlterarPermissoesRequest;
 import com.projetocontabil.interfaces.rest.dto.ConvidarUsuarioRequest;
 import org.slf4j.Logger;
@@ -26,13 +27,16 @@ public class UsuarioGestaoController {
     private final ConvidarUsuarioUseCase convidarUseCase;
     private final ListarUsuariosUseCase listarUseCase;
     private final AlterarPermissoesUseCase alterarPermissoesUseCase;
+    private final RemoverUsuarioUseCase removerUsuarioUseCase;
 
     public UsuarioGestaoController(ConvidarUsuarioUseCase convidarUseCase,
                                     ListarUsuariosUseCase listarUseCase,
-                                    AlterarPermissoesUseCase alterarPermissoesUseCase) {
+                                    AlterarPermissoesUseCase alterarPermissoesUseCase,
+                                    RemoverUsuarioUseCase removerUsuarioUseCase) {
         this.convidarUseCase = convidarUseCase;
         this.listarUseCase = listarUseCase;
         this.alterarPermissoesUseCase = alterarPermissoesUseCase;
+        this.removerUsuarioUseCase = removerUsuarioUseCase;
     }
 
     @GetMapping
@@ -92,6 +96,23 @@ public class UsuarioGestaoController {
             var comando = new AlterarPermissoesUseCase.Comando(solicitanteId, id, permissoes, request.departamentoId());
             alterarPermissoesUseCase.executar(comando);
             return ResponseEntity.ok(Map.of("mensagem", "Permissões atualizadas"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(403).body(Map.of("erro", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> remover(
+            @RequestHeader("X-EmpresaLocataria-Id") String tenantId,
+            @PathVariable UUID id
+    ) {
+        // TODO: Extrair do JWT em produção
+        UUID solicitanteId = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");
+
+        try {
+            var comando = new RemoverUsuarioUseCase.Comando(solicitanteId, id, tenantId);
+            removerUsuarioUseCase.executar(comando);
+            return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(403).body(Map.of("erro", e.getMessage()));
         }

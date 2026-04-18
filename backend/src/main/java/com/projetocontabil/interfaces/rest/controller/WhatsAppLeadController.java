@@ -20,10 +20,23 @@ public class WhatsAppLeadController {
      * Marca todas as mensagens de um Lead como lidas.
      */
     @PatchMapping("/{leadId}/read")
-    public ResponseEntity<Void> marcarComoLido(@PathVariable UUID leadId) {
+    public ResponseEntity<Void> marcarComoLido(@PathVariable String leadId) {
         log.info("Marcando mensagens como lidas para o Lead: {}", leadId);
         
-        return leadRepository.findById(leadId).map(lead -> {
+        UUID uuid;
+        try {
+            uuid = UUID.fromString(leadId);
+        } catch (IllegalArgumentException e) {
+            uuid = leadRepository.findByTelefone(leadId)
+                    .map(com.projetocontabil.core.domain.crm.model.Lead::getId)
+                    .orElse(null);
+        }
+
+        if (uuid == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return leadRepository.findById(uuid).map(lead -> {
             lead.resetarMensagensNaoLidas();
             leadRepository.save(lead);
             return ResponseEntity.ok().<Void>build();

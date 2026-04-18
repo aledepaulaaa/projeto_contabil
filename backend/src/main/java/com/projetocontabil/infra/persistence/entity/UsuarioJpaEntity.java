@@ -23,6 +23,7 @@ public class UsuarioJpaEntity {
     private String empresaLocatariaId;
 
     private String email;
+    private String username;
 
     @Column(name = "password")
     private String senhaHash;
@@ -55,6 +56,9 @@ public class UsuarioJpaEntity {
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
+
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
 
     public String getSenhaHash() { return senhaHash; }
     public void setSenhaHash(String senhaHash) { this.senhaHash = senhaHash; }

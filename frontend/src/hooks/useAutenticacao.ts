@@ -14,7 +14,18 @@ export function useAutenticacao() {
     clearError();
     try {
       const resp = await AutenticacaoService.login({ usuario, senha });
-      login(resp.token, resp.empresaLocatariaId || usuario);
+      login({
+        token: resp.token,
+        empresaLocatariaId: resp.empresaLocatariaId || usuario,
+        usuarioId: resp.usuarioId || '',
+        papel: resp.papel,
+        nome: resp.nome,
+        email: resp.email,
+        nomeEmpresa: resp.nomeEmpresa,
+        permissoes: resp.permissoes,
+        departamentoId: resp.departamentoId,
+        departamentoNome: resp.departamentoNome
+      });
       return true;
     } catch (e) {
       if (e instanceof AxiosError) {

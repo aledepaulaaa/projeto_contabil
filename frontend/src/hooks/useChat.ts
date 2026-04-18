@@ -11,6 +11,9 @@ export interface MensagemChat {
   autor: 'atendente' | 'cliente' | 'sistema';
   texto: string;
   horario: string;
+  tipo: 'EXTERNA' | 'INTERNA';
+  visivel: boolean;
+  restritoAdmin: boolean;
 }
 
 export const useChat = (leadId: string | undefined) => {
@@ -19,7 +22,7 @@ export const useChat = (leadId: string | undefined) => {
   const [loading, setLoading] = useState(false);
 
   const carregarHistorico = useCallback(async () => {
-    if (!leadId) return;
+    if (!leadId || leadId === 'undefined' || leadId === 'null') return;
     setLoading(true);
     try {
       const historico = await LeadService.getChatHistory(leadId);
@@ -27,7 +30,10 @@ export const useChat = (leadId: string | undefined) => {
         id: m.id,
         autor: m.remetente === 'LEAD' ? 'cliente' : 'atendente',
         texto: m.conteudo,
-        horario: new Date(m.enviadoEm).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        horario: new Date(m.enviadoEm).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        tipo: m.tipo || 'EXTERNA',
+        visivel: m.visivel !== false,
+        restritoAdmin: m.restritoAdmin || false,
       }));
       setMensagens(formatadas);
     } catch (error) {
@@ -38,7 +44,7 @@ export const useChat = (leadId: string | undefined) => {
   }, [leadId]);
 
   useEffect(() => {
-    if (!leadId) return;
+    if (!leadId || leadId === 'undefined' || leadId === 'null') return;
 
     carregarHistorico();
     
@@ -67,10 +73,13 @@ export const useChat = (leadId: string | undefined) => {
         const payload = JSON.parse(message.body);
         if (payload.tipo === 'NOVA_MENSAGEM') {
           const novaMsg: MensagemChat = {
-            id: Date.now().toString(),
+            id: payload.id || Date.now().toString(),
             autor: payload.remetente === 'LEAD' ? 'cliente' : 'atendente',
             texto: payload.mensagem,
-            horario: new Date(payload.timestamp * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            horario: new Date(payload.timestamp * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            tipo: payload.tipoMensagem || 'EXTERNA',
+            visivel: payload.visivel !== false,
+            restritoAdmin: payload.restritoAdmin || false,
           };
           
           if (payload.remetente === 'LEAD') {

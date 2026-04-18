@@ -46,7 +46,7 @@ public class AlterarPermissoesUseCase {
 
         // Reconstruir com novas permissões
         var atualizado = Usuario.reconstituirCompleto(
-                alvo.getId(), alvo.getEmpresaLocatariaId(), alvo.getEmail(),
+                alvo.getId(), alvo.getEmpresaLocatariaId(), alvo.getEmail(), alvo.getUsername(),
                 alvo.getSenhaHash(), alvo.getNome(), alvo.getRole(), alvo.isAtivo(),
                 alvo.getPapel(),
                 comando.departamentoId() != null ? comando.departamentoId() : alvo.getDepartamentoId(),

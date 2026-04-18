@@ -1,6 +1,7 @@
 package com.projetocontabil.infra.persistence.repository;
 
 import com.projetocontabil.core.domain.departamento.model.Departamento;
+import com.projetocontabil.core.domain.empresalocataria.EmpresaLocatariaId;
 import com.projetocontabil.core.ports.driven.DepartamentoRepository;
 import com.projetocontabil.infra.persistence.entity.DepartamentoJpaEntity;
 import org.springframework.stereotype.Component;
@@ -32,8 +33,8 @@ public class DepartamentoRepositoryAdapter implements DepartamentoRepository {
     }
 
     @Override
-    public List<Departamento> findAllByEmpresaLocatariaId(String empresaLocatariaId) {
-        return jpaRepository.findAllByEmpresaLocatariaId(empresaLocatariaId)
+    public List<Departamento> findAllByEmpresaLocatariaId(EmpresaLocatariaId empresaId) {
+        return jpaRepository.findAllByEmpresaLocatariaId(empresaId.value())
                 .stream().map(this::toDomain).collect(Collectors.toList());
     }
 
@@ -45,6 +46,11 @@ public class DepartamentoRepositoryAdapter implements DepartamentoRepository {
     @Override
     public boolean existsByNomeAndEmpresaLocatariaId(String nome, String empresaLocatariaId) {
         return jpaRepository.existsByNomeAndEmpresaLocatariaId(nome, empresaLocatariaId);
+    }
+
+    @Override
+    public Optional<Departamento> findByNomeAndEmpresaLocatariaId(String nome, String empresaLocatariaId) {
+        return jpaRepository.findByNomeAndEmpresaLocatariaId(nome, empresaLocatariaId).map(this::toDomain);
     }
 
     private Departamento toDomain(DepartamentoJpaEntity entity) {
@@ -61,4 +67,6 @@ public class DepartamentoRepositoryAdapter implements DepartamentoRepository {
         entity.setCriadoEm(domain.getCriadoEm());
         return entity;
     }
+
+
 }

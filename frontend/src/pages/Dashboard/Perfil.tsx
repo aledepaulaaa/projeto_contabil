@@ -6,14 +6,14 @@ import { Texto } from '../../components/atoms/Texto/Texto';
 import { Card } from '../../components/atoms/Card/Card';
 
 export const Perfil: React.FC = () => {
-  const { empresaLocatariaId } = useAuthStore();
+  const { user, empresaLocatariaId } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [avatar, setAvatar] = useState<string | null>(null);
   
   const [formData, setFormData] = useState({
-    nome: 'Usuário Master',
-    email: 'admin@projetocontabil.com.br',
-    empresa: 'Minha Contabilidade LTDA'
+    nome: user?.nome || '',
+    email: user?.email || '',
+    empresa: user?.nomeEmpresa || 'Empresa não identificada'
   });
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -92,8 +92,8 @@ export const Perfil: React.FC = () => {
               <input 
                 type="email" 
                 value={formData.email}
-                onChange={e => setFormData({...formData, email: e.target.value})}
-                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-3 px-4 text-text-main focus:outline-none focus:border-blue-500/50 transition-all placeholder:text-text-secondary"
+                readOnly
+                className="w-full bg-slate-100 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl py-3 px-4 text-text-secondary cursor-not-allowed focus:outline-none transition-all placeholder:text-text-secondary"
                 placeholder="seu@email.com"
               />
             </div>

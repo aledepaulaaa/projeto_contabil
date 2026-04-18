@@ -134,16 +134,16 @@ class ConvidarUsuarioUseCaseTest {
     // Helpers
     private Usuario criarAdmin() {
         return Usuario.reconstituirCompleto(ADMIN_ID, TENANT, "admin@empresa.com", "hash",
-                "Admin", "ADMIN", true, Papel.ADMIN, null, null, EnumSet.allOf(Permissao.class));
+                "Admin", "ADMIN", null, true, Papel.ADMIN, null, null, EnumSet.allOf(Permissao.class));
     }
 
     private Usuario criarGestor() {
         return Usuario.reconstituirCompleto(UUID.randomUUID(), TENANT, "gestor@empresa.com", "hash",
-                "Gestor", "GESTOR", true, Papel.GESTOR, null, null, EnumSet.allOf(Permissao.class));
+                "Gestor", "GESTOR", null, true, Papel.GESTOR, null, null, EnumSet.allOf(Permissao.class));
     }
 
     private Usuario criarConvidado() {
         return Usuario.reconstituirCompleto(UUID.randomUUID(), TENANT, "convidado@empresa.com", "hash",
-                "Convidado", "CONVIDADO", true, Papel.CONVIDADO, null, null, EnumSet.noneOf(Permissao.class));
+                "Convidado", "CONVIDADO", null, true, Papel.CONVIDADO, null, null, EnumSet.noneOf(Permissao.class));
     }
 }

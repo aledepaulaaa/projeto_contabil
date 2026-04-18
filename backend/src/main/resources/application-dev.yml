@@ -18,7 +18,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: false
 
   # ── RabbitMQ ──
   rabbitmq:
@@ -76,7 +76,14 @@ api:
 # ── Logging (dev) ──
 logging:
   level:
-    com.projetocontabil: DEBUG
+    com.projetocontabil: INFO
     com.projetocontabil.infra.integrations: DEBUG
-    org.hibernate.SQL: DEBUG
-    org.hibernate.orm.jdbc.bind: TRACE
+    org.hibernate.SQL: INFO
+    org.hibernate.orm.jdbc.bind: INFO
+
+# ── Mailtrap (dev) ──
+mailtrap:
+  api-token: ${MAILTRAP_API_TOKEN}
+  sender-email: ${MAILTRAP_SENDER_EMAIL:noreply@contabilpro.com.br}
+  sandbox: ${MAILTRAP_SANDBOX:true}
+  inbox-id: ${MAILTRAP_INBOX_ID:4464001}

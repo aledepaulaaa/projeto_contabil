@@ -21,16 +21,18 @@ public class Lead extends AggregateRoot {
     private StatusLead status;
     private OrigemLead origemLead;
     private TipoServico tipoServico;
+    private UUID departamentoId;
     private String observacaoNaoFechamento;
     private final String googleLeadId;
     private final LocalDateTime criadoEm;
     private int quantidadeMensagensNaoLidas;
+    private boolean conversaPrivada;
 
     private Lead(UUID id, EmpresaLocatariaId empresaLocatariaId, String nomeContato, Email email,
                  Telefone telefone, Identificacao identificacao, String nomeEmpresa,
-                 StatusLead status, OrigemLead origemLead, TipoServico tipoServico,
+                 StatusLead status, OrigemLead origemLead, TipoServico tipoServico, UUID departamentoId,
                  String observacaoNaoFechamento, String googleLeadId, LocalDateTime criadoEm,
-                 int quantidadeMensagensNaoLidas) {
+                 int quantidadeMensagensNaoLidas, boolean conversaPrivada) {
         super(id);
         this.empresaLocatariaId = empresaLocatariaId;
         this.nomeContato = nomeContato;
@@ -41,33 +43,35 @@ public class Lead extends AggregateRoot {
         this.status = status;
         this.origemLead = origemLead;
         this.tipoServico = tipoServico;
+        this.departamentoId = departamentoId;
         this.observacaoNaoFechamento = observacaoNaoFechamento;
         this.googleLeadId = googleLeadId;
         this.criadoEm = criadoEm;
         this.quantidadeMensagensNaoLidas = quantidadeMensagensNaoLidas;
+        this.conversaPrivada = conversaPrivada;
     }
 
     public static Lead criar(EmpresaLocatariaId id, String nome, Email email, Telefone telefone,
                               Identificacao identificacao, String nomeEmpresa,
                               OrigemLead origem, TipoServico tipoServico) {
         return new Lead(UUID.randomUUID(), id, nome, email, telefone, identificacao, nomeEmpresa,
-                StatusLead.LEAD, origem, tipoServico, null, null, LocalDateTime.now(), 0);
+                StatusLead.LEAD, origem, tipoServico, null, null, null, LocalDateTime.now(), 0, false);
     }
 
     public static Lead criarComGoogleId(EmpresaLocatariaId id, String nome, Email email, Telefone telefone,
                                          Identificacao identificacao, String nomeEmpresa,
                                          OrigemLead origem, TipoServico tipoServico, String googleId) {
         return new Lead(UUID.randomUUID(), id, nome, email, telefone, identificacao, nomeEmpresa,
-                StatusLead.LEAD, origem, tipoServico, null, googleId, LocalDateTime.now(), 0);
+                StatusLead.LEAD, origem, tipoServico, null, null, googleId, LocalDateTime.now(), 0, false);
     }
 
     public static Lead reconstituir(UUID id, EmpresaLocatariaId empresaId, String nome, Email email,
                                      Telefone tel, Identificacao ident, String emp,
-                                     StatusLead status, OrigemLead origem, TipoServico tipoServico,
+                                     StatusLead status, OrigemLead origem, TipoServico tipoServico, UUID departamentoId,
                                      String observacaoNaoFechamento, String googleId, LocalDateTime criado,
-                                     int quantidadeMensagensNaoLidas) {
-        return new Lead(id, empresaId, nome, email, tel, ident, emp, status, origem, tipoServico, 
-                observacaoNaoFechamento, googleId, criado, quantidadeMensagensNaoLidas);
+                                     int quantidadeMensagensNaoLidas, boolean conversaPrivada) {
+        return new Lead(id, empresaId, nome, email, tel, ident, emp, status, origem, tipoServico, departamentoId, 
+                observacaoNaoFechamento, googleId, criado, quantidadeMensagensNaoLidas, conversaPrivada);
     }
 
     public void atualizarDados(String nome, Email email, Telefone telefone, String nomeEmpresa, 
@@ -119,5 +123,13 @@ public class Lead extends AggregateRoot {
 
     public void resetarMensagensNaoLidas() {
         this.quantidadeMensagensNaoLidas = 0;
+    }
+
+    public void setConversaPrivada(boolean conversaPrivada) {
+        this.conversaPrivada = conversaPrivada;
+    }
+
+    public void setDepartamentoId(UUID departamentoId) {
+        this.departamentoId = departamentoId;
     }
 }

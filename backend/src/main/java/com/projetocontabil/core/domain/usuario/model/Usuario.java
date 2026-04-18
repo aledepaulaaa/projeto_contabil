@@ -16,6 +16,7 @@ public class Usuario {
     private final UUID id;
     private final String empresaLocatariaId;
     private final String email;
+    private final String username; // exigido pelo DB legacy
     private final String senhaHash;
     private final String nome;
     private final String role; // legado - manter compatibilidade
@@ -25,10 +26,11 @@ public class Usuario {
     private final UUID convidadoPor;
     private final Set<Permissao> permissoes;
 
-    public Usuario(UUID id, String empresaLocatariaId, String email, String senhaHash, String nome, String role, boolean ativo, Papel papel, UUID departamentoId, UUID convidadoPor, Set<Permissao> permissoes) {
+    public Usuario(UUID id, String empresaLocatariaId, String email, String username, String senhaHash, String nome, String role, boolean ativo, Papel papel, UUID departamentoId, UUID convidadoPor, Set<Permissao> permissoes) {
         this.id = id;
         this.empresaLocatariaId = empresaLocatariaId;
         this.email = email;
+        this.username = username != null ? username : email;
         this.senhaHash = senhaHash;
         this.nome = nome;
         this.role = role;
@@ -42,6 +44,7 @@ public class Usuario {
     public UUID getId() { return id; }
     public String getEmpresaLocatariaId() { return empresaLocatariaId; }
     public String getEmail() { return email; }
+    public String getUsername() { return username; }
     public String getSenhaHash() { return senhaHash; }
     public String getNome() { return nome; }
     public String getRole() { return role; }
@@ -57,9 +60,9 @@ public class Usuario {
     /**
      * Reconstitui um usuário a partir do banco de dados.
      */
-    public static Usuario reconstituir(UUID id, String empresaLocatariaId, String email,
+    public static Usuario reconstituir(UUID id, String empresaLocatariaId, String email, String username,
                                         String senhaHash, String nome, String role, boolean ativo) {
-        return new Usuario(id, empresaLocatariaId, email, senhaHash, nome, role, ativo,
+        return new Usuario(id, empresaLocatariaId, email, username, senhaHash, nome, role, ativo,
                 Papel.valueOf(role != null ? role.toUpperCase() : "ADMIN"),
                 null, null, EnumSet.allOf(Permissao.class));
     }
@@ -67,11 +70,11 @@ public class Usuario {
     /**
      * Reconstitui com campos completos do RBAC.
      */
-    public static Usuario reconstituirCompleto(UUID id, String empresaLocatariaId, String email,
+    public static Usuario reconstituirCompleto(UUID id, String empresaLocatariaId, String email, String username,
                                                 String senhaHash, String nome, String role, boolean ativo,
                                                 Papel papel, UUID departamentoId, UUID convidadoPor,
                                                 Set<Permissao> permissoes) {
-        return new Usuario(id, empresaLocatariaId, email, senhaHash, nome, role, ativo,
+        return new Usuario(id, empresaLocatariaId, email, username, senhaHash, nome, role, ativo,
                 papel, departamentoId, convidadoPor, permissoes != null ? permissoes : EnumSet.noneOf(Permissao.class));
     }
 
@@ -83,7 +86,7 @@ public class Usuario {
                                                   Set<Permissao> permissoes) {
         String senhaGerada = gerarSenha();
         Usuario usuario = new Usuario(
-                UUID.randomUUID(), empresaLocatariaId, email, senhaGerada, nome,
+                UUID.randomUUID(), empresaLocatariaId, email, email, senhaGerada, nome,
                 papel.name(), true, papel, departamentoId, convidadoPor,
                 permissoes != null ? permissoes : EnumSet.noneOf(Permissao.class)
         );

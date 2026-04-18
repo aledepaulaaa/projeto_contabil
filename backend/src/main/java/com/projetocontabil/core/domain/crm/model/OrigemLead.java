@@ -10,5 +10,6 @@ public enum OrigemLead {
     INDICACAO,
     GOOGLE_ADS,
     PLANILHA,
-    DIGITAL
+    DIGITAL,
+    WHATSAPP
 }

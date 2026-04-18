@@ -1,7 +1,6 @@
 package com.projetocontabil.core.domain.usuario.model;
 
 import com.projetocontabil.core.domain.shared.ValueObject;
-import lombok.Getter;
 
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -10,7 +9,7 @@ import java.util.UUID;
 /**
  * Value Object — Convite de Usuário pendente.
  */
-public class ConviteUsuario extends ValueObject {
+public class ConviteUsuario implements ValueObject {
     private final UUID id;
     private final String empresaLocatariaId;
     private final String email;

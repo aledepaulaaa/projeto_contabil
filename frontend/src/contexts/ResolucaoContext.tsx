@@ -9,7 +9,7 @@ interface ResolucaoContextProps {
 const ResolucaoContext = createContext<ResolucaoContextProps | undefined>(undefined);
 
 export const ResolucaoProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const isMobile = useMobileResolution(320); // Foco no breakpoint XS (320px)
+  const isMobile = useMobileResolution(1024); // Foco no breakpoint mobile/tablet para layout responsivo
 
   return (
     <ResolucaoContext.Provider value={{ isMobile }}>

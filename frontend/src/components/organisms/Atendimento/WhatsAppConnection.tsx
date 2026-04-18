@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Card } from '../../atoms/Card/Card';
 import { Texto } from '../../atoms/Texto/Texto';
 import { Botao } from '../../atoms/Botao/Botao';
-import { CheckCircle, XCircle, QrCode, LogOut, RefreshCw } from 'lucide-react';
+import { useAuthStore } from '../../../store/authStore';
+import { CheckCircle, XCircle, QrCode, LogOut, RefreshCw, ShieldAlert } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { io, Socket } from 'socket.io-client';
 import { QRCodeCanvas } from 'qrcode.react';
@@ -14,6 +15,9 @@ export const WhatsAppConnection: React.FC = () => {
   const [status, setStatus] = useState<'connected' | 'disconnected' | 'connecting'>('disconnected');
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [socket, setSocket] = useState<Socket | null>(null);
+  const { papel } = useAuthStore();
+
+  const podeGerenciarInstancia = papel === 'ADMIN' || papel === 'GESTOR';
 
   useEffect(() => {
     // Busca inicial de status
@@ -118,17 +122,24 @@ export const WhatsAppConnection: React.FC = () => {
             </Texto>
             
             <div className="flex flex-wrap gap-3 pt-2">
-              <Botao 
-                variant={status === 'connected' ? 'outline' : 'primary'}
-                className={`!w-auto px-6 h-11 flex items-center gap-2 ${status === 'connected' ? 'text-rose-500 border-rose-500/20 hover:bg-rose-500/5' : ''}`}
-                onClick={status === 'connected' ? handleDisconnect : handleGenerateQR}
-              >
-                {status === 'connected' ? (
-                  <> <LogOut size={18} /> Desconectar </>
-                ) : (
-                  <> <QrCode size={18} /> Gerar QR Code </>
-                )}
-              </Botao>
+              {podeGerenciarInstancia ? (
+                <Botao 
+                  variant={status === 'connected' ? 'outline' : 'primary'}
+                  className={`!w-auto px-6 h-11 flex items-center gap-2 ${status === 'connected' ? 'text-rose-500 border-rose-500/20 hover:bg-rose-500/5' : ''}`}
+                  onClick={status === 'connected' ? handleDisconnect : handleGenerateQR}
+                >
+                  {status === 'connected' ? (
+                    <> <LogOut size={18} /> Desconectar </>
+                  ) : (
+                    <> <QrCode size={18} /> Gerar QR Code </>
+                  )}
+                </Botao>
+              ) : (
+                <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800/50 rounded-xl text-slate-400">
+                  <ShieldAlert size={18} />
+                  <Texto variant="detalhe" className="font-medium">Ações restritas ao Gestor</Texto>
+                </div>
+              )}
               
               {status === 'connected' && (
                 <Texto variant="detalhe" className="mt-auto mb-3 text-slate-400 italic">

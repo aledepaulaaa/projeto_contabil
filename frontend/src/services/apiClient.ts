@@ -14,12 +14,26 @@ export const apiClient = axios.create({
 apiClient.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   const empresaLocatariaId = localStorage.getItem('empresaLocatariaId');
+  const usuarioId = localStorage.getItem('usuarioId');
+  const papel = localStorage.getItem('papel');
+  const departamentoId = localStorage.getItem('departamentoId');
+
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
-  if (empresaLocatariaId) {
+  if (empresaLocatariaId && empresaLocatariaId !== 'undefined' && empresaLocatariaId !== 'null') {
     config.headers['X-EmpresaLocataria-Id'] = empresaLocatariaId;
   }
+  if (usuarioId && usuarioId !== 'undefined' && usuarioId !== 'null') {
+    config.headers['X-Usuario-Id'] = usuarioId;
+  }
+  if (papel && papel !== 'undefined' && papel !== 'null') {
+    config.headers['X-Usuario-Papel'] = papel;
+  }
+  if (departamentoId && departamentoId !== 'undefined' && departamentoId !== 'null') {
+    config.headers['X-Usuario-Departamento-Id'] = departamentoId;
+  }
+
   return config;
 });
 

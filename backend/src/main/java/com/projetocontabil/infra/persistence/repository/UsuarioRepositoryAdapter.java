@@ -96,6 +96,7 @@ public class UsuarioRepositoryAdapter implements UsuarioRepository {
                 entity.getId(),
                 entity.getEmpresaLocatariaId(),
                 entity.getEmail(),
+                entity.getUsername(),
                 entity.getSenhaHash(),
                 entity.getNome(),
                 entity.getRole(),
@@ -112,6 +113,7 @@ public class UsuarioRepositoryAdapter implements UsuarioRepository {
         entity.setId(domain.getId());
         entity.setEmpresaLocatariaId(domain.getEmpresaLocatariaId());
         entity.setEmail(domain.getEmail());
+        entity.setUsername(domain.getUsername());
         entity.setSenhaHash(domain.getSenhaHash()); // pode ser sobrescrita pelo save()
         entity.setNome(domain.getNome());
         entity.setRole(domain.getRole());

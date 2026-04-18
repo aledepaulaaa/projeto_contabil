@@ -14,13 +14,14 @@ public class NotificationService {
 
     private final SimpMessagingTemplate messagingTemplate;
 
-    public void notifyNewLead(String empresaLocatariaId, String leadName) {
+    public void notifyNewLead(String empresaLocatariaId, String leadName, String leadId) {
         String destination = "/topic/leads/" + empresaLocatariaId;
         log.info("Enviando notificação de novo lead para: {}", destination);
         
         messagingTemplate.convertAndSend(destination, Map.of(
             "tipo", "NOVO_LEAD",
             "mensagem", "Novo lead capturado: " + leadName,
+            "leadId", leadId,
             "data", System.currentTimeMillis()
         ));
     }
@@ -62,6 +63,45 @@ public class NotificationService {
             "mensagem", message,
             "remetente", remetente,
             "timestamp", timestamp
+        ));
+    }
+
+    public void notifyReloadContacts(String empresaLocatariaId) {
+        String destination = "/topic/leads/" + empresaLocatariaId;
+        log.info("Enviando sinal de RELOAD_CONTACTS para: {}", destination);
+        
+        messagingTemplate.convertAndSend(destination, Map.of(
+            "tipo", "RELOAD_CONTACTS",
+            "data", System.currentTimeMillis()
+        ));
+    }
+
+    public void notifyTransferencia(String empresaLocatariaId, String leadName, String deptoNome, String leadId) {
+        String destination = "/topic/leads/" + empresaLocatariaId;
+        log.info("Enviando notificação de transferência de lead para: {}", destination);
+        
+        messagingTemplate.convertAndSend(destination, Map.of(
+            "tipo", "TRANSFERENCIA_ATENDIMENTO",
+            "mensagem", String.format("🔄 Lead %s agora está em atendimento (%s)", leadName, deptoNome),
+            "leadName", leadName,
+            "deptoNome", deptoNome,
+            "leadId", leadId,
+            "data", System.currentTimeMillis()
+        ));
+    }
+
+    public void notifyTransferenciaSetorial(String empresaLocatariaId, String deptoId, String leadName, String deptoNome, String leadId) {
+        // Tópico restrito ao departamento destino
+        String destination = "/topic/leads/" + empresaLocatariaId + "/" + deptoId;
+        log.info("Enviando notificação de transferência SETORIAL para: {}", destination);
+        
+        messagingTemplate.convertAndSend(destination, Map.of(
+            "tipo", "TRANSFERENCIA_ATENDIMENTO",
+            "mensagem", String.format("🔄 Novo atendimento de %s no setor %s", leadName, deptoNome),
+            "leadName", leadName,
+            "deptoNome", deptoNome,
+            "leadId", leadId,
+            "data", System.currentTimeMillis()
         ));
     }
 }

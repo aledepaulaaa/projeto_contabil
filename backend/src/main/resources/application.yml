@@ -118,7 +118,7 @@ resilience4j:
 
 # ── Mailtrap ──
 mailtrap:
-  api-token: ${MAILTRAP_API_TOKEN:fake-token-for-dev}
+  api-token: ${MAILTRAP_API_TOKEN}
   sender-email: ${MAILTRAP_SENDER_EMAIL:noreply@contabilpro.com.br}
   sandbox: ${MAILTRAP_SANDBOX:false}
   inbox-id: ${MAILTRAP_INBOX_ID:0}

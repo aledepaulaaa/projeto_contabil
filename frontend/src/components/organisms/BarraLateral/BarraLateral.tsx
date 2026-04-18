@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useResolucao } from '../../../contexts/ResolucaoContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard,
@@ -66,29 +67,28 @@ const ItemMenu: React.FC<ItemMenuProps> = ({ icon: Icon, label, active, expanded
 
 export const BarraLateral: React.FC<BarraLateralProps> = ({ isOpen, onClose }) => {
   const [expanded, setExpanded] = useState(true);
-  const [isMobile, setIsMobile] = useState(false);
   const [location, setLocation] = useLocation();
   const { theme, toggleTheme } = useTheme();
+  const { isMobile } = useResolucao();
 
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 1024);
-    };
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+    if (isMobile) {
+      setExpanded(true); // Garante que no mobile o conteúdo interno esteja visível quando abrir
+    }
+  }, [isMobile]);
+
+  const userRole = localStorage.getItem('app:user_role') || 'ADMIN';
 
   const menuItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { path: '/dashboard/crm', label: 'CRM / Leads', icon: Users },
-    { path: '/dashboard/contratos', label: 'Contratos', icon: FileSignature },
-    { path: '/dashboard/atendimento', label: 'Atendimento', icon: MessageSquare },
-    { path: '/dashboard/onboarding', label: 'Onboarding', icon: Rocket },
-    { path: '/dashboard/rotinas', label: 'Rotinas', icon: Calendar },
-    { path: '/dashboard/alvaras', label: 'Alvarás', icon: FileText },
-    { path: '/dashboard/processos', label: 'Processos', icon: Briefcase },
-  ];
+    { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['ADMIN', 'GESTOR', 'OPERADOR'] },
+    { path: '/dashboard/crm', label: 'CRM / Leads', icon: Users, roles: ['ADMIN', 'GESTOR'] },
+    { path: '/dashboard/contratos', label: 'Contratos', icon: FileSignature, roles: ['ADMIN', 'GESTOR'] },
+    { path: '/dashboard/atendimento', label: 'Atendimento', icon: MessageSquare, roles: ['ADMIN', 'GESTOR', 'OPERADOR'] },
+    { path: '/dashboard/onboarding', label: 'Onboarding', icon: Rocket, roles: ['ADMIN', 'GESTOR'] },
+    { path: '/dashboard/rotinas', label: 'Rotinas', icon: Calendar, roles: ['ADMIN', 'GESTOR', 'OPERADOR'] },
+    { path: '/dashboard/alvaras', label: 'Alvarás', icon: FileText, roles: ['ADMIN', 'GESTOR'] },
+    { path: '/dashboard/processos', label: 'Processos', icon: Briefcase, roles: ['ADMIN', 'GESTOR'] },
+  ].filter(item => item.roles.includes(userRole.toUpperCase()));
 
   const sidebarVariants = {
     open: { x: 0, width: 260 },
@@ -117,7 +117,7 @@ export const BarraLateral: React.FC<BarraLateralProps> = ({ isOpen, onClose }) =
         animate={isMobile ? (isOpen ? 'mobileOpen' : 'mobileClosed') : (expanded ? 'open' : 'closed')}
         variants={sidebarVariants}
         className={`
-          fixed inset-y-0 left-0 z-[70] lg:sticky lg:flex flex-col h-screen 
+          fixed inset-y-0 left-0 z-[70] lg:sticky flex flex-col h-screen 
           bg-white/80 dark:bg-slate-950/90 backdrop-blur-xl border-r border-slate-200 dark:border-white/5 p-4 
           transition-all duration-300 overflow-x-hidden shadow-2xl lg:shadow-none
         `}

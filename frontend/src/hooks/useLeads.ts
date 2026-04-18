@@ -50,7 +50,8 @@ export function useLeads() {
   });
 
   const moveMutation = useMutation({
-    mutationFn: ({ id, status, observacao }: { id: string; status: string; observacao?: string }) => LeadService.moverLead(id, status, observacao),
+    mutationFn: ({ id, status, observacao, departamentoId }: { id: string; status: string; observacao?: string; departamentoId?: string }) => 
+      LeadService.moverLead(id, status, observacao, departamentoId),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: ['leads'] });
       queryClient.invalidateQueries({ queryKey: ['historico', id] });

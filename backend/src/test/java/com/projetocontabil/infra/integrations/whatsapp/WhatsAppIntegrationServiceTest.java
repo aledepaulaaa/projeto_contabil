@@ -7,7 +7,9 @@ import com.projetocontabil.core.domain.empresalocataria.EmpresaLocatariaId;
 import com.projetocontabil.infra.messaging.NotificationService;
 import com.projetocontabil.infra.messaging.WhatsAppProducer;
 import com.projetocontabil.infra.persistence.repository.MensagemChatJpaRepository;
+import com.projetocontabil.core.ports.driven.EmpresaLocatariaRepository;
 import com.projetocontabil.core.ports.driven.HistoricoVidaLeadRepository;
+import com.projetocontabil.core.domain.empresalocataria.model.EmpresaLocataria;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -31,13 +33,21 @@ class WhatsAppIntegrationServiceTest {
 
     @Mock
     private HistoricoVidaLeadRepository historicoRepository;
+    
+    @Mock
+    private EmpresaLocatariaRepository empresaRepository;
 
     private WhatsAppIntegrationService whatsAppIntegrationService;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        whatsAppIntegrationService = new WhatsAppIntegrationService(whatsAppProducer, mensagemRepository, historicoRepository, notificationService);
+        whatsAppIntegrationService = new WhatsAppIntegrationService(whatsAppProducer, mensagemRepository, historicoRepository, notificationService, empresaRepository);
+        
+        // Mock padrão: Automação Ativa
+        EmpresaLocataria empresaMock = mock(EmpresaLocataria.class);
+        when(empresaMock.isWhatsappAutomacaoAtivo()).thenReturn(true);
+        when(empresaRepository.findByEmpresaLocatariaId(any())).thenReturn(Optional.of(empresaMock));
     }
 
     @Test

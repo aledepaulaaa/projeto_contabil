@@ -86,10 +86,13 @@ export const LeadService = {
     await apiClient.delete(`/api/leads/${id}`);
   },
 
-  moverLead: async (id: string, status: string, observacao?: string) => {
+  moverLead: async (id: string, status: string, observacao?: string, departamentoId?: string) => {
     let url = `/api/leads/${id}/status?status=${status}`;
     if (observacao) {
       url += `&observacao=${encodeURIComponent(observacao)}`;
+    }
+    if (departamentoId) {
+      url += `&departamentoId=${departamentoId}`;
     }
     const { data } = await apiClient.patch(url);
     return data;
@@ -233,7 +236,7 @@ export const LeadService = {
 
   /** Busca o histórico de chat do Lead */
   getChatHistory: async (leadId: string): Promise<any[]> => {
-    const { data } = await apiClient.get(`/api/whatsapp/webhook/${leadId}`);
+    const { data } = await apiClient.get(`/api/whatsapp/chat/${leadId}`);
     return data;
   },
 
@@ -241,4 +244,39 @@ export const LeadService = {
   marcarMensagensLidas: async (leadId: string): Promise<void> => {
     await apiClient.patch(`/api/whatsapp/leads/${leadId}/read`);
   },
+
+  /** Envia uma mensagem via WhatsApp ou Nota Interna */
+  enviarMensagem: async (leadId: string, payload: { conteudo: string, tipo: 'EXTERNA' | 'INTERNA' }): Promise<void> => {
+    await apiClient.post(`/api/whatsapp/chat/${leadId}/send`, payload);
+  },
+
+  /** Atualiza a visibilidade de uma mensagem (Admin Only no backend) */
+  atualizarVisibilidadeMensagem: async (mensagemId: string, visivel: boolean): Promise<void> => {
+    await apiClient.patch(`/api/atendimento/mensagens/${mensagemId}/visibilidade?visivel=${visivel}`);
+  },
+
+  /** Sincroniza contatos da plataforma com a Whapi */
+  syncContatosWhatsApp: async (): Promise<void> => {
+    await apiClient.post('/api/whatsapp/webhook/contacts/sync');
+  },
+
+  /** Transfere um atendimento para outro departamento ou atendente */
+  transferirAtendimento: async (leadId: string, dados: { novoDeptoId?: string, novoAtendenteId?: string }): Promise<void> => {
+    await apiClient.post('/api/atendimento/transferir', { leadId, ...dados });
+  },
+
+  /** Encerra o atendimento atual de um lead */
+  encerrarAtendimento: async (leadId: string): Promise<void> => {
+    await apiClient.post(`/api/atendimento/encerrar/${leadId}`);
+  },
+
+  /** Alterna a privacidade do atendimento (Admin Only) */
+  togglePrivacidade: async (leadId: string, privada: boolean): Promise<void> => {
+    await apiClient.patch(`/api/atendimento/leads/${leadId}/privacidade?privada=${privada}`);
+  },
+
+  /** Inicia o atendimento de um lead que está na fila */
+  aceitarAtendimento: async (leadId: string): Promise<void> => {
+    await apiClient.post(`/api/leads/${leadId}/atendimento/aceitar`);
+  }
 };

@@ -28,10 +28,25 @@ public class MensagemChatJpaEntity {
     @Column(name = "empresa_locataria_id")
     private String empresaLocatariaId;
 
+    @Column(name = "atendimento_id")
+    private UUID atendimentoId;
+
     @Column(columnDefinition = "TEXT")
     private String conteudo;
 
     private String remetente; // LEAD ou CONSULTOR
+
+    @Column(name = "tipo")
+    private String tipo = "EXTERNA"; // EXTERNA ou INTERNA
+
+    @Column(name = "usuario_id")
+    private UUID usuarioId;
+
+    @Column(name = "visivel")
+    private Boolean visivel = true;
+
+    @Column(name = "restrito_admin")
+    private Boolean restritoAdmin = false;
     
     private LocalDateTime enviadoEm;
 }

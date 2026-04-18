@@ -33,4 +33,10 @@ public class EmpresaLocatariaJpaEntity {
     
     private LocalDateTime criadoEm;
     private LocalDateTime dataFimTrial;
+
+    @Column(name = "whatsapp_automacao_ativo")
+    private boolean whatsappAutomacaoAtivo = true;
+
+    @Column(name = "email_automacao_ativo")
+    private boolean emailAutomacaoAtivo = true;
 }

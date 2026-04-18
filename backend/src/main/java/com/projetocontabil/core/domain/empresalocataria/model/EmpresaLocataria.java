@@ -19,8 +19,12 @@ public class EmpresaLocataria extends AggregateRoot {
     private final RegimeTributario regimeTributario;
     private final LocalDateTime criadoEm;
     private final LocalDateTime dataFimTrial;
+    private final boolean whatsappAutomacaoAtivo;
+    private final boolean emailAutomacaoAtivo;
 
-    private EmpresaLocataria(UUID id, EmpresaLocatariaId empresaId, String nome, String cnpj, RegimeTributario regime, LocalDateTime criadoEm, LocalDateTime dataFimTrial) {
+    private EmpresaLocataria(UUID id, EmpresaLocatariaId empresaId, String nome, String cnpj, 
+                             RegimeTributario regime, LocalDateTime criadoEm, LocalDateTime dataFimTrial,
+                             boolean whatsappAutomacaoAtivo, boolean emailAutomacaoAtivo) {
         super(id);
         this.empresaId = empresaId;
         this.nome = nome;
@@ -28,15 +32,19 @@ public class EmpresaLocataria extends AggregateRoot {
         this.regimeTributario = regime;
         this.criadoEm = criadoEm;
         this.dataFimTrial = dataFimTrial;
+        this.whatsappAutomacaoAtivo = whatsappAutomacaoAtivo;
+        this.emailAutomacaoAtivo = emailAutomacaoAtivo;
     }
 
     public static EmpresaLocataria criar(EmpresaLocatariaId empresaId, String nome, String cnpj, RegimeTributario regime) {
         LocalDateTime agora = LocalDateTime.now();
-        return new EmpresaLocataria(UUID.randomUUID(), empresaId, nome, cnpj, regime, agora, agora.plusDays(7));
+        return new EmpresaLocataria(UUID.randomUUID(), empresaId, nome, cnpj, regime, agora, agora.plusDays(7), true, true);
     }
 
-    public static EmpresaLocataria reconstituir(UUID id, EmpresaLocatariaId empresaId, String nome, String cnpj, RegimeTributario regime, LocalDateTime criadoEm, LocalDateTime dataFimTrial) {
-        return new EmpresaLocataria(id, empresaId, nome, cnpj, regime, criadoEm, dataFimTrial);
+    public static EmpresaLocataria reconstituir(UUID id, EmpresaLocatariaId empresaId, String nome, String cnpj, 
+                                               RegimeTributario regime, LocalDateTime criadoEm, LocalDateTime dataFimTrial,
+                                               boolean whatsappAutomacaoAtivo, boolean emailAutomacaoAtivo) {
+        return new EmpresaLocataria(id, empresaId, nome, cnpj, regime, criadoEm, dataFimTrial, whatsappAutomacaoAtivo, emailAutomacaoAtivo);
     }
 
     public boolean isTrialVencido() {

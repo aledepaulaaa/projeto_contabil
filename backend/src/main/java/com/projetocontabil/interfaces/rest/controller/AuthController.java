@@ -1,5 +1,7 @@
 package com.projetocontabil.interfaces.rest.controller;
 
+import com.projetocontabil.core.domain.empresalocataria.EmpresaLocatariaId;
+import com.projetocontabil.core.ports.driven.EmpresaLocatariaRepository;
 import com.projetocontabil.core.ports.driven.UsuarioRepository;
 import com.projetocontabil.interfaces.rest.dto.AutenticacaoRequest;
 import com.projetocontabil.interfaces.rest.dto.AutenticacaoResponse;
@@ -17,10 +19,17 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final UsuarioRepository usuarioRepository;
+    private final EmpresaLocatariaRepository empresaRepository;
+    private final com.projetocontabil.core.ports.driven.DepartamentoRepository departamentoRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public AuthController(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
+    public AuthController(UsuarioRepository usuarioRepository, 
+                          EmpresaLocatariaRepository empresaRepository,
+                          com.projetocontabil.core.ports.driven.DepartamentoRepository departamentoRepository,
+                          PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
+        this.empresaRepository = empresaRepository;
+        this.departamentoRepository = departamentoRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -56,6 +65,18 @@ public class AuthController {
 
         log.info("Login bem-sucedido para: {}", request.getUsername());
 
+        String nomeEmpresa = empresaRepository.findByEmpresaLocatariaId(EmpresaLocatariaId.of(usuario.getEmpresaLocatariaId()))
+                .map(e -> e.getNome())
+                .orElse("Empresa não encontrada");
+ 
+        // Buscar nome do departamento
+        String nomeDepto = "Geral";
+        if (usuario.getDepartamentoId() != null) {
+            nomeDepto = departamentoRepository.findById(usuario.getDepartamentoId())
+                    .map(d -> d.getNome())
+                    .orElse("Departamento não encontrado");
+        }
+
         // Token JWT Mock para o frontend não quebrar
         String mockToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTYyMjUwMDAwMH0.mock_signature";
 
@@ -69,7 +90,11 @@ public class AuthController {
                 usuario.getEmpresaLocatariaId(),
                 usuario.getPapel() != null ? usuario.getPapel().name() : "ADMIN",
                 usuario.getNome(),
+                usuario.getEmail(),
+                nomeEmpresa,
                 usuario.getDepartamentoId(),
+                nomeDepto,
+                usuario.getId(),
                 permissoes
         ));
     }

@@ -4,6 +4,8 @@ import com.projetocontabil.core.domain.crm.model.Lead;
 import com.projetocontabil.core.domain.crm.model.StatusLead;
 import com.projetocontabil.core.domain.crm.model.EventoHistoricoLead;
 import com.projetocontabil.core.domain.crm.model.HistoricoVidaLead;
+import com.projetocontabil.core.domain.empresalocataria.model.EmpresaLocataria;
+import com.projetocontabil.core.ports.driven.EmpresaLocatariaRepository;
 import com.projetocontabil.core.ports.driven.HistoricoVidaLeadRepository;
 import com.projetocontabil.infra.messaging.EmailProducer;
 import lombok.RequiredArgsConstructor;
@@ -21,12 +23,22 @@ public class EmailIntegrationService {
 
     private final EmailProducer emailProducer;
     private final HistoricoVidaLeadRepository historicoRepository;
+    private final EmpresaLocatariaRepository empresaRepository;
 
     /**
      * Envia notificação automática baseada na mudança de status do Lead.
      */
     @Async
     public void enviarNotificacaoStatus(Lead lead, StatusLead novoStatus) {
+        // Verificar se Automação está Ativa para a Empresa
+        EmpresaLocataria empresa = empresaRepository.findByEmpresaLocatariaId(lead.getEmpresaLocatariaId())
+                .orElse(null);
+
+        if (empresa != null && !empresa.isEmailAutomacaoAtivo()) {
+            log.info("Automação de E-mail desativada para a empresa {}. Ignorando disparo.", empresa.getNome());
+            return;
+        }
+
         if (lead.getEmail() == null || lead.getEmail().value() == null) {
             log.warn("ABORTANDO: Lead {} (ID: {}) não possui e-mail cadastrado. Automação cancelada.", 
                      lead.getNomeContato(), lead.getId());

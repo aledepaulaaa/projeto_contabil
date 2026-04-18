@@ -115,7 +115,8 @@ export const CRM: React.FC = () => {
       return;
     }
     try {
-      await moveLead({ id, status: newStatus });
+      const deptoId = localStorage.getItem('departamentoId');
+      await moveLead({ id, status: newStatus, departamentoId: deptoId || undefined });
 
       // Simulação de Disparo Automático (Etapa 2 - Atendimento)
       if (['PROPOSTA', 'AGUARDANDO', 'FECHAMENTO'].includes(newStatus)) {
