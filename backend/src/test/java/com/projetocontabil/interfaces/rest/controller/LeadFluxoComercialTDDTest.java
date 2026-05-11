@@ -67,7 +67,7 @@ class LeadFluxoComercialTDDTest {
         UUID leadId = UUID.randomUUID();
         Lead leadSemDepto = Lead.reconstituir(leadId, EmpresaLocatariaId.of(TENANT), "Lead Teste", new Email("teste@test.com"),
                 new Telefone("11999999999"), new Identificacao("00000000000001"), "Empresa 1",
-                StatusLead.LEAD, null, null, null, null, null, LocalDateTime.now(), 0, false);
+                StatusLead.LEAD, null, null, null, null, null, LocalDateTime.now(), 0, false, null);
 
         Departamento deptoComercial = Departamento.reconstituir(COMERCIAL_ID, TENANT, "Comercial", "Setor Comercial", LocalDateTime.now());
 

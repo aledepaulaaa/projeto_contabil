@@ -15,4 +15,5 @@ public class ZapSignProperties {
     private String apiBaseUrl;
     private String idOrganization;
     private String refreshUrl;
+    private String webhookUrl;
 }

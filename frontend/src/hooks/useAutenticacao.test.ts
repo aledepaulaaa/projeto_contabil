@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useAutenticacao } from './useAutenticacao';
-import { AutenticacaoService } from '../services/AutenticacaoService';
+import { AutenticacaoService, type AutenticacaoResponse } from '../services/AutenticacaoService';
 import { useAuthStore } from '../store/authStore';
 import { useGlobalErrorStore } from '../store/globalErrorStore';
 
@@ -17,7 +17,15 @@ describe('useAutenticacao Hook', () => {
   });
 
   it('deve realizar login com sucesso e atualizar authStore', async () => {
-    const mockReponse = { token: 'jwt.123', tenantId: 'tenant-1' };
+    const mockReponse: AutenticacaoResponse = { 
+      token: 'jwt.123', 
+      empresaLocatariaId: 'tenant-1',
+      papel: 'ADMIN',
+      nome: 'Teste',
+      email: 'teste@teste.com',
+      nomeEmpresa: 'Empresa Teste',
+      permissoes: ['*']
+    };
     vi.mocked(AutenticacaoService.login).mockResolvedValue(mockReponse);
 
     const { result } = renderHook(() => useAutenticacao());

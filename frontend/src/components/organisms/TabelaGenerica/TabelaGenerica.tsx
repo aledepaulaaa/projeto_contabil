@@ -15,6 +15,7 @@ interface TabelaGenericaProps<T> {
   chaveUnica: (item: T) => string;
   vazio?: { icone: React.ReactNode; titulo: string; subtitulo: string };
   onClickLinha?: (item: T) => void;
+  isLoading?: boolean;
   className?: string;
 }
 
@@ -29,9 +30,25 @@ export function TabelaGenerica<T>({
   chaveUnica,
   vazio,
   onClickLinha,
+  isLoading,
   className = ''
 }: TabelaGenericaProps<T>) {
   const totalCols = colunas.length;
+
+  if (isLoading) {
+    return (
+      <Card noPadding className={`w-full overflow-hidden animate-pulse ${className}`}>
+        <div className="h-12 bg-slate-50 dark:bg-slate-900 border-b border-slate-100 dark:border-white/5" />
+        {[1, 2, 3].map(i => (
+          <div key={i} className="p-4 border-b border-slate-100 dark:border-white/5 flex gap-4">
+             <div className="h-4 bg-slate-100 dark:bg-slate-800 rounded w-1/4" />
+             <div className="h-4 bg-slate-100 dark:bg-slate-800 rounded w-1/2" />
+             <div className="h-4 bg-slate-100 dark:bg-slate-800 rounded w-1/4" />
+          </div>
+        ))}
+      </Card>
+    );
+  }
 
   if (dados.length === 0 && vazio) {
     return (
@@ -50,7 +67,7 @@ export function TabelaGenerica<T>({
   return (
     <Card noPadding className={`w-full overflow-hidden flex flex-col ${className}`}>
       {/* Header */}
-      <div className={`grid grid-cols-${totalCols * 3} gap-4 p-4 border-b border-slate-100 dark:border-white/10 bg-slate-50/50 dark:bg-black/20 transition-colors hidden md:grid`}>
+      <div className={`grid grid-cols-12 gap-4 p-4 border-b border-slate-100 dark:border-white/10 bg-slate-50/50 dark:bg-black/20 transition-colors hidden md:grid`}>
         {colunas.map(col => (
           <div key={col.chave} className={col.largura || `col-span-3`}>
             <Texto variant="label">{col.titulo}</Texto>
@@ -64,7 +81,7 @@ export function TabelaGenerica<T>({
           <div
             key={chaveUnica(item)}
             onClick={() => onClickLinha?.(item)}
-            className={`p-4 border-b border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors grid grid-cols-1 md:grid-cols-${totalCols * 3} gap-4 items-center ${onClickLinha ? 'cursor-pointer' : ''}`}
+            className={`p-4 border-b border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors grid grid-cols-1 md:grid-cols-12 gap-4 items-center ${onClickLinha ? 'cursor-pointer' : ''}`}
           >
             {colunas.map(col => (
               <div key={col.chave} className={col.largura || `col-span-3`}>

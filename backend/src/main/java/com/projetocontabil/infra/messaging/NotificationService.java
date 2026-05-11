@@ -104,4 +104,16 @@ public class NotificationService {
             "data", System.currentTimeMillis()
         ));
     }
+
+    public void notifyTarefaPrazo(String empresaLocatariaId, String tituloTarefa, String clientName, String onboardingId) {
+        String destination = "/topic/onboarding/" + empresaLocatariaId;
+        log.info("Enviando notificação de prazo de tarefa para: {}", destination);
+
+        messagingTemplate.convertAndSend(destination, Map.of(
+            "tipo", "PRAZO_TAREFA",
+            "mensagem", String.format("⏰ Prazo Próximo: %s (Cliente: %s)", tituloTarefa, clientName),
+            "onboardingId", onboardingId,
+            "data", System.currentTimeMillis()
+        ));
+    }
 }

@@ -61,4 +61,7 @@ public class LeadJpaEntity {
 
     @Column(name = "conversa_privada")
     private boolean conversaPrivada = false;
+
+    @Column(name = "resumo_ia", columnDefinition = "TEXT")
+    private String resumoIA;
 }

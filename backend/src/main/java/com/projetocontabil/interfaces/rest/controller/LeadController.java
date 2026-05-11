@@ -10,9 +10,13 @@ import com.projetocontabil.core.ports.driven.ContratoRepository;
 import com.projetocontabil.core.ports.driven.HistoricoVidaLeadRepository;
 import com.projetocontabil.core.ports.driven.LeadRepository;
 import com.projetocontabil.core.ports.driven.AtendimentoRepository;
+import com.projetocontabil.core.domain.atendimento.model.Atendimento;
 import com.projetocontabil.core.usecases.crm.FinalizarOnboardingUseCase;
 import com.projetocontabil.core.usecases.crm.HistoricoExportService;
-import com.projetocontabil.core.domain.atendimento.model.Atendimento;
+import com.projetocontabil.core.usecases.crm.ImportarLeadsUseCase;
+import com.projetocontabil.core.usecases.onboarding.IniciarOnboardingUseCase;
+import com.projetocontabil.core.ports.driven.AuditoriaRepository;
+import com.projetocontabil.core.domain.shared.AuditoriaAtividade;
 import com.projetocontabil.infra.tenancy.EmpresaLocatariaContext;
 import com.projetocontabil.interfaces.rest.dto.CriarLeadRequest;
 import jakarta.validation.Valid;
@@ -23,9 +27,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import com.projetocontabil.core.usecases.crm.ImportarLeadsUseCase;
-import com.projetocontabil.core.ports.driven.AuditoriaRepository;
-import com.projetocontabil.core.domain.shared.AuditoriaAtividade;
 import org.springframework.transaction.annotation.Transactional;
 import com.projetocontabil.core.ports.driven.DepartamentoRepository;
 import com.projetocontabil.core.ports.driven.UsuarioRepository;
@@ -55,6 +56,7 @@ public class LeadController {
     private final org.springframework.web.client.RestTemplate restTemplate;
     private final com.projetocontabil.core.ports.driven.DepartamentoRepository departamentoRepository;
     private final com.projetocontabil.core.ports.driven.UsuarioRepository usuarioRepository;
+    private final IniciarOnboardingUseCase iniciarOnboardingUseCase;
 
     public LeadController(LeadRepository leadRepository,
                          AtendimentoRepository atendimentoRepository,
@@ -70,7 +72,8 @@ public class LeadController {
                          com.projetocontabil.infra.messaging.NotificationService notificationService,
                          org.springframework.web.client.RestTemplate restTemplate,
                          com.projetocontabil.core.ports.driven.DepartamentoRepository departamentoRepository,
-                         com.projetocontabil.core.ports.driven.UsuarioRepository usuarioRepository) {
+                         com.projetocontabil.core.ports.driven.UsuarioRepository usuarioRepository,
+                         IniciarOnboardingUseCase iniciarOnboardingUseCase) {
         this.leadRepository = leadRepository;
         this.atendimentoRepository = atendimentoRepository;
         this.contratoRepository = contratoRepository;
@@ -86,6 +89,7 @@ public class LeadController {
         this.restTemplate = restTemplate;
         this.departamentoRepository = departamentoRepository;
         this.usuarioRepository = usuarioRepository;
+        this.iniciarOnboardingUseCase = iniciarOnboardingUseCase;
     }
 
     @PostMapping("/import")
@@ -205,6 +209,14 @@ public class LeadController {
         if (existente.isEmpty()) return ResponseEntity.notFound().build();
 
         var lead = existente.get();
+        
+        // Verificação de Isolamento Multi-tenant (Upgrade 3.1 Security)
+        String empresaLogada = EmpresaLocatariaContext.getEmpresaLocatariaId();
+        if (!lead.getEmpresaLocatariaId().value().equals(empresaLogada)) {
+            log.warn("⚠️ [SECURITY] Tentativa de acesso não autorizado ao Lead {} pela empresa {}", id, empresaLogada);
+            return ResponseEntity.notFound().build(); // Retornamos 404 por segurança (obscurity)
+        }
+
         StatusLead novoStatus = StatusLead.valueOf(status.toUpperCase());
         String statusAntigo = lead.getStatus().name();
 
@@ -236,8 +248,8 @@ public class LeadController {
         auditoriaRepository.salvar(AuditoriaAtividade.registrar(lead.getEmpresaLocatariaId(), "admin", "LEAD_MOVIDO", 
             "Lead " + lead.getNomeContato() + " movido para " + novoStatus.name(), null));
 
-        // Fluxo especial: FECHAMENTO dispara geração de contrato assíncrona via RabbitMQ
-        if (novoStatus == StatusLead.FECHAMENTO) {
+        // Fluxo especial: PROPOSTA dispara geração de contrato assíncrona via RabbitMQ (Upgrade 3.1)
+        if (novoStatus == StatusLead.PROPOSTA) {
             var contratoOpt = contratoRepository.findByLeadId(id);
             boolean jaPossuiContratoValido = contratoOpt.isPresent() && 
                 (contratoOpt.get().getStatus() == StatusContrato.GERANDO || 
@@ -245,6 +257,7 @@ public class LeadController {
                  contratoOpt.get().getStatus() == StatusContrato.ATIVO);
 
             if (!jaPossuiContratoValido) {
+                log.info("[CRM 3.1] Gatilho de contrato acionado para o lead {} em etapa PROPOSTA", lead.getNomeContato());
                 contratoProducer.enviarParaGeracaoDeContrato(
                     id.toString(),
                     lead.getEmpresaLocatariaId().value(),
@@ -252,6 +265,12 @@ public class LeadController {
                     lead.getEmail() != null ? lead.getEmail().value() : ""
                 );
             }
+        }
+        
+        // Fluxo especial: FECHAMENTO dispara vinculação ao Onboarding (Upgrade 3.1)
+        if (novoStatus == StatusLead.FECHAMENTO) {
+             log.info("[CRM 3.1] Lead {} atingiu FECHAMENTO. Iniciando contexto de Onboarding.", lead.getNomeContato());
+             iniciarOnboardingUseCase.executar(lead);
         }
 
         if (EnumSet.of(StatusLead.PROPOSTA, StatusLead.AGUARDANDO, StatusLead.FECHAMENTO).contains(novoStatus)) {
@@ -307,11 +326,14 @@ public class LeadController {
             );
         }
 
-
         // DISPARO AUTOMÁTICO WHATSAPP & E-MAIL (ETAPA 2)
-        log.info("Gatilhos de automação acionados para o lead {} movido para {}", lead.getNomeContato(), novoStatus);
-        whatsAppService.enviarNotificacaoStatus(lead, novoStatus);
-        emailService.enviarNotificacaoStatus(lead, novoStatus);
+        if (novoStatus != StatusLead.PROPOSTA) {
+            log.info("Gatilhos de automação acionados para o lead {} movido para {}", lead.getNomeContato(), novoStatus);
+            whatsAppService.enviarNotificacaoStatus(lead, novoStatus);
+            emailService.enviarNotificacaoStatus(lead, novoStatus);
+        } else {
+            log.info("Disparo de automação para PROPOSTA adiado até a geração do contrato (GerarContratoUseCase).");
+        }
 
         // SINCRONIZAÇÃO EM TEMPO REAL: Notificar Central de Atendimento
         notificationService.notifyReloadContacts(lead.getEmpresaLocatariaId().value());

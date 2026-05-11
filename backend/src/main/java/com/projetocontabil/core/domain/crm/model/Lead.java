@@ -27,12 +27,13 @@ public class Lead extends AggregateRoot {
     private final LocalDateTime criadoEm;
     private int quantidadeMensagensNaoLidas;
     private boolean conversaPrivada;
+    private String resumoIA;
 
     private Lead(UUID id, EmpresaLocatariaId empresaLocatariaId, String nomeContato, Email email,
-                 Telefone telefone, Identificacao identificacao, String nomeEmpresa,
-                 StatusLead status, OrigemLead origemLead, TipoServico tipoServico, UUID departamentoId,
-                 String observacaoNaoFechamento, String googleLeadId, LocalDateTime criadoEm,
-                 int quantidadeMensagensNaoLidas, boolean conversaPrivada) {
+            Telefone telefone, Identificacao identificacao, String nomeEmpresa,
+            StatusLead status, OrigemLead origemLead, TipoServico tipoServico, UUID departamentoId,
+            String observacaoNaoFechamento, String googleLeadId, LocalDateTime criadoEm,
+            int quantidadeMensagensNaoLidas, boolean conversaPrivada, String resumoIA) {
         super(id);
         this.empresaLocatariaId = empresaLocatariaId;
         this.nomeContato = nomeContato;
@@ -49,34 +50,35 @@ public class Lead extends AggregateRoot {
         this.criadoEm = criadoEm;
         this.quantidadeMensagensNaoLidas = quantidadeMensagensNaoLidas;
         this.conversaPrivada = conversaPrivada;
+        this.resumoIA = resumoIA;
     }
 
     public static Lead criar(EmpresaLocatariaId id, String nome, Email email, Telefone telefone,
-                              Identificacao identificacao, String nomeEmpresa,
-                              OrigemLead origem, TipoServico tipoServico) {
+            Identificacao identificacao, String nomeEmpresa,
+            OrigemLead origem, TipoServico tipoServico) {
         return new Lead(UUID.randomUUID(), id, nome, email, telefone, identificacao, nomeEmpresa,
-                StatusLead.LEAD, origem, tipoServico, null, null, null, LocalDateTime.now(), 0, false);
+                StatusLead.LEAD, origem, tipoServico, null, null, null, LocalDateTime.now(), 0, false, null);
     }
 
     public static Lead criarComGoogleId(EmpresaLocatariaId id, String nome, Email email, Telefone telefone,
-                                         Identificacao identificacao, String nomeEmpresa,
-                                         OrigemLead origem, TipoServico tipoServico, String googleId) {
+            Identificacao identificacao, String nomeEmpresa,
+            OrigemLead origem, TipoServico tipoServico, String googleId) {
         return new Lead(UUID.randomUUID(), id, nome, email, telefone, identificacao, nomeEmpresa,
-                StatusLead.LEAD, origem, tipoServico, null, null, googleId, LocalDateTime.now(), 0, false);
+                StatusLead.LEAD, origem, tipoServico, null, null, googleId, LocalDateTime.now(), 0, false, null);
     }
 
     public static Lead reconstituir(UUID id, EmpresaLocatariaId empresaId, String nome, Email email,
-                                     Telefone tel, Identificacao ident, String emp,
-                                     StatusLead status, OrigemLead origem, TipoServico tipoServico, UUID departamentoId,
-                                     String observacaoNaoFechamento, String googleId, LocalDateTime criado,
-                                     int quantidadeMensagensNaoLidas, boolean conversaPrivada) {
-        return new Lead(id, empresaId, nome, email, tel, ident, emp, status, origem, tipoServico, departamentoId, 
-                observacaoNaoFechamento, googleId, criado, quantidadeMensagensNaoLidas, conversaPrivada);
+            Telefone tel, Identificacao ident, String emp,
+            StatusLead status, OrigemLead origem, TipoServico tipoServico, UUID departamentoId,
+            String observacaoNaoFechamento, String googleId, LocalDateTime criado,
+            int quantidadeMensagensNaoLidas, boolean conversaPrivada, String resumoIA) {
+        return new Lead(id, empresaId, nome, email, tel, ident, emp, status, origem, tipoServico, departamentoId,
+                observacaoNaoFechamento, googleId, criado, quantidadeMensagensNaoLidas, conversaPrivada, resumoIA);
     }
 
-    public void atualizarDados(String nome, Email email, Telefone telefone, String nomeEmpresa, 
-                               Identificacao identificacao, OrigemLead origem, 
-                               TipoServico tipoServico) {
+    public void atualizarDados(String nome, Email email, Telefone telefone, String nomeEmpresa,
+            Identificacao identificacao, OrigemLead origem,
+            TipoServico tipoServico) {
         this.nomeContato = nome;
         this.email = email;
         this.telefone = telefone;
@@ -107,7 +109,8 @@ public class Lead extends AggregateRoot {
     }
 
     /**
-     * Registra a observação do motivo de não fechamento e move o Lead para NAO_FECHOU.
+     * Registra a observação do motivo de não fechamento e move o Lead para
+     * NAO_FECHOU.
      */
     public void registrarNaoFechamento(String observacao) {
         if (observacao == null || observacao.isBlank()) {
@@ -131,5 +134,9 @@ public class Lead extends AggregateRoot {
 
     public void setDepartamentoId(UUID departamentoId) {
         this.departamentoId = departamentoId;
+    }
+
+    public void setResumoIA(String resumoIA) {
+        this.resumoIA = resumoIA;
     }
 }

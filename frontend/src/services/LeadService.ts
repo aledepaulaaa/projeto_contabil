@@ -278,5 +278,17 @@ export const LeadService = {
   /** Inicia o atendimento de um lead que está na fila */
   aceitarAtendimento: async (leadId: string): Promise<void> => {
     await apiClient.post(`/api/leads/${leadId}/atendimento/aceitar`);
+  },
+
+  /** Busca os templates configurados no banco para a empresa atual */
+  listarTemplatesAutomacao: async (): Promise<any[]> => {
+    const { data } = await apiClient.get('/api/automacao/templates');
+    return data;
+  },
+
+  /** Salva um template de automação no banco de dados */
+  salvarTemplateAutomacao: async (gatilho: string, texto: string): Promise<any> => {
+    const { data } = await apiClient.post('/api/automacao/templates', { gatilho, texto });
+    return data;
   }
 };

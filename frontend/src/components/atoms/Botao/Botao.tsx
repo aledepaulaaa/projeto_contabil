@@ -7,6 +7,7 @@ interface BotaoProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
   loading?: boolean;
   variant?: 'primary' | 'outline' | 'danger';
+  size?: 'sm' | 'md' | 'lg';
 }
 
 export const Botao: React.FC<BotaoProps> = ({ 

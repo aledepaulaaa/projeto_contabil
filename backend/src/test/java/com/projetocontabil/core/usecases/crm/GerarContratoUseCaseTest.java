@@ -37,7 +37,7 @@ class GerarContratoUseCaseTest {
     @BeforeEach
     void setUp() {
         useCase = new GerarContratoUseCase(
-                contratoRepository, historicoRepository, signatureGateway, notificationService, templateService);
+                contratoRepository, historicoRepository, signatureGateway, notificationService, templateService, null, null, null);
     }
 
     @Test

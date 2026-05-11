@@ -19,7 +19,13 @@ export function useCadastro() {
       // Simula login automático após cadastro para o Dashboard
       // Em uma integração real, o backend poderia retornar as credenciais ou 
       // redirecionar para o login. Aqui seguimos a meta de ir para o dashboard.
-      login('fake-jwt-new-account', cnpj);
+      login({ 
+        token: 'fake-jwt-new-account', 
+        empresaLocatariaId: cnpj, 
+        papel: 'ADMIN', 
+        permissoes: ['*'], 
+        usuarioId: 'new-user-id' 
+      });
       
       setLocation('/dashboard');
       return true;

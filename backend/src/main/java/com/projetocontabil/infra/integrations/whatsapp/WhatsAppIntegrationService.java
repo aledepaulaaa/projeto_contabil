@@ -4,8 +4,11 @@ import com.projetocontabil.core.domain.crm.model.Lead;
 import com.projetocontabil.core.domain.crm.model.StatusLead;
 import com.projetocontabil.core.domain.crm.model.EventoHistoricoLead;
 import com.projetocontabil.core.domain.crm.model.HistoricoVidaLead;
+import com.projetocontabil.core.domain.crm.model.AutomacaoTemplate;
 import com.projetocontabil.core.domain.empresalocataria.EmpresaLocatariaId;
 import com.projetocontabil.core.domain.empresalocataria.model.EmpresaLocataria;
+import com.projetocontabil.core.ports.driven.AutomacaoTemplateRepository;
+import com.projetocontabil.core.ports.driven.ContratoRepository;
 import com.projetocontabil.core.ports.driven.EmpresaLocatariaRepository;
 import com.projetocontabil.core.ports.driven.HistoricoVidaLeadRepository;
 import com.projetocontabil.infra.messaging.NotificationService;
@@ -18,6 +21,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -30,15 +34,22 @@ public class WhatsAppIntegrationService {
     private final HistoricoVidaLeadRepository historicoRepository;
     private final NotificationService notificationService;
     private final EmpresaLocatariaRepository empresaRepository;
+    private final AutomacaoTemplateRepository templateRepository;
+    private final ContratoRepository contratoRepository;
 
     /**
      * Envia notificação automática baseada na mudança de status do Lead.
      */
     @Async
     public void enviarNotificacaoStatus(Lead lead, StatusLead status) {
+        enviarNotificacaoStatus(lead, status, null);
+    }
+
+    @Async
+    public void enviarNotificacaoStatus(Lead lead, StatusLead status, String customUrl) {
         log.info("Iniciando processo de notificação automática para Lead: {} (Status: {})", lead.getNomeContato(), status);
         
-        String mensagem = gerarMensagemParaStatus(lead, status);
+        String mensagem = gerarMensagemParaStatus(lead, status, customUrl);
         if (mensagem == null) {
             log.debug("A mudança para o status {} não possui mensagem automática configurada.", status);
             return;
@@ -113,21 +124,47 @@ public class WhatsAppIntegrationService {
         }
     }
 
-    private String gerarMensagemParaStatus(Lead lead, StatusLead status) {
+    private String gerarMensagemParaStatus(Lead lead, StatusLead status, String customUrl) {
+        String mensagem = obterMensagemDoTemplate(lead, status);
+        if (mensagem == null) return null;
+
+        return formatarVariaveis(mensagem, lead, customUrl);
+    }
+
+    private String obterMensagemDoTemplate(Lead lead, StatusLead status) {
+        Optional<AutomacaoTemplate> templateOpt = templateRepository.findByEmpresaAndGatilho(lead.getEmpresaLocatariaId(), status);
+        
+        if (templateOpt.isPresent()) {
+            return templateOpt.get().getTexto();
+        }
+
+        // Fallbacks caso não exista template configurado
         return switch (status) {
-            case PROPOSTA -> String.format(
-                "Olá %s! 👋 Acabamos de enviar a proposta da %s para o seu e-mail. Vamos conversar sobre os próximos passos?",
-                lead.getNomeContato(), lead.getNomeEmpresa());
-            
-            case AGUARDANDO -> String.format(
-                "Olá %s, estamos aguardando sua aprovação para seguirmos com o processo da %s. Alguma dúvida?",
-                lead.getNomeContato(), lead.getNomeEmpresa());
-                
-            case FECHAMENTO -> String.format(
-                "Parabéns %s! 🎉 Chegamos na etapa final. O contrato da %s foi enviado para assinatura via ZapSign.",
-                lead.getNomeContato(), lead.getNomeEmpresa());
-                
+            case PROPOSTA -> "Olá {nome}! 👋 Acabamos de gerar o contrato da {empresa}. Enviamos o link oficial para o seu e-mail e você também pode assinar por aqui via ZapSign: {link_zapsign} Vamos dar esse passo?";
+            case AGUARDANDO -> "Olá {nome}, estamos aguardando a assinatura do contrato da {empresa} para iniciarmos sua implantação. Alguma dúvida sobre as cláusulas?";
+            case FECHAMENTO -> "Parabéns {nome}! 🎉 O contrato da {empresa} foi assinado com sucesso. Seja bem-vindo(a)! Nossa equipe de implantação entrará em contato em breve!";
             default -> null;
         };
+    }
+
+    private String formatarVariaveis(String texto, Lead lead, String customUrl) {
+        String urlZapsign = customUrl != null ? customUrl : "Link não disponível";
+        
+        if (customUrl == null) {
+            try {
+                var contratoOpt = contratoRepository.findByLeadId(lead.getId());
+                if (contratoOpt.isPresent() && contratoOpt.get().getUrlDocumentoZapSign() != null) {
+                    urlZapsign = contratoOpt.get().getUrlDocumentoZapSign();
+                }
+            } catch (Exception e) {
+                log.warn("Falha ao buscar URL do contrato para formatação de WhatsApp do lead {}: {}", lead.getId(), e.getMessage());
+            }
+        }
+
+        return texto
+            .replace("{nome}", lead.getNomeContato() != null ? lead.getNomeContato() : "")
+            .replace("{empresa}", lead.getNomeEmpresa() != null ? lead.getNomeEmpresa() : "")
+            .replace("{link_documento}", urlZapsign)
+            .replace("{link_zapsign}", urlZapsign);
     }
 }

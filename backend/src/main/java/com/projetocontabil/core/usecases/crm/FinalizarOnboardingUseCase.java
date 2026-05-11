@@ -8,6 +8,7 @@ import com.projetocontabil.core.domain.empresalocataria.model.EmpresaLocataria;
 import com.projetocontabil.core.domain.rotinas.model.RegimeTributario;
 import com.projetocontabil.core.domain.rotinas.model.Obrigacao;
 import com.projetocontabil.core.ports.driven.*;
+import com.projetocontabil.core.domain.empresa.model.Empresa;
 import com.projetocontabil.core.usecases.rotinas.GeradorObrigacaoStrategy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +32,7 @@ public class FinalizarOnboardingUseCase {
     private final SignatureGateway signatureGateway;
     private final ErpSincronizadorGateway erpGateway;
     private final ContratoTemplateService templateService;
+    private final EmpresaRepository empresaServidaRepository;
 
     public FinalizarOnboardingUseCase(LeadRepository leadRepository,
                                       EmpresaLocatariaRepository empresaRepository,
@@ -42,7 +44,8 @@ public class FinalizarOnboardingUseCase {
                                       PaymentGateway paymentGateway,
                                       SignatureGateway signatureGateway,
                                       ErpSincronizadorGateway erpGateway,
-                                      ContratoTemplateService templateService) {
+                                      ContratoTemplateService templateService,
+                                      EmpresaRepository empresaServidaRepository) {
         this.leadRepository = leadRepository;
         this.empresaRepository = empresaRepository;
         this.obrigacaoRepository = obrigacaoRepository;
@@ -54,6 +57,7 @@ public class FinalizarOnboardingUseCase {
         this.signatureGateway = signatureGateway;
         this.erpGateway = erpGateway;
         this.templateService = templateService;
+        this.empresaServidaRepository = empresaServidaRepository;
     }
 
     @Transactional
@@ -65,11 +69,23 @@ public class FinalizarOnboardingUseCase {
         lead.converter();
 
         // Criar a EmpresaLocataria (Tenant) real no sistema
-        var novaEmpresa = EmpresaLocataria.criar(lead.getEmpresaLocatariaId(), lead.getNomeEmpresa(), lead.getIdentificacao().value(), regime);
-        empresaRepository.save(novaEmpresa);
+        var novaEmpresaLocataria = EmpresaLocataria.criar(lead.getEmpresaLocatariaId(), lead.getNomeEmpresa(), lead.getIdentificacao().value(), regime);
+        empresaRepository.save(novaEmpresaLocataria);
+
+        // SINCRONIZAÇÃO: Criar registro no Módulo Corporate (Empresas)
+        var regimeEmpresa = converterRegime(regime);
+        var empresaCorporate = Empresa.criar(
+                lead.getEmpresaLocatariaId(),
+                lead.getNomeEmpresa(),
+                null,
+                lead.getIdentificacao(),
+                regimeEmpresa,
+                null
+        );
+        empresaServidaRepository.salvar(empresaCorporate);
 
         // Gerar Obrigações Iniciais baseadas no Regime
-        List<Obrigacao> iniciais = geradorStrategy.gerarIniciais(novaEmpresa);
+        List<Obrigacao> iniciais = geradorStrategy.gerarIniciais(novaEmpresaLocataria);
         iniciais.forEach(obrigacaoRepository::save);
 
         // Criar Contrato AGUARDANDO_ASSINATURA
@@ -120,5 +136,15 @@ public class FinalizarOnboardingUseCase {
         lead.clearDomainEvents();
 
         return lead;
+    }
+
+    private com.projetocontabil.core.domain.empresa.model.RegimeTributario converterRegime(RegimeTributario regime) {
+        return switch (regime) {
+            case MEI -> com.projetocontabil.core.domain.empresa.model.RegimeTributario.MEI;
+            case SIMPLES_NACIONAL -> com.projetocontabil.core.domain.empresa.model.RegimeTributario.SIMPLES;
+            case LUCRO_PRESUMIDO -> com.projetocontabil.core.domain.empresa.model.RegimeTributario.PRESUMIDO;
+            case LUCRO_REAL -> com.projetocontabil.core.domain.empresa.model.RegimeTributario.REAL;
+            default -> com.projetocontabil.core.domain.empresa.model.RegimeTributario.SIMPLES;
+        };
     }
 }

@@ -11,26 +11,64 @@ const templatesIniciais = [
     { id: 'FECHAMENTO', label: 'Contrato para Assinatura', trigger: 'Lead movido para Fechamento', icon: CheckCircle, text: 'Olá {nome}, seu contrato já foi gerado ✍️. Acesse para assinar digitalmente: {link_zapsign}' },
 ];
 
-const EMOJIS = ['🤝', '🚀', '📄', '✍️', '✅', '⏳', '💡', '📅', '📞', '👋', '🎉', '💰'];
+import { LeadService } from '../../../services/LeadService';
+import { EMOJIS } from '../../../consts/emojis';
 
 export const MessageTemplates: React.FC = () => {
-    const [templates, setTemplates] = useState(() => {
-        const saved = sessionStorage.getItem('atendimento_templates');
-        return saved ? JSON.parse(saved) : templatesIniciais;
-    });
-    const [selectedTemplate, setSelectedTemplate] = useState(templates[0]);
+    const [templates, setTemplates] = useState<any[]>(templatesIniciais);
+    const [selectedTemplate, setSelectedTemplate] = useState<any>(templatesIniciais[0]);
     const [showEmojis, setShowEmojis] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const current = templates.find((t: any) => t.id === selectedTemplate.id);
-        if (current) setSelectedTemplate(current);
-    }, [templates]);
+        carregarTemplates();
+    }, []);
 
-    const handleSave = () => {
-        const updated = templates.map((t: any) => t.id === selectedTemplate.id ? selectedTemplate : t);
-        setTemplates(updated);
-        sessionStorage.setItem('atendimento_templates', JSON.stringify(updated));
-        alert('Automação salva temporariamente na sessão!');
+    const carregarTemplates = async () => {
+        try {
+            setIsLoading(true);
+            const dados = await LeadService.listarTemplatesAutomacao();
+            
+            // Mescla com os padrões
+            const mesclados = templatesIniciais.map(padrao => {
+                const salvo = dados.find(d => d.gatilho === padrao.id);
+                if (salvo) {
+                    return { ...padrao, text: salvo.texto };
+                }
+                return padrao;
+            });
+            
+            setTemplates(mesclados);
+            if (mesclados.length > 0) {
+                // Atualiza o template selecionado atualmente com a versão do banco
+                setSelectedTemplate((prev: any) => mesclados.find(m => m.id === prev.id) || mesclados[0]);
+            }
+        } catch (error) {
+            console.error('Erro ao carregar templates:', error);
+            // Fallback para sessionStorage se a API falhar
+            const saved = sessionStorage.getItem('atendimento_templates');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                setTemplates(parsed);
+                setSelectedTemplate(parsed[0]);
+            }
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleSave = async () => {
+        try {
+            await LeadService.salvarTemplateAutomacao(selectedTemplate.id, selectedTemplate.text);
+            
+            const updated = templates.map((t: any) => t.id === selectedTemplate.id ? selectedTemplate : t);
+            setTemplates(updated);
+            sessionStorage.setItem('atendimento_templates', JSON.stringify(updated));
+            alert('Automação salva com sucesso e já está ativa para os próximos disparos!');
+        } catch (error) {
+            console.error('Erro ao salvar template:', error);
+            alert('Erro ao salvar automação. Verifique sua conexão.');
+        }
     };
 
     const insertText = (before: string, after: string = '') => {

@@ -10,6 +10,8 @@ import { ThemeProvider } from './contexts/ThemeContext';
 
 import { Assinaturas } from './pages/Assinaturas/Assinaturas';
 
+import { Toaster } from 'react-hot-toast';
+
 function App() {
   const { isAuthenticated } = useAuthStore();
   const [location, setLocation] = useLocation();
@@ -27,6 +29,19 @@ function App() {
 
   return (
     <ThemeProvider>
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          style: {
+            background: '#1e293b',
+            color: '#fff',
+            borderRadius: '12px',
+            fontSize: '14px',
+            fontWeight: '600',
+            border: '1px solid rgba(255,255,255,0.1)'
+          }
+        }}
+      />
       <Switch>
         <Route path="/login" component={Login} />
         <Route path="/cadastro" component={Cadastro} />

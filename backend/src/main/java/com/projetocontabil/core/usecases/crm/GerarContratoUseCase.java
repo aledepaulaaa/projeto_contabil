@@ -2,13 +2,17 @@ package com.projetocontabil.core.usecases.crm;
 
 import com.projetocontabil.core.domain.crm.model.Contrato;
 import com.projetocontabil.core.domain.crm.model.StatusContrato;
+import com.projetocontabil.core.domain.crm.model.StatusLead;
 import com.projetocontabil.core.domain.crm.model.EventoHistoricoLead;
 import com.projetocontabil.core.domain.crm.model.HistoricoVidaLead;
 import com.projetocontabil.core.domain.empresalocataria.EmpresaLocatariaId;
 import com.projetocontabil.core.ports.driven.ContratoRepository;
 import com.projetocontabil.core.ports.driven.HistoricoVidaLeadRepository;
+import com.projetocontabil.core.ports.driven.LeadRepository;
 import com.projetocontabil.core.ports.driven.SignatureGateway;
 import com.projetocontabil.infra.messaging.NotificationService;
+import com.projetocontabil.infra.integrations.whatsapp.WhatsAppIntegrationService;
+import com.projetocontabil.infra.integrations.email.EmailIntegrationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -31,6 +35,9 @@ public class GerarContratoUseCase {
     private final SignatureGateway signatureGateway;
     private final NotificationService notificationService;
     private final ContratoTemplateService templateService;
+    private final LeadRepository leadRepository;
+    private final WhatsAppIntegrationService whatsAppService;
+    private final EmailIntegrationService emailService;
 
     @Transactional
     public void executar(UUID leadId, String empresaLocatariaId, String nomeContato, String emailContato) {
@@ -98,10 +105,17 @@ public class GerarContratoUseCase {
             // 6. Registrar histórico (Timeline)
             registrarHistorico(leadId, empresaId, nomeContato, urlDocumento);
 
-            // 5. Notificar via WebSocket
+            // 7. Notificar via WebSocket
             notificationService.notifyContratoDisponivel(empresaLocatariaId, nomeContato, contrato.getId().toString());
 
             log.info("[CONTRATO] Contrato gerado com sucesso para Lead '{}'. URL: {}", nomeContato, urlDocumento);
+
+            // 8. Disparo Automático (Substitui o disparo prematuro do LeadController)
+            leadRepository.findById(leadId).ifPresent(lead -> {
+                log.info("Gatilhos de automação (PROPOSTA) acionados para o lead {} após geração do contrato. URL: {}", lead.getNomeContato(), urlDocumento);
+                whatsAppService.enviarNotificacaoStatus(lead, StatusLead.PROPOSTA, urlDocumento);
+                emailService.enviarNotificacaoStatus(lead, StatusLead.PROPOSTA, urlDocumento);
+            });
 
         } catch (Exception e) {
             log.error("[CONTRATO] Falha ao gerar contrato para Lead '{}': {}", nomeContato, e.getMessage(), e);

@@ -121,17 +121,17 @@ class LeadVisibilidadeIsolamentoTest {
         // Lead atribuído ao operador logado (mesmo departamento)
         Lead leadMeu = Lead.reconstituir(leadMeuId, EmpresaLocatariaId.of(TENANT), "Meu Lead", new Email("meu@test.com"), 
                 new Telefone("11999999999"), new Identificacao("00000000000001"), "Empresa 1", 
-                StatusLead.PROPOSTA, null, null, DEPARTAMENTO_ID, null, null, LocalDateTime.now(), 0, false);
+                StatusLead.PROPOSTA, null, null, DEPARTAMENTO_ID, null, null, LocalDateTime.now(), 0, false, null);
 
         // Lead na fila (sem atendente no atendimento, mas do mesmo departamento)
         Lead leadFila = Lead.reconstituir(leadFilaId, EmpresaLocatariaId.of(TENANT), "Lead na Fila", new Email("fila@test.com"), 
                 new Telefone("11888888888"), new Identificacao("00000000000002"), "Empresa 2", 
-                StatusLead.AGUARDANDO, null, null, DEPARTAMENTO_ID, null, null, LocalDateTime.now(), 0, false);
+                StatusLead.AGUARDANDO, null, null, DEPARTAMENTO_ID, null, null, LocalDateTime.now(), 0, false, null);
 
         // Lead de outro departamento
         Lead leadOutro = Lead.reconstituir(leadOutroId, EmpresaLocatariaId.of(TENANT), "Outro Lead", new Email("outro@test.com"), 
                 new Telefone("11777777777"), new Identificacao("00000000000003"), "Empresa 3", 
-                StatusLead.PROPOSTA, null, null, OUTRO_DEPARTAMENTO_ID, null, null, LocalDateTime.now(), 0, false);
+                StatusLead.PROPOSTA, null, null, OUTRO_DEPARTAMENTO_ID, null, null, LocalDateTime.now(), 0, false, null);
 
         when(leadRepository.findAllByEmpresaLocatariaId(EmpresaLocatariaId.of(TENANT))).thenReturn(List.of(leadMeu, leadFila, leadOutro));
 
@@ -166,7 +166,7 @@ class LeadVisibilidadeIsolamentoTest {
 
         Lead leadQualquer = Lead.reconstituir(leadQualquerId, EmpresaLocatariaId.of(TENANT), "Qualquer Lead", new Email("gestor@test.com"), 
                 new Telefone("11666666666"), new Identificacao("00000000000004"), "Empresa 4", 
-                StatusLead.PROPOSTA, null, null, null, null, null, LocalDateTime.now(), 0, false);
+                StatusLead.PROPOSTA, null, null, null, null, null, LocalDateTime.now(), 0, false, null);
 
         when(leadRepository.findAllByEmpresaLocatariaId(EmpresaLocatariaId.of(TENANT))).thenReturn(List.of(leadQualquer));
         when(atendimentoRepository.findAllAtivosByEmpresa(TENANT)).thenReturn(Collections.emptyList());
@@ -193,7 +193,7 @@ class LeadVisibilidadeIsolamentoTest {
 
         Lead leadDeptoB = Lead.reconstituir(leadDeptoBId, EmpresaLocatariaId.of(TENANT), "Lead do B", new Email("b@test.com"), 
                 new Telefone("11555555555"), new Identificacao("00000000000005"), "Empresa 5", 
-                StatusLead.PROPOSTA, null, null, OUTRO_DEPARTAMENTO_ID, null, null, LocalDateTime.now(), 0, false);
+                StatusLead.PROPOSTA, null, null, OUTRO_DEPARTAMENTO_ID, null, null, LocalDateTime.now(), 0, false, null);
 
         when(leadRepository.findAllByEmpresaLocatariaId(EmpresaLocatariaId.of(TENANT))).thenReturn(List.of(leadDeptoB));
         when(atendimentoRepository.findAllAtivosByEmpresa(TENANT)).thenReturn(Collections.emptyList());

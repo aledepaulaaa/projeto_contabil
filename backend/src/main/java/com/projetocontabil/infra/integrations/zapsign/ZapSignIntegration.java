@@ -146,6 +146,11 @@ public class ZapSignIntegration implements SignatureGateway {
         body.put("base64_pdf", base64Content);
         body.put("one_click_active", true); 
         body.put("require_signature", true); // Exige checkbox + desenho da assinatura
+        body.put("external_id", contratoId.toString()); // Identificador para o Webhook
+
+        if (props.isSandboxMode()) {
+            body.put("sandbox", true);
+        }
         
         List<Map<String, Object>> signersList = signers.stream().map(s -> {
             Map<String, Object> signer = new HashMap<>();
@@ -162,12 +167,14 @@ public class ZapSignIntegration implements SignatureGateway {
             String jsonBody = objectMapper.writeValueAsString(body);
             HttpEntity<String> request = new HttpEntity<>(jsonBody, headers);
             
-            log.debug("[ZapSign] Chamada POST para: {}", url);
+            log.info("[ZapSign] Enviando requisição para: {} | Payload: {}", url, jsonBody);
             
             ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
                 url, HttpMethod.POST, request,
                 new org.springframework.core.ParameterizedTypeReference<Map<String, Object>>() {}
             );
+
+            log.info("[ZapSign] Resposta recebida: Status {} | Body: {}", response.getStatusCode(), response.getBody());
 
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                 // A ZapSign retorna uma lista de signatários com suas URLs
@@ -189,5 +196,83 @@ public class ZapSignIntegration implements SignatureGateway {
     public String createDocumentForSignature(UUID contratoId, EmpresaLocatariaId tid, String title, String urlOrTemplate, List<Signer> signers) {
         // Legado: Chamada simplificada para o Mock ou OneClick se possível
         return createDocumentOneClick(contratoId, tid, title, "DUMMY_CONTENT", signers);
+    }
+
+    /**
+     * Registra um novo Webhook na ZapSign via API.
+     */
+    public String registerWebhook(String targetUrl, String eventType) {
+        ensureAuthenticated();
+
+        String url = props.getApiBaseUrl() + "/user/company/webhook/";
+        
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Authorization", "Bearer " + props.getApiToken());
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("url", targetUrl);
+        body.put("type", eventType != null ? eventType : "doc_signed");
+
+        // Adicionar Header de Segurança para o Webhook
+        List<Map<String, String>> customHeaders = new ArrayList<>();
+        
+        // Header de Autenticação
+        Map<String, String> authHeader = new HashMap<>();
+        authHeader.put("name", "Authorization");
+        authHeader.put("value", "Bearer " + props.getApiToken());
+        customHeaders.add(authHeader);
+
+        // Header para pular o aviso do ngrok (Plano Free)
+        Map<String, String> ngrokHeader = new HashMap<>();
+        ngrokHeader.put("name", "ngrok-skip-browser-warning");
+        ngrokHeader.put("value", "true");
+        customHeaders.add(ngrokHeader);
+
+        body.put("headers", customHeaders);
+
+        try {
+            String jsonBody = objectMapper.writeValueAsString(body);
+            HttpEntity<String> request = new HttpEntity<>(jsonBody, headers);
+            
+            log.info("[ZapSign] Registrando Webhook: {} para o evento {}", targetUrl, body.get("type"));
+            
+            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+                url, HttpMethod.POST, request,
+                new org.springframework.core.ParameterizedTypeReference<Map<String, Object>>() {}
+            );
+
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                Object id = response.getBody().get("id");
+                log.info("[ZapSign] Webhook registrado com sucesso! ID: {}", id);
+                return id.toString();
+            }
+            throw new RuntimeException("Erro ao registrar webhook na ZapSign. Status: " + response.getStatusCode());
+        } catch (Exception e) {
+            log.error("[ZapSign] Falha ao registrar webhook: {}", e.getMessage());
+            throw new RuntimeException("Falha na integração ZapSign (Webhook): " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Lista todos os Webhooks registrados na organização.
+     */
+    public List<Map<String, Object>> listarWebhooks() {
+        ensureAuthenticated();
+        String url = props.getApiBaseUrl() + "/user/company/webhook/";
+        
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + props.getApiToken());
+
+        try {
+            ResponseEntity<List<Map<String, Object>>> response = restTemplate.exchange(
+                url, HttpMethod.GET, new HttpEntity<>(headers),
+                new org.springframework.core.ParameterizedTypeReference<List<Map<String, Object>>>() {}
+            );
+            return response.getBody();
+        } catch (Exception e) {
+            log.error("[ZapSign] Erro ao listar webhooks: {}", e.getMessage());
+            return Collections.emptyList();
+        }
     }
 }

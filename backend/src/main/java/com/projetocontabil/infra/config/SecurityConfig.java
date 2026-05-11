@@ -23,7 +23,7 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**", "/h2-console/**").permitAll()
+                .requestMatchers("/api/auth/**", "/h2-console/**", "/api/webhooks/**").permitAll()
                 .anyRequest().permitAll() // TODO: Refinar para segurança JWT real em produção
             )
             .headers(headers -> headers.frameOptions(frame -> frame.disable()));

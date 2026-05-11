@@ -42,7 +42,7 @@ class WhatsAppIntegrationServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        whatsAppIntegrationService = new WhatsAppIntegrationService(whatsAppProducer, mensagemRepository, historicoRepository, notificationService, empresaRepository);
+        whatsAppIntegrationService = new WhatsAppIntegrationService(whatsAppProducer, mensagemRepository, historicoRepository, notificationService, empresaRepository, null, null);
         
         // Mock padrão: Automação Ativa
         EmpresaLocataria empresaMock = mock(EmpresaLocataria.class);

@@ -87,7 +87,8 @@ public class LeadRepositoryAdapter implements LeadRepository {
                 entity.getGoogleLeadId(),
                 entity.getCriadoEm(),
                 entity.getQuantidadeMensagensNaoLidas() != null ? entity.getQuantidadeMensagensNaoLidas() : 0,
-                entity.isConversaPrivada()
+                entity.isConversaPrivada(),
+                entity.getResumoIA()
         );
     }
 
@@ -139,6 +140,7 @@ public class LeadRepositoryAdapter implements LeadRepository {
         entity.setObservacaoNaoFechamento(lead.getObservacaoNaoFechamento());
         entity.setQuantidadeMensagensNaoLidas(lead.getQuantidadeMensagensNaoLidas());
         entity.setConversaPrivada(lead.isConversaPrivada());
+        entity.setResumoIA(lead.getResumoIA());
         return entity;
     }
 }

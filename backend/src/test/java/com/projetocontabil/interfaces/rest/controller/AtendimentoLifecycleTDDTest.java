@@ -83,7 +83,7 @@ class AtendimentoLifecycleTDDTest {
         Lead lead = Lead.reconstituir(
             leadId, tenant, "Raissa", null, null, null, "Bolivar CORP", 
             StatusLead.PROPOSTA, null, null, null, null, null, 
-            LocalDateTime.now().minusDays(2), 0, false
+            LocalDateTime.now().minusDays(2), 0, false, null
         );
         
         when(leadRepository.findAllByEmpresaLocatariaId(any())).thenReturn(List.of(lead));
@@ -116,7 +116,7 @@ class AtendimentoLifecycleTDDTest {
         Lead lead = Lead.reconstituir(
             leadId, tenant, "Raissa", null, null, null, "Bolivar CORP", 
             StatusLead.PROPOSTA, null, null, null, null, null, 
-            LocalDateTime.now().minusDays(2), 0, false
+            LocalDateTime.now().minusDays(2), 0, false, null
         );
         
         com.projetocontabil.core.domain.atendimento.model.Atendimento atend = 
