@@ -1,4 +1,4 @@
-import amqp, { Connection, Channel, ConsumeMessage } from 'amqplib';
+import { connect, Connection, Channel, ConsumeMessage } from 'amqplib';
 import { EnviarMensagemUseCase } from '../../use-cases/EnviarMensagemUseCase.js';
 
 /**
@@ -21,8 +21,8 @@ interface PayloadMensagemWhatsApp {
 
 export class ConsumidorRabbitMQ {
   private readonly fila = 'q.whatsapp.envio';
-  private conexao: Connection | null = null;
-  private canal: Channel | null = null;
+  private conexao: any = null;
+  private canal: any = null;
 
   constructor(
     private readonly enviarMensagemUseCase: EnviarMensagemUseCase,
@@ -36,9 +36,10 @@ export class ConsumidorRabbitMQ {
   async conectar(): Promise<void> {
     try {
       console.log(`[RabbitMQ] Conectando em ${this.urlRabbit}...`);
-      this.conexao = await amqp.connect(this.urlRabbit);
-      this.canal = await this.conexao.createChannel();
-
+      const conn = await connect(this.urlRabbit);
+      this.conexao = conn;
+      
+      this.canal = await conn.createChannel();
       await this.canal.assertQueue(this.fila, { durable: true });
 
       console.log(`[RabbitMQ] ✅ Aguardando mensagens na fila: ${this.fila}`);

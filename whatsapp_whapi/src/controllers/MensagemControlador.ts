@@ -120,7 +120,7 @@ export function criarMensagemControlador(
   router.get('/messages/:chatId', async (req: Request, res: Response) => {
     try {
       const limite = parseInt(req.query.limit as string) || 100;
-      const resultado = await obterMensagens.listarPorChat(req.params.chatId, limite);
+      const resultado = await obterMensagens.listarPorChat(req.params.chatId as string, limite);
       res.json(resultado);
     } catch (error: any) {
       res.status(500).json({ error: error.message });

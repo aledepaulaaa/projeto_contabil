@@ -77,7 +77,7 @@ export function criarGrupoControlador(gerenciarGrupo: GerenciarGrupoUseCase): Ro
   router.post('/groups/:groupId/participants', async (req: Request, res: Response) => {
     try {
       const { participantId } = req.body;
-      const resultado = await gerenciarGrupo.adicionarParticipante(req.params.groupId, participantId);
+      const resultado = await gerenciarGrupo.adicionarParticipante(req.params.groupId as string, participantId);
 
       if (resultado.sucesso) {
         res.json({ success: true });

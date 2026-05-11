@@ -43,7 +43,7 @@ export function criarChatControlador(obterChat: ObterChatUseCase): Router {
    */
   router.get('/chats/:chatId', async (req: Request, res: Response) => {
     try {
-      const chat = await obterChat.buscarPorId(req.params.chatId);
+      const chat = await obterChat.buscarPorId(req.params.chatId as string);
       if (chat) {
         res.json(chat);
       } else {

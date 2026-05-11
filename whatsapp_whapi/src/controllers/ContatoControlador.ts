@@ -43,7 +43,7 @@ export function criarContatoControlador(obterContatos: ObterContatosUseCase): Ro
    */
   router.get('/contacts/:contactId', async (req: Request, res: Response) => {
     try {
-      const contato = await obterContatos.buscarPorId(req.params.contactId);
+      const contato = await obterContatos.buscarPorId(req.params.contactId as string);
       if (contato) {
         res.json(contato);
       } else {
