@@ -1,0 +1,34 @@
+# ══════════════════════════════════════════════════════════
+# Projeto Contábil — Perfil de Produção (Cloud)
+# ══════════════════════════════════════════════════════════
+
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 5 # Render Free tier exige pools pequenos
+      minimum-idle: 1
+
+  # ── RabbitMQ (CloudAMQP) ──
+  rabbitmq:
+    addresses: ${SPRING_RABBITMQ_ADDRESSES} # Formato host:port
+    username: ${SPRING_RABBITMQ_USERNAME}
+    password: ${SPRING_RABBITMQ_PASSWORD}
+    virtual-host: ${SPRING_RABBITMQ_VIRTUAL_HOST:/}
+
+  # ── Redis (Upstash) ──
+  data:
+    redis:
+      url: ${SPRING_DATA_REDIS_URL} # Upstash fornece uma URL redis://...
+      
+  jpa:
+    hibernate:
+      ddl-auto: validate # Em produção, nunca use 'update'
+    show-sql: false
+
+server:
+  port: ${PORT:8080} # O Render injeta a variável PORT automaticamente
+  forward-headers-strategy: native
