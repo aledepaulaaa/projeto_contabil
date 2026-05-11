@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { DepartamentoService, type DepartamentoResponse as Departamento } from '../services/DepartamentoService';
 import { useAuthStore } from '../store/authStore';
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Users, Mail, Building2, ShieldCheck, Trash2, Plus } from 'lucide-react';
+import { X, Users, ShieldCheck, Trash2, Plus } from 'lucide-react';
 import { Texto } from '../../atoms/Texto/Texto';
 import { Botao } from '../../atoms/Botao/Botao';
 import { Card } from '../../atoms/Card/Card';

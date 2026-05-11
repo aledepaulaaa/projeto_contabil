@@ -93,7 +93,6 @@ export const Contratos: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [cancelModal, setCancelModal] = useState<{ id: string; nome: string } | null>(null);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [motivoCancelamento, setMotivoCancelamento] = useState('');
 
   const filteredContratos = contratos.filter(c => {

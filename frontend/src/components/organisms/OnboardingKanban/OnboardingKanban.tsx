@@ -4,7 +4,6 @@ import {
   PlayCircle, 
   CheckCircle2, 
   Calendar,
-  MoreVertical,
   Plus,
   Flag,
   CheckSquare,

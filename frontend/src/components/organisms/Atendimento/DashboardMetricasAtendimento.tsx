@@ -23,7 +23,6 @@ export const DashboardMetricasAtendimento: React.FC = () => {
     const [exporting, setExporting] = useState(false);
     const [filtroData, setFiltroData] = useState('7d');
     const [tabAtiva, setTabAtiva] = useState<'geral' | 'pessoal'>('geral');
-    const userRole = localStorage.getItem('app:user_role') || 'ADMIN';
 
     useEffect(() => {
         carregarMetricas();

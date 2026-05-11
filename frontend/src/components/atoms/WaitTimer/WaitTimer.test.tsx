@@ -1,7 +1,6 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { WaitTimer } from './WaitTimer';
-import React from 'react';
 
 describe('WaitTimer SLA Logic', () => {
     it('deve mostrar "Chegou agora" para menos de 90 segundos', () => {

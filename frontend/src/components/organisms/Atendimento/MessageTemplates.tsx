@@ -18,7 +18,6 @@ export const MessageTemplates: React.FC = () => {
     const [templates, setTemplates] = useState<any[]>(templatesIniciais);
     const [selectedTemplate, setSelectedTemplate] = useState<any>(templatesIniciais[0]);
     const [showEmojis, setShowEmojis] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         carregarTemplates();
@@ -26,7 +25,6 @@ export const MessageTemplates: React.FC = () => {
 
     const carregarTemplates = async () => {
         try {
-            setIsLoading(true);
             const dados = await LeadService.listarTemplatesAutomacao();
             
             // Mescla com os padrões
@@ -53,7 +51,6 @@ export const MessageTemplates: React.FC = () => {
                 setSelectedTemplate(parsed[0]);
             }
         } finally {
-            setIsLoading(false);
         }
     };
 

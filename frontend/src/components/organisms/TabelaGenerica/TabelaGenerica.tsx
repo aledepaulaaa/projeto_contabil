@@ -33,7 +33,6 @@ export function TabelaGenerica<T>({
   isLoading,
   className = ''
 }: TabelaGenericaProps<T>) {
-  const totalCols = colunas.length;
 
   if (isLoading) {
     return (

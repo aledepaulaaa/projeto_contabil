@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, Download, Clock, FileText, FileSpreadsheet, X, PenTool, MessageCircle, RefreshCcw, ArrowRight } from 'lucide-react';
+import { Bell, Download, Clock, FileText, FileSpreadsheet, X, PenTool, MessageCircle, ArrowRight } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { LeadService, type NotificacaoDownload } from '../../../services/LeadService';
 import { Texto } from '../../atoms/Texto/Texto';

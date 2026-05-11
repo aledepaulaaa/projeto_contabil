@@ -1,4 +1,4 @@
-import { Building2, ShieldCheck, UserCheck, AlertCircle } from 'lucide-react';
+
 
 export type RegimeTributario = 'MEI' | 'SIMPLES' | 'PRESUMIDO' | 'REAL';
 

@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { ContactSidebar } from './ContactSidebar';
-import { LeadService } from '../../../services/LeadService';
 
 // Mock do LeadService
 vi.mock('../../../services/LeadService', () => ({

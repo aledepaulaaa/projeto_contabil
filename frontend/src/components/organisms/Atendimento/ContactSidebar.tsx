@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Texto } from '../../atoms/Texto/Texto';
-import { Search, Filter, Clock, User, Users, MessageCircle, AlertCircle, Loader2, RefreshCcw, ArrowRightLeft, Inbox, Lock } from 'lucide-react';
+import { Search, Clock, User, Users, MessageCircle, AlertCircle, Loader2, RefreshCcw, ArrowRightLeft, Inbox, Lock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LeadService } from '../../../services/LeadService';
 import { ModalTransferenciaAtendimento } from './ModalTransferenciaAtendimento';

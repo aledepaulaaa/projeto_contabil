@@ -2,13 +2,11 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Texto } from '../../atoms/Texto/Texto';
 import { Botao } from '../../atoms/Botao/Botao';
 import { Send, Forward, XCircle, Clock, UserCheck, MessageSquare, ShieldCheck, ArrowRightLeft } from 'lucide-react';
-import { useAuthStore } from '../../../store/authStore';
 import { motion, AnimatePresence } from 'framer-motion';
 import { WaitTimer } from '../../atoms/WaitTimer/WaitTimer';
 
 import { useChat } from '../../../hooks/useChat';
 import { LeadService } from '../../../services/LeadService';
-import { useResolucao } from '../../../contexts/ResolucaoContext';
 
 interface ChatWindowProps {
   lead: {
@@ -33,7 +31,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ lead, onTransferir, onEn
   const [isAceitando, setIsAceitando] = useState(false);
   const [novoTexto, setNovoTexto] = useState('');
   const [isNotaInterna, setIsNotaInterna] = useState(false);
-  const { user } = useAuthStore();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -62,14 +59,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ lead, onTransferir, onEn
     } catch (error) {
       console.error('Erro ao enviar mensagem:', error);
       alert('Falha ao enviar mensagem.');
-    }
-  };
-
-  const handleToggleVisibilidade = async (mensagemId: string, visivelAtual: boolean) => {
-    try {
-      await LeadService.atualizarVisibilidadeMensagem(mensagemId, !visivelAtual);
-    } catch (error) {
-      console.error('Erro ao atualizar visibilidade:', error);
     }
   };
 

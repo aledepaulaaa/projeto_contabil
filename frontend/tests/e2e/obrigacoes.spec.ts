@@ -36,7 +36,7 @@ test.describe('Fluxo de Obrigações Fiscais (Fase 6)', () => {
     await expect(btnSync).toBeVisible({ timeout: 10000 });
     
     // 4. Dispara sincronização e aguarda a resposta do backend
-    const [response] = await Promise.all([
+    await Promise.all([
       page.waitForResponse(resp => resp.url().includes('/onboarding') && resp.status() === 200, { timeout: 30000 }),
       btnSync.click(),
     ]);

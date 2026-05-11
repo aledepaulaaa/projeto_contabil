@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation } from 'wouter';
-import { Bell, X } from 'lucide-react';
+import { Bell } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNotificacoes } from '../../../hooks/useNotificacoes';
 
@@ -9,7 +9,7 @@ interface BadgeNotificacaoProps {
 }
 
 export const BadgeNotificacao: React.FC<BadgeNotificacaoProps> = ({ empresaLocatariaId }) => {
-  const [location, setLocation] = useLocation();
+  const [_, setLocation] = useLocation();
   const { notificacoes, limparNotificacoes } = useNotificacoes(empresaLocatariaId);
   const [open, setOpen] = useState(false);
 

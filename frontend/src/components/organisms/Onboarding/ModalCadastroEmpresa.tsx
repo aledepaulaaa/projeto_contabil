@@ -9,11 +9,7 @@ import {
   Plus, 
   Trash2, 
   Save,
-  CheckCircle2,
-  AlertCircle,
-  FileSpreadsheet,
-  Globe,
-  Hash
+  Globe
 } from 'lucide-react';
 import { Texto } from '../../atoms/Texto/Texto';
 import { Botao } from '../../atoms/Botao/Botao';
