@@ -7,9 +7,7 @@ import { ResetarSenha } from './pages/ResetarSenha/ResetarSenha';
 import { useAuthStore } from './store/authStore';
 import { useEffect } from 'react';
 import { ThemeProvider } from './contexts/ThemeContext';
-
 import { Assinaturas } from './pages/Assinaturas/Assinaturas';
-
 import { Toaster } from 'react-hot-toast';
 
 function App() {
