@@ -22,10 +22,30 @@ CREATE TABLE atendimentos (
 CREATE INDEX idx_atendimento_tenant_lead ON atendimentos(empresa_locataria_id, lead_id);
 CREATE INDEX idx_atendimento_status ON atendimentos(status);
 
--- 2. Atualizar a tabela de mensagens_chat
--- Se a tabela não existir (pode ter sido criada pelo Hibernate), o Flyway cuidará da consistência.
--- Caso já exista, adicionamos as colunas. 
--- Para compatibilidade com a limpeza de dados solicitada pelo usuário, podemos recriar ou ajustar.
+-- 2. Garantir que a tabela mensagens_chat existe (ela era gerada pelo Hibernate ddl-auto)
+CREATE TABLE IF NOT EXISTS mensagens_chat (
+    id UUID PRIMARY KEY,
+    lead_id UUID NOT NULL,
+    empresa_locataria_id VARCHAR(255) NOT NULL,
+    conteudo TEXT,
+    remetente VARCHAR(50),
+    enviado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_mensagem_lead_base FOREIGN KEY (lead_id) REFERENCES leads(id)
+);
+
+-- Tabela de auditoria para mensagens
+CREATE TABLE IF NOT EXISTS mensagens_chat_aud (
+    id UUID NOT NULL,
+    rev INTEGER NOT NULL,
+    revtype SMALLINT,
+    lead_id UUID,
+    empresa_locataria_id VARCHAR(255),
+    conteudo TEXT,
+    remetente VARCHAR(50),
+    PRIMARY KEY (id, rev)
+);
+
+-- 3. Atualizar a tabela de mensagens_chat com novos campos
 
 ALTER TABLE mensagens_chat ADD COLUMN IF NOT EXISTS atendimento_id UUID;
 ALTER TABLE mensagens_chat ADD COLUMN IF NOT EXISTS tipo VARCHAR(20) DEFAULT 'EXTERNA'; -- EXTERNA ou INTERNA
