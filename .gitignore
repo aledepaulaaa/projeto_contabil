@@ -41,3 +41,9 @@ PROMPTS.md
 mascara-cpf-cnpj.md
 /docs
 monitoramento_ir_pessoa_fisica.md
+
+# Scraper
+/scraper-contabil
+scraper-contabil
+scraper-contabil/
+scraper-contabil/requirements.txt
