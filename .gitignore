@@ -41,9 +41,23 @@ PROMPTS.md
 mascara-cpf-cnpj.md
 /docs
 monitoramento_ir_pessoa_fisica.md
+plano_implementacao.md
 
 # Scraper
 /scraper-contabil
 scraper-contabil
 scraper-contabil/
 scraper-contabil/requirements.txt
+robo-contabil
+scratch
+
+# Certificados digitais e chaves privadas — NUNCA commitar
+*.pfx
+*.p12
+*.pem
+*.key
+*.b64
+certificado*
+chave-privada*
+extrair_chave_serpro.ps1
+

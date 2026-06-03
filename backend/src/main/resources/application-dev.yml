@@ -20,6 +20,10 @@ spring:
       ddl-auto: update
     show-sql: false
 
+  # ── Flyway (dev) ──
+  flyway:
+    validate-on-migrate: false
+
   # ── RabbitMQ ──
   rabbitmq:
     host: localhost
@@ -35,10 +39,10 @@ spring:
 
   # ── E-mail (Dev/Mailtrap) ──
   mail:
-    host: ${MAIL_HOST}
-    port: ${MAIL_PORT}
-    username: ${MAIL_USERNAME}
-    password: ${MAIL_PASSWORD}
+    host: ${MAIL_HOST:sandbox.smtp.mailtrap.io}
+    port: ${MAIL_PORT:2525}
+    username: ${MAIL_USERNAME:default_username}
+    password: ${MAIL_PASSWORD:default_password}
     properties:
       mail:
         smtp:
@@ -51,8 +55,8 @@ spring:
       client:
         registration:
           google:
-            client-id: ${GOOGLE_CLIENT_ID}
-            client-secret: ${GOOGLE_CLIENT_SECRET}
+            client-id: ${GOOGLE_CLIENT_ID:mock-google-client-id}
+            client-secret: ${GOOGLE_CLIENT_SECRET:mock-google-client-secret}
             scope:
               - openid
               - profile
@@ -67,10 +71,10 @@ spring:
 # ── Google Ads API ──
 api:
   google-ads:
-    developer-token: ${GOOGLE_ADS_DEVELOPER_TOKEN}
-    client-customer-id: ${GOOGLE_ADS_CLIENT_CUSTOMER_ID}
-    client-id: ${GOOGLE_CLIENT_ID}
-    client-secret: ${GOOGLE_CLIENT_SECRET}
+    developer-token: ${GOOGLE_ADS_DEVELOPER_TOKEN:mock-developer-token}
+    client-customer-id: ${GOOGLE_ADS_CLIENT_CUSTOMER_ID:mock-client-customer-id}
+    client-id: ${GOOGLE_CLIENT_ID:mock-google-client-id}
+    client-secret: ${GOOGLE_CLIENT_SECRET:mock-google-client-secret}
     redirect-uri: http://localhost:8080/api/v1/integrations/google-ads/callback
 
 # ── Logging (dev) ──
@@ -83,7 +87,16 @@ logging:
 
 # ── Mailtrap (dev) ──
 mailtrap:
-  api-token: ${MAILTRAP_API_TOKEN}
+  api-token: ${MAILTRAP_API_TOKEN:mock-mailtrap-api-token}
   sender-email: ${MAILTRAP_SENDER_EMAIL:noreply@contabilpro.com.br}
   sandbox: ${MAILTRAP_SANDBOX:true}
   inbox-id: ${MAILTRAP_INBOX_ID:4464001}
+
+# ── SERPRO (dev) ──
+serpro:
+  api-base-url: ${SERPRO_API_BASE_URL:https://gateway.apiserpro.serpro.gov.br/renda-pf-trial/v1}
+  base-url-prod: ${SERPRO_BASE_URL_PROD:https://gateway.apiserpro.serpro.gov.br/renda-pf/v1}
+  token-url: ${SERPRO_TOKEN_URL:https://gateway.apiserpro.serpro.gov.br/token}
+  consumer-key: ${SERPRO_CONSUMER_KEY:53R9kVlGIoFMQoO3ibua2Klf9uYa}
+  consumer-secret: ${SERPRO_CONSUMER_SECRET:NiRIBkJiWqGYPlAfDcMQQQW_aPEa}
+  private-key-base64: ${SERPRO_PRIVATE_KEY_BASE64:mock-private-key}

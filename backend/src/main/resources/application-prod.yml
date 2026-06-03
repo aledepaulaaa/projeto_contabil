@@ -32,3 +32,12 @@ spring:
 server:
   port: ${PORT:8080} # O Render injeta a variável PORT automaticamente
   forward-headers-strategy: native
+
+# ── SERPRO (prod) ──
+serpro:
+  api-base-url: ${SERPRO_API_BASE_URL:https://gateway.apiserpro.serpro.gov.br/renda-pf/v1}
+  base-url-prod: ${SERPRO_BASE_URL_PROD:https://gateway.apiserpro.serpro.gov.br/renda-pf/v1}
+  token-url: ${SERPRO_TOKEN_URL:https://gateway.apiserpro.serpro.gov.br/token}
+  consumer-key: ${SERPRO_CONSUMER_KEY}
+  consumer-secret: ${SERPRO_CONSUMER_SECRET}
+  private-key-base64: ${SERPRO_PRIVATE_KEY_BASE64}

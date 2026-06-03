@@ -14,7 +14,8 @@ import {
   Moon,
   X,
   FileSignature,
-  MessageSquare
+  MessageSquare,
+  Database
 } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { useTheme } from '../../../contexts/ThemeContext';
@@ -88,6 +89,7 @@ export const BarraLateral: React.FC<BarraLateralProps> = ({ isOpen, onClose }) =
     { path: '/dashboard/rotinas', label: 'Rotinas', icon: Calendar, roles: ['ADMIN', 'GESTOR', 'OPERADOR'] },
     { path: '/dashboard/alvaras', label: 'Alvarás', icon: FileText, roles: ['ADMIN', 'GESTOR'] },
     { path: '/dashboard/processos', label: 'Processos', icon: Briefcase, roles: ['ADMIN', 'GESTOR'] },
+    { path: '/dashboard/serpro', label: 'Consulta SERPRO', icon: Database, roles: ['ADMIN', 'GESTOR', 'OPERADOR'] },
   ].filter(item => item.roles.includes(userRole.toUpperCase()));
 
   const sidebarVariants = {
