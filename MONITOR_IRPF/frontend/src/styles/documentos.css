@@ -1,0 +1,324 @@
+.doc-progress-cell {
+  min-width: 140px;
+}
+
+.doc-progress-bar {
+  height: 8px;
+  background: #e0e4e8;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.doc-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #1565c0, #2e7d32);
+  border-radius: 999px;
+  transition: width 0.25s ease;
+}
+
+.doc-progress-label {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-top: 0.25rem;
+}
+
+.doc-muted {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.doc-badge-locked {
+  display: inline-block;
+  margin-left: 0.35rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  background: var(--danger-bg);
+  color: var(--danger);
+  border: 1px solid #ffcdd2;
+  vertical-align: middle;
+}
+
+.doc-btn-locked {
+  border-color: #ffcdd2 !important;
+  color: var(--danger) !important;
+}
+
+.doc-view-modal {
+  max-width: 560px;
+  max-height: calc(100vh - 3rem);
+  overflow-y: auto;
+}
+
+.doc-view-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.doc-view-list li {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 0.9rem;
+  background: #fafbfc;
+}
+
+.doc-view-item--ok {
+  border-color: #a5d6a7;
+  background: #f1f8f2;
+}
+
+.doc-view-item-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.doc-view-file-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.portal-doc-locked {
+  background: #fff3e0;
+  border: 1px solid #ffcc80;
+  color: #e65100;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  margin-bottom: 1rem;
+  line-height: 1.45;
+}
+
+.doc-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.documentos-toolbar {
+  margin-bottom: 1rem;
+}
+
+.documentos-toolbar label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.documentos-toolbar input {
+  min-width: 220px;
+  max-width: 320px;
+}
+
+.documentos-table tbody tr {
+  cursor: default;
+}
+
+.documentos-table tbody tr:hover {
+  background: #f5f7f9;
+}
+
+.doc-assign-modal {
+  max-width: 420px;
+}
+
+.checklist-config-layout {
+  display: grid;
+  grid-template-columns: minmax(200px, 260px) 1fr;
+  gap: 1.25rem;
+  margin-top: 1rem;
+}
+
+@media (max-width: 800px) {
+  .checklist-config-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.checklist-config-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0.75rem 0 0;
+}
+
+.checklist-config-list li {
+  margin-bottom: 0.35rem;
+}
+
+.checklist-config-list-btn {
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  padding: 0.55rem 0.75rem;
+  cursor: pointer;
+  font: inherit;
+}
+
+.checklist-config-list-btn:hover {
+  border-color: var(--accent);
+  background: #f5f9ff;
+}
+
+.checklist-config-list-btn.active {
+  border-color: var(--accent);
+  background: var(--info-bg);
+}
+
+.checklist-items-table input[type="text"] {
+  width: 100%;
+}
+
+.checklist-items-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.checklist-items-table tbody tr {
+  cursor: default;
+}
+
+.portal-doc-page {
+  min-height: 100vh;
+  background: var(--main-bg);
+  font-family: var(--font);
+  color: var(--text);
+}
+
+.portal-doc-header {
+  background: linear-gradient(180deg, var(--sidebar-bg), var(--sidebar-bg-deep));
+  color: #fff;
+  padding: 1.5rem 1.25rem;
+  text-align: center;
+}
+
+.portal-doc-header h1 {
+  margin: 0;
+  font-size: 1.35rem;
+}
+
+.portal-doc-header p {
+  margin: 0.35rem 0 0;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.portal-doc-main {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 3rem;
+}
+
+.portal-doc-title {
+  margin: 0 0 1rem;
+  font-size: 1.15rem;
+}
+
+.portal-doc-progress {
+  margin-bottom: 1rem;
+}
+
+.portal-doc-hint {
+  font-size: 0.88rem;
+  color: var(--muted);
+  line-height: 1.45;
+  margin: 0 0 1.25rem;
+}
+
+.portal-doc-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.portal-doc-list li {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.1rem;
+  box-shadow: var(--shadow);
+}
+
+.portal-doc-item--done {
+  border-color: #a5d6a7;
+  background: linear-gradient(135deg, #fff, #f1f8f2);
+}
+
+.portal-doc-item-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.portal-doc-item-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.portal-doc-badge {
+  display: inline-block;
+  margin-left: 0.35rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--warning);
+  vertical-align: middle;
+}
+
+.portal-doc-status-ok {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--success);
+  white-space: nowrap;
+}
+
+.portal-doc-status-pend {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.portal-doc-file {
+  font-size: 0.82rem;
+  margin: 0 0 0.65rem;
+  color: var(--muted);
+}
+
+.portal-doc-loading {
+  text-align: center;
+  color: var(--muted);
+}
+
+.portal-doc-error {
+  background: var(--danger-bg);
+  border: 1px solid #ffcdd2;
+  color: var(--danger);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  margin-bottom: 1rem;
+}

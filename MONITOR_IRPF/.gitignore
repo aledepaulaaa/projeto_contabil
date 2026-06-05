@@ -1,0 +1,27 @@
+# Ambiente / segredos
+.env
+backend/.env
+backend/config/app_kv.local.json
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# SQLite local (dados de desenvolvimento)
+backend/data/*.db
+
+# Build / logs
+*.log
+
+# IDE
+.idea/
+.vscode/
+
+# Docs, pastas avulsas e relatórios
+documentacao

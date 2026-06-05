@@ -1,0 +1,42 @@
+{
+  "_readme": "Chaves com _ são ignoradas pelo script. Copia este ficheiro para app_kv.local.json, preenche, corre: python scripts/apply_kv_template.py",
+  "irpf_govbox_root": "C:\\\\Program Files (x86)\\\\GOVBOX\\\\irpf-2026",
+  "irpf_govbox_roots_v1": [
+    "C:\\\\Program Files (x86)\\\\GOVBOX\\\\irpf-2026"
+  ],
+  "irpf_monitor_enabled": "true",
+  "sqlite_auxiliar_path": "",
+  "monitor_config_v1": {},
+  "monitor_snapshot_v1": {},
+  "asaas_config_v1": {
+    "enabled": false,
+    "apiKey": "COLE_AQUI_A_CHAVE_ASAAS",
+    "baseUrl": "https://api-sandbox.asaas.com/v3",
+    "billingType": "BOLETO",
+    "dueDays": 7,
+    "descriptionTemplate": "Honorários IRPF {ano} - {nome}"
+  },
+  "serpro_integra_contador_config_v1": {
+    "enabled": false,
+    "baseUrl": "https://gateway.apiserpro.serpro.gov.br/integra-contador/v1",
+    "enviarPath": "Contrato/Enviar",
+    "authUrl": "https://autenticacao.sapi.serpro.gov.br/authenticate",
+    "roleType": "TERCEIROS",
+    "consumerKey": "COLE_CONSUMER_KEY",
+    "consumerSecret": "COLE_CONSUMER_SECRET",
+    "certPassword": "SENHA_DO_P12_SE_HOUVER",
+    "accessToken": "legado_opcional_nao_usado_no_fluxo_oauth",
+    "nota": "certPassword: senha do .p12 enviado em contador/certificado/upload. Trial pode usar baseUrl .../integra-contador-trial/v1"
+  },
+  "contador_config_v1": {
+    "nome": "NOME_DO_CONTADOR",
+    "cpf": "00000000000",
+    "crc": "000000",
+    "email": "email@exemplo.com"
+  },
+  "contador_cert_a1_b64": "",
+  "contador_cert_a1_meta": {
+    "nome": "ALIAS_DO_CERTIFICADO",
+    "nota": "Ou deixa vazio e faz upload pela UI em Configurações / integrações quando existir."
+  }
+}

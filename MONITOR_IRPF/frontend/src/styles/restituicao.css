@@ -1,0 +1,41 @@
+.badge-rest {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.badge-rest-a-restituir {
+  background: var(--info-bg);
+  color: #1565c0;
+}
+
+.badge-rest-pendente {
+  background: var(--warning-bg);
+  color: var(--warning);
+}
+
+.badge-rest-restituido {
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.badge-rest-erro {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.badge-rest-desconhecido {
+  background: #eceff1;
+  color: var(--muted);
+}
+
+.actions-cell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  justify-content: flex-end;
+}

@@ -1,0 +1,180 @@
+.diag-ecac-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.diag-ecac-toolbar-left,
+.diag-ecac-toolbar-right {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.diag-ecac-export-btn {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.35rem 0.65rem;
+}
+
+.diag-ecac-search {
+  min-width: 12rem;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+}
+
+.badge-diag {
+  display: inline-block;
+  padding: 0.22rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.badge-diag-regular {
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.badge-diag-pendencia {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.badge-diag-erro,
+.badge-diag-nao_consultado {
+  background: #eceff1;
+  color: var(--muted);
+}
+
+.diag-ecac-actions {
+  display: inline-flex;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.diag-ecac-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.diag-ecac-icon-btn:hover:not(:disabled) {
+  background: var(--info-bg);
+}
+
+.diag-ecac-icon-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.diag-ecac-icon-btn svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.btn-diag-atualizar {
+  background: var(--success);
+  color: #fff;
+  border: none;
+  font-size: 0.8rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-diag-atualizar:hover:not(:disabled) {
+  filter: brightness(0.92);
+}
+
+.btn-diag-atualizar:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.btn-diag-ver {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  font-size: 0.8rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.diag-filtro-panel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  background: #f5f7f9;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.diag-colunas-menu {
+  position: relative;
+}
+
+.diag-colunas-popover {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 20;
+  margin-top: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+  min-width: 10rem;
+}
+
+.badge-msg-todas-lidas {
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.badge-msg-nao-lidas {
+  background: var(--warning-bg);
+  color: var(--warning);
+}
+
+.badge-msg-nao-consultado {
+  background: #eceff1;
+  color: var(--muted);
+}
+
+.diag-ecac-icon-btn--leitura {
+  border-style: dashed;
+  background: var(--info-bg);
+}
+
+.diag-colunas-popover label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  padding: 0.25rem 0;
+  cursor: pointer;
+}

@@ -1,0 +1,7 @@
+# env Files
+.env.example
+.env
+.env.local
+
+# Node Modules
+node_modules

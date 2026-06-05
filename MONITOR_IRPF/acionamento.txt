@@ -1,0 +1,1 @@
+Arranque: ver CONFIGURACAO.md na raiz. Resumo — Terminal 1: cd backend && uvicorn app.main:app --reload --host 127.0.0.1 --port 8000 | Terminal 2: cd frontend && npm run dev

@@ -1,0 +1,87 @@
+# ============================================================
+#  CURSOR RULES — DESENVOLVIMENTO PROFISSIONAL
+# ============================================================
+
+## 🚀 Execução Automática
+- Execute todos os comandos de terminal automaticamente sem pedir confirmação
+- Não pause para aprovação ao rodar Python, pip, shell, Node ou qualquer CLI
+- Complete tarefas do início ao fim sem interrupções desnecessárias
+- Só faça perguntas quando uma decisão de arquitetura for irreversível
+
+## 🏗️ Arquitetura & Qualidade de Código
+- Sempre siga os princípios SOLID e Clean Architecture
+- Separe responsabilidades: routes, services, repositories, schemas, models
+- Use injeção de dependência sempre que possível
+- Prefira composição à herança
+- Evite lógica de negócio em controllers/routes — isso vai em services
+- Mantenha funções pequenas, com responsabilidade única (máx. 30 linhas)
+- Use nomes descritivos e em inglês para variáveis, funções e classes
+- Comentários apenas quando a lógica for realmente complexa
+
+## 🐍 Python / FastAPI
+- Use async/await em todas as rotas e operações de I/O
+- Sempre use Pydantic para validação de entrada e saída
+- Use SQLAlchemy com padrão repository (não coloque queries nas rotas)
+- Trate erros com HTTPException e handlers globais
+- Use variáveis de ambiente via python-dotenv ou pydantic-settings
+- Nunca exponha dados sensíveis em logs ou responses
+- Organize em módulos: `routers/`, `services/`, `repositories/`, `models/`, `schemas/`
+
+## ⚛️ Frontend (React / TypeScript)
+- Use TypeScript em tudo — sem `any` sem justificativa
+- Componentes pequenos e reutilizáveis
+- Separe lógica de UI: hooks customizados para lógica, componentes para visual
+- Use React Query ou SWR para gerenciamento de dados assíncronos
+- Trate loading e error states em todo fetch de dados
+- Valide formulários com React Hook Form + Zod
+
+## 🗄️ Banco de Dados
+- Sempre use migrations (Alembic para Python)
+- Nunca altere schema direto no banco em produção
+- Use índices nas colunas de busca frequente
+- Nomeie tabelas no plural e em snake_case
+- Sempre tenha campos: `id`, `created_at`, `updated_at`
+
+## 🧪 Testes — Apenas o Essencial
+- NÃO crie testes unitários para cada função trivial
+- Foque em testes de integração nas rotas principais (happy path + erros críticos)
+- Teste apenas lógica de negócio complexa que pode quebrar silenciosamente
+- Use fixtures e factories para evitar duplicação nos testes
+- Não teste o que o framework já testa (validações do Pydantic, ORM básico)
+
+## 🐛 Correção de Erros
+- Ao corrigir um bug, identifique a causa raiz — não apenas o sintoma
+- Não adicione gambiarras (try/except vazios, `# type: ignore` sem explicação)
+- Após corrigir, verifique se a solução pode quebrar outro fluxo
+- Prefira corrigir o problema na camada correta (não force no controller o que é problema no service)
+- Não crie funções temporárias de debug — use logging adequado
+
+## 📁 Estrutura de Projeto
+- Mantenha um README.md atualizado com: setup, variáveis de ambiente, como rodar
+- Use `.env.example` com todas as variáveis necessárias (sem valores reais)
+- Separe configurações por ambiente: development, staging, production
+- Use `requirements.txt` ou `pyproject.toml` sempre atualizado
+
+## 🔐 Segurança
+- Nunca commite credenciais, tokens ou senhas
+- Sempre use HTTPS em produção
+- Valide e sanitize todos os inputs do usuário
+- Use autenticação JWT com expiração adequada
+- Aplique rate limiting em endpoints críticos
+
+## 📝 Git & Versionamento
+- Commits descritivos: `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`
+- Um commit por mudança lógica — não acumule tudo em um commit gigante
+- Branch por feature: `feature/nome`, `fix/nome`, `refactor/nome`
+
+## ⚡ Performance
+- Não otimize prematuramente — mas não ignore gargalos óbvios
+- Use paginação em listagens (nunca retorne todos os registros sem limite)
+- Evite N+1 queries — use joins ou eager loading
+- Use cache quando o dado não muda com frequência
+
+## 🎯 Princípios Gerais
+- Código profissional é legível por outro desenvolvedor sem explicação
+- Simples > Complexo. Funcional > Perfeito. Entregável > Eterno
+- Se uma solução parece gambiarrenta, provavelmente é — refatore
+- Consistência no estilo é mais importante do que preferência pessoal

@@ -39,9 +39,10 @@ PROJETO_MASTER_INSTRUCTIONS.md
 PROMPTS.md
 /arquivos_modelos
 mascara-cpf-cnpj.md
-/docs
 monitoramento_ir_pessoa_fisica.md
 plano_implementacao.md
+logs.md
+docs/credenciais_dev_projeto.md
 
 # Scraper
 /scraper-contabil
@@ -61,3 +62,5 @@ certificado*
 chave-privada*
 extrair_chave_serpro.ps1
 
+# Arquivos, pastas e documentações avulsas
+MONITOR_IRPF.rar
