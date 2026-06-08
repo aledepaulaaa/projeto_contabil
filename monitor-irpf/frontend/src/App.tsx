@@ -2,7 +2,6 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { AppShell } from "./components/AppShell";
 import { ClientesPage } from "./pages/ClientesPage";
 import { ConfigPage } from "./pages/ConfigPage";
-import { ConsultaSerproPage } from "./pages/ConsultaSerproPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { DocumentosPage } from "./pages/DocumentosPage";
 import { PortalClienteDocumentosPage } from "./pages/PortalClienteDocumentosPage";
@@ -35,7 +34,6 @@ export default function App() {
         <Route path="diagnostico-fiscal" element={<DiagnosticoFiscalPage />} />
         <Route path="mensagens-ecac" element={<MensagensEcacPage />} />
         <Route path="insights" element={<InsightsPage />} />
-        <Route path="consulta-serpro" element={<ConsultaSerproPage />} />
         <Route path="configuracoes" element={<ConfigPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>

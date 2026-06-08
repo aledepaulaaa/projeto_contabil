@@ -401,6 +401,120 @@ def serpro_consulta_renda(payload: dict[str, Any], db: Session = Depends(get_db)
         return {"ok": False, "message": f"Falha inesperada na consulta: {e}"}
 
 
+@router.post("/serpro/chamar")
+def serpro_chamar_api(payload: dict[str, Any], db: Session = Depends(get_db)) -> dict[str, Any]:
+    """
+    Realiza uma chamada dinâmica à API do SERPRO utilizando as credenciais configuradas.
+    Payload:
+    - endpoint: str (ex: "/Consultar/12345")
+    - method: str (GET, POST, etc., default GET)
+    - body: dict/list/any (payload a enviar no corpo da requisição, opcional)
+    - headers: dict (cabeçalhos adicionais, opcional)
+    """
+    endpoint = str(payload.get("endpoint") or "").strip()
+    method = str(payload.get("method") or "GET").strip().upper()
+    body_data = payload.get("body")
+    custom_headers = payload.get("headers") or {}
+
+    if not endpoint:
+        raise HTTPException(status_code=400, detail="O parâmetro 'endpoint' é obrigatório.")
+
+    # Obter configuração e verificar mock
+    kv = AppKvRepository(db)
+    cfg = _json_or_default(kv.get(_K_SERPRO), {})
+    
+    # Se o token trial estiver no endpoint, ou a consumerKey começar com "mock"
+    is_trial_token = _SERPRO_TRIAL_TOKEN in endpoint
+    c_key = str(cfg.get("consumerKey") or "").strip()
+    
+    if c_key.lower().startswith("mock") or is_trial_token:
+        # Se for consulta de renda do token trial, retornamos a estrutura de renda mockada
+        if is_trial_token and ("Consultar" in endpoint or "consulta-renda" in endpoint):
+            return {
+                "ok": True,
+                "statusCode": 200,
+                "data": _MOCK_RENDA_RESPONSE
+            }
+        return {
+            "ok": True,
+            "statusCode": 200,
+            "data": {
+                "mock": True,
+                "message": f"Chamada mock bem-sucedida para o endpoint: {endpoint}",
+                "method": method,
+                "payload_recebido": body_data
+            }
+        }
+
+    # Verificar se está ativo
+    if not cfg.get("enabled"):
+         raise HTTPException(status_code=400, detail="A integração do SERPRO está desativada nas configurações.")
+
+    # ── Chamada real (exige credenciais e certificado configurados) ──
+    try:
+        tokens = _serpro_tokens_from_config(db)
+    except ValueError as e:
+        return {"ok": False, "message": str(e)}
+    except httpx.HTTPStatusError as e:
+        return {"ok": False, "message": _serpro_http_error_message(e)}
+    except httpx.RequestError as e:
+        return {"ok": False, "message": f"Erro de rede (SAPI): {e}"}
+    except Exception as e:
+        return {"ok": False, "message": f"Falha na autenticação Serpro: {e}"}
+
+    base_url = str(cfg.get("baseUrl") or "").rstrip("/")
+    if not base_url:
+        return {"ok": False, "message": "Configure a URL Base da API Serpro nas configurações."}
+
+    # Resolver URL do endpoint
+    if endpoint.startswith("http://") or endpoint.startswith("https://"):
+        full_url = endpoint
+    else:
+        # Garantir barra inicial
+        if not endpoint.startswith("/"):
+            endpoint = "/" + endpoint
+        full_url = f"{base_url}{endpoint}"
+
+    access_token = tokens.get("access_token", "")
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Accept": "application/json",
+        **custom_headers
+    }
+
+    try:
+        with httpx.Client(verify=True, timeout=30.0) as client:
+            if method == "GET":
+                r = client.get(full_url, headers=headers)
+            elif method == "POST":
+                r = client.post(full_url, headers=headers, json=body_data)
+            elif method == "PUT":
+                r = client.put(full_url, headers=headers, json=body_data)
+            elif method == "DELETE":
+                r = client.delete(full_url, headers=headers)
+            else:
+                r = client.request(method, full_url, headers=headers, json=body_data)
+        
+        ok_http = 200 <= r.status_code < 300
+        
+        try:
+            res_data = r.json()
+        except Exception:
+            res_data = r.text
+            
+        return {
+            "ok": ok_http,
+            "statusCode": r.status_code,
+            "data": res_data
+        }
+    except httpx.HTTPStatusError as e:
+        return {"ok": False, "statusCode": e.response.status_code, "message": _serpro_http_error_message(e)}
+    except httpx.RequestError as e:
+        return {"ok": False, "message": f"Erro de rede ao conectar com a API SERPRO: {e}"}
+    except Exception as e:
+        return {"ok": False, "message": f"Falha inesperada na chamada: {e}"}
+
+
 @router.post("/serpro/integra-contador/token")
 def serpro_integra_token(db: Session = Depends(get_db)) -> dict[str, Any]:
     try:

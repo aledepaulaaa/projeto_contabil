@@ -722,6 +722,32 @@ export async function postSerproConsultaRenda(tokenCompartilhamento: string): Pr
   }
 }
 
+export interface SerproChamarResult {
+  ok: boolean;
+  statusCode?: number;
+  message?: string;
+  data?: any;
+}
+
+export async function postSerproChamar(body: {
+  endpoint: string;
+  method?: string;
+  body?: any;
+  headers?: Record<string, string>;
+}): Promise<SerproChamarResult> {
+  const res = await fetch(`${API}/integracoes/serpro/chamar`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const text = await res.text();
+  try {
+    return JSON.parse(text) as SerproChamarResult;
+  } catch {
+    throw new Error(text || res.statusText);
+  }
+}
+
 export async function fetchChecklistModelos(): Promise<ChecklistModeloResumo[]> {
   const res = await fetch(`${API}/checklist-modelos`);
   return parseResponse(res) as Promise<ChecklistModeloResumo[]>;

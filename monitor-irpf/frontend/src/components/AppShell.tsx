@@ -14,7 +14,6 @@ import {
   IconRestituicoes,
   IconPrecificacao,
   IconProcuracoes,
-  IconSerpro,
   IconUsuario,
 } from "./NavIcons";
 
@@ -38,7 +37,6 @@ const NAV: NavItem[] = [
   { to: "/diagnostico-fiscal", label: "Diagnóstico fiscal", Icon: IconDiagnostico },
   { to: "/mensagens-ecac", label: "Mensagens e-CAC", Icon: IconMensagens },
   { to: "/insights", label: "Insights", Icon: IconInsights },
-  { to: "/consulta-serpro", label: "Consulta SERPRO", Icon: IconSerpro },
   { to: "/configuracoes", label: "Configurações", Icon: IconConfig },
 ];
 
