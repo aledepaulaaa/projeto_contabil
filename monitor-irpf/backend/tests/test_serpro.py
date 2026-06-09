@@ -110,6 +110,40 @@ class TestSerproService(unittest.TestCase):
         from app.repositories.app_kv_repository import AppKvRepository
         self.assertEqual(AppKvRepository(self.db).get("contador_cert_a1_pass"), "pass_cert_123")
 
+    def test_sandbox_mode_default_and_routing(self):
+        if serpro_config_get is None or serpro_config_put is None:
+            self.skipTest("Router não importado")
+        
+        # 1. Verifica se os novos campos estão no get padrão
+        res = serpro_config_get(self.db)
+        self.assertIn("sandboxMode", res)
+        self.assertTrue(res["sandboxMode"])
+        self.assertEqual(res["baseUrl"], "https://gateway.apiserpro.serpro.gov.br/")
+        self.assertTrue(res["apiRendaAtiva"])
+        self.assertFalse(res["apiRestituicaoAtiva"])
+
+        # 2. Salva com sandboxMode desativado e outra baseUrl
+        payload = {
+            "enabled": True,
+            "consumerKey": "key123",
+            "consumerSecret": "secret123",
+            "baseUrl": "https://gateway.apiserpro.serpro.gov.br/",
+            "sandboxMode": False,
+            "apiRendaAtiva": True,
+            "apiRestituicaoAtiva": True,
+        }
+        res_put = serpro_config_put(payload, self.db)
+        self.assertFalse(res_put["sandboxMode"])
+        self.assertTrue(res_put["apiRestituicaoAtiva"])
+
+        # Verifica no banco se as flags persistem
+        from app.repositories.app_kv_repository import AppKvRepository
+        import json
+        config_salva = json.loads(AppKvRepository(self.db).get("serpro_integra_contador_config_v1"))
+        self.assertFalse(config_salva.get("sandboxMode"))
+        self.assertEqual(config_salva.get("baseUrl"), "https://gateway.apiserpro.serpro.gov.br/")
+        self.assertTrue(config_salva.get("apiRestituicaoAtiva"))
+
 
 if __name__ == "__main__":
     unittest.main()

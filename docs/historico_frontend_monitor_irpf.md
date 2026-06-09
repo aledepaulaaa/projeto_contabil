@@ -1,5 +1,18 @@
 # Histórico de Alterações — Frontend (MONITOR_IRPF)
 
+## v1.3.0 - Ambientes Sandbox & Refatoração SERPRO (09/06/2026)
+* **Asaas (Sandbox/Prod Keys)**:
+  * Adicionado toggle visual de "Modo Sandbox (Testes)".
+  * Separados os campos de chaves da API para `sandboxApiKey` e `productionApiKey`, com indicação visual de cor (laranja para testes, verde para produção) e badges explicativos.
+  * Otimizada a experiência removendo campos manuais de URLs que agora são computados no backend.
+* **Conta Azul (Ativação de APIs)**:
+  * Adicionado checkbox reativo para ativar de forma granular a **API de Cobranças (Emissão de Boletos/Pix)**.
+* **SERPRO (Refatoração e Testes Sandbox)**:
+  * Renomeado o painel principal de configurações para **Configurações de Integração SERPRO** e removida a seção do simulador da tela de configuração principal.
+  * Criado um layout de abas premium (Vanilla CSS): **Configurações** (controle de credenciais, toggle sandbox, APIs ativas, upload de certs) e **Testar Sandbox** (simulador sandbox).
+  * Adicionado suporte no simulador para testar múltiplos módulos (Renda, Restituição e Autorizações/Procurações), com botões para auto-preencher dados de teste da documentação, visualização dos cards e tabela de dados parseados, e detalhes de URL executada, status code e JSON de retorno técnico.
+  * Correção de warning de variável não lida (`id`) em `PrecificacaoCobrancaPage.tsx` para assegurar que a compilação do TypeScript ocorra com zero erros.
+
 ## v1.2.0 - Página Consulta Renda SERPRO (05/06/2026)
 * **Contexto**: Implementação da página de consulta de renda via API SERPRO, replicando e adaptando o design premium da aplicação CONTABIL_PRO para a stack CSS nativa do MONITOR_IRPF.
 * **Nova Página `ConsultaSerproPage.tsx`**:

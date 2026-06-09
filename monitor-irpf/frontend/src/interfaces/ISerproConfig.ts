@@ -9,4 +9,10 @@ export interface SerproConfig {
   certPassword?: string;
   hasCert?: boolean;
   hasPrivateKey?: boolean;
+  /** Habilita a API "Consultar Renda" (dados cadastrais, ocupação e rendimentos). */
+  apiRendaAtiva?: boolean;
+  /** Habilita a API "Consultar Restituição IRPF". */
+  apiRestituicaoAtiva?: boolean;
+  /** Controla se usa o ambiente sandbox (trial) ou produção. */
+  sandboxMode?: boolean;
 }

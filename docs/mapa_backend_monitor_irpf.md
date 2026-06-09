@@ -29,15 +29,17 @@ O backend da sub-aplicação `MONITOR_IRPF` é construído com Python 3.12, Fast
 
 | Rota | Método | Descrição |
 |---|---|---|
-| `/api/integracoes/serpro/config` | GET / PUT | Ler/salvar credenciais e configurações |
+| `/api/integracoes/serpro/config` | GET / PUT | Ler/salvar credenciais, configurações e `sandboxMode` |
 | `/api/integracoes/serpro/extrair-chave` | POST | Extrair RSA PKCS8 do certificado PFX armazenado |
 | `/api/integracoes/serpro/integra-contador/token` | POST | Autenticar via SAPI (mTLS) e obter access token |
-| `/api/integracoes/serpro/consulta-renda` | POST | Consultar renda do contribuinte (mock ou produção) |
+| `/api/integracoes/serpro/consulta-renda` | POST | Consultar renda do contribuinte (sandbox ou produção) |
+| `/api/integracoes/serpro/chamar` | POST | Realiza chamadas dinâmicas/testes para as APIs da SERPRO |
 | `/api/integracoes/contador/certificado/upload` | POST | Upload do certificado digital A1 (PFX/P12) |
 | `/api/integracoes/contador/testar-certificado` | POST | Verificar integridade e senha do PFX |
 
-> **Mock automático**: Token `06aef429-a981-3ec5-a1f8-71d38d86481e` retorna dataset simulado sem custo de API.
-> **Mock bypass**: `consumerKey` iniciando com `"mock"` ignora autenticação SAPI.
+> **Rotas Dinâmicas de Sandbox**: Dependendo da flag `sandboxMode` na configuração, o backend roteia dinamicamente os módulos: `renda-pf-trial/v1` vs `renda-pf/v1`, e `consulta-restituicao-trial/v1` vs `consulta-restituicao/v1`.
+> **Mock automático de Sandbox**: Módulo `/chamar` e `/consulta-renda` interceptam tokens conhecidos de demonstração (`06aef429-a981-3ec5-a1f8-71d38d86481e` para Renda, `nchRml3PnHfUNC6hxowNnqYMfqMETs8WbYIaCfOKRgKm` ou `mWLQjmHUVY9Thsf88NlJ0ta7YHRmC8ZyMEpxFAuj6zmA` para Restituição, e CPF `12345678909` ou `11111111111` para Autorizações) retornando dados mockados.
+> **Bypass de SAPI**: Se `consumerKey` começar com `"mock"`, ou se o modo sandbox estiver ativo sem chaves configuradas, a autenticação SAPI real é contornada com mock.
 
 ---
 

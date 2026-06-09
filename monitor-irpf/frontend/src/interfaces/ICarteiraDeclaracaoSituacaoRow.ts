@@ -9,4 +9,6 @@ export interface CarteiraDeclaracaoSituacaoRow {
   situacao_declaracao: SituacaoDeclaracaoCarteira;
   /** ISO date (YYYY-MM-DD) quando «válido até» aplica. */
   validade_ate: string | null;
+  token?: string | null;
+  status_real?: string | null;
 }

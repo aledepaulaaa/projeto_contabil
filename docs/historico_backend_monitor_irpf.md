@@ -1,5 +1,18 @@
 # Histórico de Alterações — Backend (MONITOR_IRPF)
 
+## v1.3.0 - Ambientes Sandbox & Refatoração SERPRO (09/06/2026)
+* **Asaas (Sandbox/Prod Keys)**:
+  * Atualizada a configuração reativa no app_kv (`asaas_config_v1`) com suporte aos campos `sandboxMode`, `sandboxApiKey` e `productionApiKey`.
+  * Ajustada a lógica de criação de cobranças (`criar_cobranca_para_cliente`) para utilizar a URL base dinâmica (`https://api-sandbox.asaas.com/v3` se `sandboxMode` for verdadeiro, caso contrário `https://api.asaas.com/v3`) e a respectiva API key.
+* **Conta Azul (Ativação de APIs)**:
+  * Adicionado suporte ao campo `apiCobrancasAtiva` nas rotas e persistência de configuração da Conta Azul.
+* **SERPRO (Sandbox & Rotas Dinâmicas)**:
+  * Adicionado `sandboxMode` no dicionário padrão em `serpro_config_get` e manipulado corretamente no `serpro_config_put`.
+  * URL base padrão alterada para `https://gateway.apiserpro.serpro.gov.br/`.
+  * Implementação de rotas dinâmicas nos serviços de Restituição (`restituicao_service.py`) e Procuração (`procuracao_service.py`), selecionando os sufixos correspondentes (`-trial/v1` vs `/v1`) dinamicamente dependendo da propriedade `sandboxMode` salva no banco.
+  * Endpoint de chamadas genéricas (`/serpro/chamar`) atualizado para interceptar os tokens conhecidos de demonstração do Trial (Renda, Restituição Com Declaração / Sem Declaração - retornando erro 404 - e Autorizações/Procurações) e retornar os payloads mock correspondentes imediatamente sem exigir comunicação externa ou chaves.
+  * Criado teste de unidade em `test_serpro.py` para validar a inicialização do `sandboxMode` e a URL padrão.
+
 ## v1.2.0 - Módulo Consulta Renda SERPRO + Mensagens de Erro Inteligentes (05/06/2026)
 * **Contexto**: Implementação do endpoint de consulta de renda da Receita Federal via API SERPRO, com suporte a modo de demonstração (sem custo) e chamada real em produção.
 * **Novo Endpoint `POST /api/integracoes/serpro/consulta-renda`**:

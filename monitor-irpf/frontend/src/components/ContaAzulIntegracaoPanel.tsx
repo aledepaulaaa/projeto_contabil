@@ -15,6 +15,7 @@ export function ContaAzulIntegracaoPanel() {
   const [ok, setOk] = useState<string | null>(null);
 
   const [enabled, setEnabled] = useState(false);
+  const [apiCobrancasAtiva, setApiCobrancasAtiva] = useState(false);
   const [clientId, setClientId] = useState("");
   const [clientSecret, setClientSecret] = useState("");
   const [redirectUri, setRedirectUri] = useState("https://contaazul.com");
@@ -29,6 +30,7 @@ export function ContaAzulIntegracaoPanel() {
     try {
       const c = await fetchContaAzulConfig();
       setEnabled(Boolean(c.enabled));
+      setApiCobrancasAtiva(Boolean(c.apiCobrancasAtiva));
       setClientId(c.clientId ?? "");
       setRedirectUri(c.redirectUri || "https://contaazul.com");
       setExpiresAt(c.expiresAt || "");
@@ -55,6 +57,7 @@ export function ContaAzulIntegracaoPanel() {
     try {
       const body: Record<string, unknown> = {
         enabled,
+        apiCobrancasAtiva,
         clientId: clientId.trim(),
         redirectUri: redirectUri.trim() || "https://contaazul.com",
       };
@@ -146,6 +149,21 @@ export function ContaAzulIntegracaoPanel() {
               onChange={(e) => setEnabled(e.target.checked)}
             />{" "}
             Integração Conta Azul ativa
+          </label>
+        </div>
+
+        <div className="field" style={{ gridColumn: "1 / -1" }}>
+          <div className="monitor-hint" style={{ marginBottom: "1rem" }}>
+            <strong>APIs Disponíveis:</strong> Selecione quais módulos da Conta Azul deseja utilizar na aplicação.
+          </div>
+          <label>
+            <input
+              type="checkbox"
+              checked={apiCobrancasAtiva}
+              onChange={(e) => setApiCobrancasAtiva(e.target.checked)}
+              disabled={!enabled}
+            />{" "}
+            API de Cobranças (Emissão de Boletos e Pix via Conta Azul)
           </label>
         </div>
 

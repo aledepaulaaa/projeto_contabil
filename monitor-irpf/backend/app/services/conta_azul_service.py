@@ -32,6 +32,7 @@ def obter_configuracao_conta_azul(db: Session) -> dict[str, Any]:
         "accessToken": "",
         "refreshToken": "",
         "expiresAt": "",
+        "apiCobrancasAtiva": False,
     }
     if not raw:
         return default
@@ -70,6 +71,15 @@ def trocar_code_por_tokens(db: Session, code: str) -> dict[str, Any]:
 
     if not client_id or not client_secret:
         raise ValueError("Configure Client ID e Client Secret antes de autorizar a aplicação.")
+
+    # Comportamento Mock
+    if str(client_id).lower().startswith("mock"):
+        config["accessToken"] = "mock_conta_azul_access_token"
+        config["refreshToken"] = "mock_conta_azul_refresh_token"
+        config["expiresAt"] = (datetime.now() + timedelta(hours=1)).isoformat()
+        config["enabled"] = True
+        salvar_configuracao_conta_azul(db, config)
+        return config
 
     # Constrói autenticação básica
     credentials = f"{client_id}:{client_secret}"
@@ -118,6 +128,14 @@ def renovar_tokens(db: Session) -> dict[str, Any]:
 
     if not client_id or not client_secret:
         raise ValueError("Credenciais da Conta Azul ausentes.")
+
+    # Comportamento Mock
+    if str(client_id).lower().startswith("mock"):
+        config["accessToken"] = "mock_conta_azul_access_token"
+        config["expiresAt"] = (datetime.now() + timedelta(hours=1)).isoformat()
+        salvar_configuracao_conta_azul(db, config)
+        return config
+
     if not refresh_token:
         raise ValueError("Nenhum refresh token disponível para renovação. Refaça a autorização.")
 
@@ -159,6 +177,10 @@ def obter_access_token_valido(db: Session) -> str:
     if not config.get("enabled"):
         raise ValueError("A integração com a Conta Azul está desabilitada nas configurações.")
     
+    client_id = config.get("clientId")
+    if str(client_id).lower().startswith("mock"):
+        return "mock_conta_azul_access_token"
+
     access_token = config.get("accessToken")
     expires_at = config.get("expiresAt")
 

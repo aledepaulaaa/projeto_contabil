@@ -17,3 +17,5 @@ class CarteiraDeclaracaoSituacaoRow(BaseModel):
         default=None,
         description="Data até a qual a situação «válido até» se aplica (prazo de entrega ou referência pós-entrega).",
     )
+    token: str | None = None
+    status_real: str | None = None

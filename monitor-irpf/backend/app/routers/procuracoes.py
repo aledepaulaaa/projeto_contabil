@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.schemas.procuracao import CarteiraDeclaracaoSituacaoRow
 from app.services.cliente_service import ClienteService
+from app.services.procuracao_service import ProcuracaoService
 
 router = APIRouter(prefix="/procuracoes", tags=["procuracoes"])
 
@@ -14,3 +15,11 @@ def carteira_situacao_declaracoes(
     db: Session = Depends(get_db),
 ) -> list[CarteiraDeclaracaoSituacaoRow]:
     return ClienteService(db).list_carteira_declaracao_situacao(ano)
+
+
+@router.post("/sincronizar")
+def sincronizar_procuracoes(
+    ano: int = Query(..., description="Ano-calendário IRPF (exercício da carteira)."),
+    db: Session = Depends(get_db),
+):
+    return ProcuracaoService(db).sincronizar(ano)

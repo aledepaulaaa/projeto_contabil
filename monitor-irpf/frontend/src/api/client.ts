@@ -216,6 +216,13 @@ export async function fetchCarteiraSituacaoDeclaracoes(ano: number): Promise<Car
   return parseResponse(res) as Promise<CarteiraDeclaracaoSituacaoRow[]>;
 }
 
+export async function postProcuracoesSincronizar(ano: number): Promise<{ ok: boolean; message: string; sincronizados?: number; erros?: number }> {
+  const res = await fetch(`${API}/procuracoes/sincronizar${qs({ ano })}`, {
+    method: "POST",
+  });
+  return parseResponse(res) as Promise<{ ok: boolean; message: string; sincronizados?: number; erros?: number }>;
+}
+
 export async function toggleClienteAtivo(body: {
   estado_key: string;
   ativo: boolean;

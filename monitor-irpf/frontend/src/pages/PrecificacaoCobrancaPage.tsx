@@ -1,5 +1,7 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { Paginacao } from "../components/Paginacao";
+import { usePaginacao } from "../hooks/usePaginacao";
 import {
   fetchAsaasConfig,
   fetchClientes,
@@ -41,6 +43,7 @@ export function PrecificacaoCobrancaPage() {
   const [infoMsg, setInfoMsg] = useState<string | null>(null);
   const [asaasEnabled, setAsaasEnabled] = useState(false);
   const [chargingKey, setChargingKey] = useState<string | null>(null);
+  const [faturasGeradas, setFaturasGeradas] = useState<Record<string, string>>({});
   const [editRow, setEditRow] = useState<ClienteListRow | null>(null);
   const [editValorStr, setEditValorStr] = useState("");
   const [savingValor, setSavingValor] = useState(false);
@@ -80,6 +83,8 @@ export function PrecificacaoCobrancaPage() {
     void load();
   }, [load]);
 
+  const { paginatedItems: pageRows, paginacaoProps } = usePaginacao(rows, 20);
+
   async function onGerarCobranca(row: ClienteListRow) {
     if (!params) return;
     const { valor } = valorHonorarioCliente(row, params);
@@ -90,14 +95,10 @@ export function PrecificacaoCobrancaPage() {
     try {
       const data = await postAsaasCobrancaCliente({ estado_key: row.estado_key, ano_carteira: exerciseYear });
       const invoiceUrl = typeof data.invoiceUrl === "string" ? data.invoiceUrl : null;
-      const id = typeof data.id === "string" ? data.id : null;
-      setInfoMsg(
-        invoiceUrl
-          ? `Cobrança criada${id ? ` (${id})` : ""}. Link da fatura: ${invoiceUrl}`
-          : id
-            ? `Cobrança criada no Asaas (${id}).`
-            : "Cobrança criada no Asaas.",
-      );
+      if (invoiceUrl) {
+        setFaturasGeradas((prev) => ({ ...prev, [row.estado_key]: invoiceUrl }));
+      }
+      setInfoMsg(`Cobrança gerada com sucesso para ${row.nome}.`);
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Erro ao gerar cobrança");
     } finally {
@@ -205,14 +206,12 @@ export function PrecificacaoCobrancaPage() {
               </thead>
               <tbody>
                 {params
-                  ? rows.map((r) => {
+                  ? pageRows.map((r) => {
                       const tipo = (r.tipo_precificacao ?? "padrao") as TipoPrecificacaoCliente;
                       const { valor } = valorHonorarioCliente(r, params);
-                      const temAsaas = Boolean((r.asaas_customer_id ?? "").trim());
                       const podeCobrar =
                         asaasEnabled &&
                         r.ativo &&
-                        temAsaas &&
                         valor != null &&
                         valor > 0 &&
                         r.estado_key.startsWith("manual:");
@@ -220,11 +219,9 @@ export function PrecificacaoCobrancaPage() {
                         ? "Ative a integração Asaas em Configurações."
                         : !r.ativo
                           ? "Cliente inativo."
-                          : !temAsaas
-                            ? "Cadastre o ID Asaas (cus_…) no cliente em Clientes."
-                            : valor == null || valor <= 0
-                              ? "Sem valor de honorário aplicável."
-                              : "Gerar cobrança no Asaas com este valor.";
+                          : valor == null || valor <= 0
+                            ? "Sem valor de honorário aplicável."
+                            : "Gerar cobrança no Asaas com este valor.";
                       return (
                         <tr key={r.estado_key} className={!r.ativo ? "cliente-row-inativa" : undefined}>
                           <td className="cell-strong">{r.nome}</td>
@@ -245,15 +242,28 @@ export function PrecificacaoCobrancaPage() {
                           </td>
                           <td>{r.ativo ? "Ativo" : "Inativo"}</td>
                           <td>
-                            <button
-                              type="button"
-                              className="btn btn-ghost btn-small"
-                              disabled={loading || !podeCobrar || chargingKey === r.estado_key}
-                              title={titleCobrar}
-                              onClick={() => void onGerarCobranca(r)}
-                            >
-                              {chargingKey === r.estado_key ? "A gerar…" : "Gerar cobrança"}
-                            </button>
+                            {faturasGeradas[r.estado_key] ? (
+                              <a
+                                href={faturasGeradas[r.estado_key]}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="btn btn-primary btn-small"
+                                title={`Acessar fatura de ${r.nome}`}
+                                style={{ display: "inline-flex", alignItems: "center", gap: "0.25rem", padding: "0.25rem 0.5rem", textDecoration: "none" }}
+                              >
+                                🔗 Acessar Fatura
+                              </a>
+                            ) : (
+                              <button
+                                type="button"
+                                className="btn btn-ghost btn-small"
+                                disabled={loading || !podeCobrar || chargingKey === r.estado_key}
+                                title={titleCobrar}
+                                onClick={() => void onGerarCobranca(r)}
+                              >
+                                {chargingKey === r.estado_key ? "A gerar…" : "Gerar cobrança"}
+                              </button>
+                            )}
                           </td>
                         </tr>
                       );
@@ -262,6 +272,7 @@ export function PrecificacaoCobrancaPage() {
               </tbody>
             </table>
           </div>
+          <Paginacao {...paginacaoProps} />
           {!loading && rows.length === 0 ? (
             <p className="empty">Nenhum cliente nesta carteira. Sincronize ou cadastre em Clientes.</p>
           ) : null}

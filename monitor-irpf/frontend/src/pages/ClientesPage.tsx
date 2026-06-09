@@ -1,5 +1,7 @@
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { Paginacao } from "../components/Paginacao";
+import { usePaginacao } from "../hooks/usePaginacao";
 import {
   ANO_MAX,
   ANO_MIN,
@@ -155,6 +157,11 @@ export function ClientesPage() {
     if (filterResponsavel === "") return rows;
     return rows.filter((r) => rowMatchesResponsavelFilter(r, filterResponsavel, usuarios));
   }, [rows, filterResponsavel, usuarios]);
+
+  const { paginatedItems: pageRows, paginacaoProps, resetPage } = usePaginacao(displayedRows, 20);
+
+  // Reset page when filter changes
+  useEffect(() => { resetPage(); }, [filterResponsavel, resetPage]);
 
   function onExportPdf() {
     exportClientesPdf({
@@ -481,7 +488,7 @@ export function ClientesPage() {
                 </tr>
               </thead>
               <tbody>
-                {displayedRows.map((r, idx) => (
+                {pageRows.map((r, idx) => (
                   <tr key={`${r.estado_key}-${idx}`} className={!r.ativo ? "cliente-row-inativa" : undefined}>
                     <td className="cell-strong">{r.nome}</td>
                     <td>{r.cpf_exibicao ?? "—"}</td>
@@ -555,6 +562,7 @@ export function ClientesPage() {
               </tbody>
             </table>
           </div>
+          <Paginacao {...paginacaoProps} />
           {!rows.length && !loading ? (
             <p className="empty">Nenhum cliente nesta carteira. Use as ações acima.</p>
           ) : null}

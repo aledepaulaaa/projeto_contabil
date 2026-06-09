@@ -63,10 +63,11 @@ def _json_or_default(raw: str | None, default: dict[str, Any]) -> dict[str, Any]
 
 
 def _mask_asaas(data: dict[str, Any]) -> dict[str, Any]:
-    out = dict(data)
-    if out.get("apiKey"):
-        out["apiKey"] = "***"
-    return out
+    ret = data.copy()
+    for key_name in ["apiKey", "sandboxApiKey", "productionApiKey"]:
+        if ret.get(key_name):
+            ret[key_name] = "***"
+    return ret
 
 
 def _mask_serpro(data: dict[str, Any]) -> dict[str, Any]:
@@ -92,9 +93,10 @@ def _serpro_tokens_from_config(db: Session) -> dict[str, Any]:
     if not cfg.get("enabled"):
         raise ValueError("Serpro está desabilitado em serpro_integra_contador_config_v1 (enabled: false).")
     
-    # Mock fallback para ambiente de desenvolvimento/teste de UI
+    # Mock fallback para ambiente de desenvolvimento/teste de UI ou modo sandbox sem chaves
     c_key = str(cfg.get("consumerKey") or "").strip()
-    if c_key.lower().startswith("mock"):
+    sandbox_mode = bool(cfg.get("sandboxMode", True))
+    if c_key.lower().startswith("mock") or (sandbox_mode and not (cfg.get("consumerKey") and cfg.get("consumerSecret"))):
         return {
             "access_token": "mock_access_token_para_testes",
             "token_type": "Bearer",
@@ -145,8 +147,9 @@ def asaas_config_get(db: Session = Depends(get_db)) -> dict[str, Any]:
     raw = AppKvRepository(db).get(_K_ASAAS)
     default = {
         "enabled": False,
-        "apiKey": "",
-        "baseUrl": "https://api-sandbox.asaas.com/v3",
+        "sandboxMode": True,
+        "productionApiKey": "",
+        "sandboxApiKey": "",
         "billingType": "UNDEFINED",
         "dueDays": 7,
         "descriptionTemplate": "Honorários IRPF {ano} - {nome}",
@@ -160,8 +163,12 @@ def asaas_config_put(payload: dict[str, Any], db: Session = Depends(get_db)) -> 
     kv = AppKvRepository(db)
     existing = _json_or_default(kv.get(_K_ASAAS), {})
     merged = {**existing, **payload}
-    if merged.get("apiKey") == "***":
-        merged["apiKey"] = existing.get("apiKey") or ""
+    
+    # Handle masked keys
+    for key_name in ["apiKey", "sandboxApiKey", "productionApiKey"]:
+        if merged.get(key_name) == "***":
+            merged[key_name] = existing.get(key_name) or ""
+            
     if "dueDays" in merged and merged["dueDays"] is not None:
         try:
             merged["dueDays"] = max(0, min(365, int(merged["dueDays"])))
@@ -192,10 +199,13 @@ def serpro_config_get(db: Session = Depends(get_db)) -> dict[str, Any]:
         "enabled": False,
         "consumerKey": "",
         "consumerSecret": "",
-        "baseUrl": "https://gateway.apiserpro.serpro.gov.br/renda-pf-trial/v1",
+        "baseUrl": "https://gateway.apiserpro.serpro.gov.br/",
         "authUrl": "https://autenticacao.sapi.serpro.gov.br/authenticate",
         "roleType": "TERCEIROS",
         "certPassword": "",
+        "sandboxMode": True,
+        "apiRendaAtiva": True,
+        "apiRestituicaoAtiva": False,
     }
     data = _json_or_default(raw, default)
     
@@ -384,7 +394,14 @@ def serpro_consulta_renda(payload: dict[str, Any], db: Session = Depends(get_db)
         "Authorization": f"Bearer {access_token}",
         "Accept": "application/json",
     }
-    consult_url = f"{base_url}/Consultar/{token}"
+    
+    # Rota dinâmica baseado no sandboxMode
+    sandbox_mode = bool(cfg.get("sandboxMode", True))
+    if "renda-pf" in base_url:
+        consult_url = f"{base_url}/Consultar/{token}"
+    else:
+        module_route = "renda-pf-trial/v1" if sandbox_mode else "renda-pf/v1"
+        consult_url = f"{base_url}/{module_route}/Consultar/{token}"
     try:
         with httpx.Client(verify=True, timeout=30.0) as client:
             r = client.get(consult_url, headers=headers)
@@ -423,18 +440,98 @@ def serpro_chamar_api(payload: dict[str, Any], db: Session = Depends(get_db)) ->
     kv = AppKvRepository(db)
     cfg = _json_or_default(kv.get(_K_SERPRO), {})
     
-    # Se o token trial estiver no endpoint, ou a consumerKey começar com "mock"
+    # Se o token trial ou tokens de restituicao estiverem no endpoint, ou a consumerKey começar com "mock"
     is_trial_token = _SERPRO_TRIAL_TOKEN in endpoint
-    c_key = str(cfg.get("consumerKey") or "").strip()
+    is_restituicao_com_token = "nchRml3PnHfUNC6hxowNnqYMfqMETs8WbYIaCfOKRgKm" in endpoint
+    is_restituicao_sem_token = "mWLQjmHUVY9Thsf88NlJ0ta7YHRmC8ZyMEpxFAuj6zmA" in endpoint
     
-    if c_key.lower().startswith("mock") or is_trial_token:
-        # Se for consulta de renda do token trial, retornamos a estrutura de renda mockada
-        if is_trial_token and ("Consultar" in endpoint or "consulta-renda" in endpoint):
+    sandbox_mode = bool(cfg.get("sandboxMode", True))
+    c_key = str(cfg.get("consumerKey") or "").strip()
+    has_creds = bool(cfg.get("consumerKey") and cfg.get("consumerSecret"))
+    
+    use_mock = c_key.lower().startswith("mock") or is_trial_token or is_restituicao_com_token or is_restituicao_sem_token or (sandbox_mode and not has_creds) or "12345678909" in endpoint or "11111111111" in endpoint
+    
+    if use_mock:
+        # 1. Mocks de Restituição / Autorizações
+        if is_restituicao_sem_token or "11111111111" in endpoint:
+            if "Autorizacoes" in endpoint:
+                return {
+                    "ok": True,
+                    "statusCode": 200,
+                    "data": {
+                        "autorizacoes": [
+                            {
+                                "ni": "11111111111",
+                                "token": "mWLQjmHUVY9Thsf88NlJ0ta7YHRmC8ZyMEpxFAuj6zmA",
+                                "status": "EXPIRADA",
+                                "dataHoraStatus": "2020-01-01T00:00:00",
+                                "dataHoraVigenciaInicial": "2020-01-01T00:00:00",
+                                "dataHoraVigenciaFinal": "2025-01-01T00:00:00",
+                                "idServico": "consulta-restituicao",
+                                "versao": "v1"
+                            }
+                        ]
+                    }
+                }
+            return {
+                "ok": False,
+                "statusCode": 404,
+                "data": {
+                    "message": "O CPF não possui restituição disponível no exercício atual."
+                }
+            }
+        
+        elif is_restituicao_com_token or "12345678909" in endpoint:
+            if "Autorizacoes" in endpoint:
+                return {
+                    "ok": True,
+                    "statusCode": 200,
+                    "data": {
+                        "autorizacoes": [
+                            {
+                                "ni": "12345678909",
+                                "token": "nchRml3PnHfUNC6hxowNnqYMfqMETs8WbYIaCfOKRgKm",
+                                "status": "ATIVA",
+                                "dataHoraStatus": "2026-06-05T18:10:00",
+                                "dataHoraVigenciaInicial": "2026-06-05T18:10:00",
+                                "dataHoraVigenciaFinal": "2031-06-05T18:10:00",
+                                "idServico": "consulta-restituicao",
+                                "versao": "v1"
+                            }
+                        ]
+                    }
+                }
+            return {
+                "ok": True,
+                "statusCode": 200,
+                "data": {
+                    "servico": "Restituição IRPF",
+                    "idServico": "consulta-restituicao",
+                    "versao": "1.0",
+                    "autorizacao": {
+                        "token": "nchRml3PnHfUNC6hxowNnqYMfqMETs8WbYIaCfOKRgKm",
+                        "dataHoraRegistro": "2026-06-05T18:10:00",
+                        "titular": "12345678909",
+                        "destinatario": "33683111000107",
+                        "avisoLegal": "O acesso a estas informações foi autorizado pelo próprio titular..."
+                    },
+                    "dados": [
+                        {"codigo": "1", "texto": "CPF", "valor": "MTIzNDU2Nzg5MDk="},  # "12345678909"
+                        {"codigo": "2", "texto": "Situação da Restituição", "valor": "MDM="},  # "03" (Creditada / Paga)
+                        {"codigo": "3", "texto": "Descrição da Situação", "valor": "Q3JlZGl0YWRhIC8gUGFnYQ=="},  # "Creditada / Paga"
+                        {"codigo": "4", "texto": "Ano-calendário", "valor": "MjAyNA=="}  # "2024"
+                    ]
+                }
+            }
+        
+        # 2. Mocks de Renda PF
+        elif is_trial_token or "renda" in endpoint or "Renda" in endpoint:
             return {
                 "ok": True,
                 "statusCode": 200,
                 "data": _MOCK_RENDA_RESPONSE
             }
+            
         return {
             "ok": True,
             "statusCode": 200,
@@ -762,7 +859,7 @@ def conta_azul_testar_conexao(db: Session = Depends(get_db)) -> dict[str, Any]:
     
     try:
         with httpx.Client(timeout=10.0) as client:
-            r = client.get("https://api.contaazul.com/v1/contacts", headers=headers)
+            r = client.get("https://api-v2.contaazul.com/v1/categorias", headers=headers)
         
         if r.status_code == 200:
             return {"ok": True, "message": "Conexão com a Conta Azul estabelecida com sucesso!"}

@@ -79,3 +79,15 @@ def ensure_sqlite_schema(engine: Engine) -> None:
                         "ALTER TABLE cliente_documentacoes ADD COLUMN portal_bloqueado BOOLEAN NOT NULL DEFAULT 0",
                     ),
                 )
+
+    if "procuracoes" in insp.get_table_names():
+        pcols = {c["name"] for c in insp.get_columns("procuracoes")}
+        with engine.begin() as conn:
+            if "token" not in pcols:
+                conn.execute(text("ALTER TABLE procuracoes ADD COLUMN token VARCHAR(100)"))
+            if "status" not in pcols:
+                conn.execute(text("ALTER TABLE procuracoes ADD COLUMN status VARCHAR(50)"))
+            if "data_inicio" not in pcols:
+                conn.execute(text("ALTER TABLE procuracoes ADD COLUMN data_inicio DATETIME"))
+            if "data_fim" not in pcols:
+                conn.execute(text("ALTER TABLE procuracoes ADD COLUMN data_fim DATETIME"))

@@ -269,8 +269,41 @@ class ClienteService:
         for m in self._manual_repo.list_by_ano_carteira(ano_carteira):
             d = normalize_cpf_digits(m.cpf)
             cpf_d = d if d and len(d) == 11 else None
-            decls = self._declaracoes_ano_cliente(ano_carteira, cpf_d, m.nome)
-            sit, validade = _classify_situacao_declaracao(ano_carteira, decls)
+            
+            # Buscar procuração no banco de dados se houver CPF
+            proc = (
+                self._db.query(Procuracao)
+                .filter(
+                    Procuracao.titular_cpf == cpf_d,
+                    Procuracao.ano_calendario == ano_carteira,
+                )
+                .first()
+                if cpf_d
+                else None
+            )
+            
+            if proc:
+                token = proc.token
+                status_real = proc.status
+                validade = proc.data_fim.date() if proc.data_fim else None
+                
+                # Deriva a situacao_declaracao baseada na procuração real
+                if proc.status == "ATIVA":
+                    if proc.data_fim and proc.data_fim.date() < date.today():
+                        sit = "vencida"
+                    else:
+                        sit = "valido_ate"
+                elif proc.status in ("EXPIRADA", "REVOGADA"):
+                    sit = "vencida"
+                else:
+                    sit = "nao_existe"
+            else:
+                # Fallback baseado nas declarações
+                decls = self._declaracoes_ano_cliente(ano_carteira, cpf_d, m.nome)
+                sit, validade = _classify_situacao_declaracao(ano_carteira, decls)
+                token = None
+                status_real = None
+
             items.append(
                 CarteiraDeclaracaoSituacaoRow(
                     estado_key=carteira_key_manual(m.id),
@@ -280,6 +313,8 @@ class ClienteService:
                     ativo=m.ativo,
                     situacao_declaracao=sit,
                     validade_ate=validade,
+                    token=token,
+                    status_real=status_real,
                 ),
             )
         items.sort(key=lambda r: r.nome.lower())

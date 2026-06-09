@@ -7,4 +7,5 @@ export interface ContaAzulConfig {
   accessToken?: string;
   refreshToken?: string;
   expiresAt?: string;
+  apiCobrancasAtiva?: boolean;
 }

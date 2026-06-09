@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { fetchDarfLista, postGerarDarf } from "../api/client";
+import { Paginacao } from "../components/Paginacao";
+import { usePaginacao } from "../hooks/usePaginacao";
 import { FiltrosTitularStatus } from "../components/FiltrosTitularStatus";
 import {
   ANO_MAX,
@@ -57,6 +59,9 @@ export function DarfPage() {
     }
     return list;
   }, [itens, filtroTitular, filtroStatus]);
+
+  const { paginatedItems: pageRows, paginacaoProps, resetPage } = usePaginacao(itensFiltrados, 20);
+  useEffect(() => { resetPage(); }, [filtroTitular, filtroStatus, resetPage]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -192,7 +197,7 @@ export function DarfPage() {
                 </tr>
               </thead>
               <tbody>
-                {itensFiltrados.map((row) => (
+                {pageRows.map((row) => (
                   <tr key={row.declaracao_id}>
                     <td>{row.titular_nome}</td>
                     <td>{formatCpf(row.titular_cpf)}</td>
@@ -209,6 +214,7 @@ export function DarfPage() {
               </tbody>
             </table>
           </div>
+          <Paginacao {...paginacaoProps} />
           {!itens.length && !loading ? (
             <p className="empty">Nenhuma declaração com imposto a pagar neste exercício.</p>
           ) : null}

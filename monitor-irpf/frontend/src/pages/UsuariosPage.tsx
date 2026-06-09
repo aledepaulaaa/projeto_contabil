@@ -1,5 +1,7 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { createUsuario, deleteUsuario, fetchUsuarios } from "../api/client";
+import { Paginacao } from "../components/Paginacao";
+import { usePaginacao } from "../hooks/usePaginacao";
 import { Usuario } from "../interfaces/IUsuario";
 
 export function UsuariosPage() {
@@ -20,6 +22,8 @@ export function UsuariosPage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  const { paginatedItems: pageRows, paginacaoProps } = usePaginacao(list, 20);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -78,7 +82,7 @@ export function UsuariosPage() {
                 </tr>
               </thead>
               <tbody>
-                {list.map((u) => (
+                {pageRows.map((u) => (
                   <tr key={u.id}>
                     <td>{u.nome}</td>
                     <td>{u.email}</td>
@@ -93,6 +97,7 @@ export function UsuariosPage() {
               </tbody>
             </table>
           </div>
+          <Paginacao {...paginacaoProps} />
         </div>
       </main>
     </>

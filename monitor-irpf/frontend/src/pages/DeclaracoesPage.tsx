@@ -1,5 +1,7 @@
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { Paginacao } from "../components/Paginacao";
+import { usePaginacao } from "../hooks/usePaginacao";
 import {
   createDeclaracao,
   deleteDeclaracao,
@@ -162,6 +164,11 @@ export function DeclaracoesPage() {
     }
     return out;
   }, [list, cpfBusca, nomeBusca]);
+
+  const { paginatedItems: pageRows, paginacaoProps, resetPage } = usePaginacao(filteredList, 20);
+
+  // Reset page when filters change
+  useEffect(() => { resetPage(); }, [cpfBusca, nomeBusca, statusFilter, resetPage]);
 
   async function onCreate(e: FormEvent) {
     e.preventDefault();
@@ -377,7 +384,7 @@ export function DeclaracoesPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredList.map((d, rowIndex) => (
+                {pageRows.map((d, rowIndex) => (
                   <tr key={d.id}>
                     <td className="cell-strong">{anoExercicioLabel(d.ano_calendario)}</td>
                     <td>
@@ -480,6 +487,7 @@ export function DeclaracoesPage() {
               </tbody>
             </table>
           </div>
+          <Paginacao {...paginacaoProps} />
           {!list.length && !loading ? (
             <p className="empty">Sem declarações para este ano e filtro.</p>
           ) : !filteredList.length && !loading ? (
