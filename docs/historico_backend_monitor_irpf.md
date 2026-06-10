@@ -1,5 +1,14 @@
 # Histórico de Alterações — Backend (MONITOR_IRPF)
 
+## v1.4.0 - Integração das APIs "Integra Contador" (SERPRO) (10/06/2026)
+* **Modelo e Persistência de Configuração**:
+  * Mapeamento dos 5 novos campos booleanos (`apiProcuracoesAtiva`, `apiDarfAtiva`, `apiMensagensEcacAtiva`, `apiDebitosAtiva` e `apiDiagnosticoFiscalAtiva`) com defaults como `False` no endpoint `GET /api/integracoes/serpro/config` e persistência reativa em banco SQLite no endpoint `PUT /api/integracoes/serpro/config`.
+* **Motor de Simulação de Mocks (Integra Contador)**:
+  * Atualização do endpoint `/serpro/chamar` para interceptar as requisições de teste Sandbox das novas APIs do Integra Contador (`PROCURACOES`, `SICALC`, `CAIXAPOSTAL`, `PAGTOWEB` e `SITFIS`) baseando-se no `idSistema` e `idServico` passados.
+  * Implementação de respostas de alta fidelidade simulando cenários da documentação oficial (comprovantes de arrecadação, DARFs com códigos de barra e linha digitável, mensagens do e-CAC, situação fiscal cadastral e relatórios criptografados em Base64).
+* **Testes de Integração**:
+  * Expansão da suíte de testes unitários `tests/test_serpro.py` para cobrir os defaults dos novos campos, a persistência de gravação na tabela `app_kv`, e a simulação de chamadas do Integra Contador com asserts estritos de payload e status HTTP.
+
 ## v1.3.0 - Ambientes Sandbox & Refatoração SERPRO (09/06/2026)
 * **Asaas (Sandbox/Prod Keys)**:
   * Atualizada a configuração reativa no app_kv (`asaas_config_v1`) com suporte aos campos `sandboxMode`, `sandboxApiKey` e `productionApiKey`.

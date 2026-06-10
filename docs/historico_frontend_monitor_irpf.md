@@ -1,5 +1,16 @@
 # Histórico de Alterações — Frontend (MONITOR_IRPF)
 
+## v1.4.0 - Integração das APIs "Integra Contador" (SERPRO) (10/06/2026)
+* **Ativação Granular das APIs**:
+  * Adicionados checkboxes de ativação individual para 5 novas APIs do Integra Contador na aba "Configurações": *Integra Procurações*, *Integra Sicalc*, *Integra Caixa Postal*, *Integra Pagamento (PAGTOWEB)* e *Integra Sitfis*.
+  * Persistência em banco local de todas as preferências salvas através do GET/PUT da configuração do SERPRO.
+* **Simulador Sandbox Expandido**:
+  * Adicionado suporte a 8 módulos no total (dropdown com Renda, Restituição, Autorizações, Procurações, DARF, Caixa Postal, Pagamentos e Sitfis).
+  * Criados campos de formulário reativos e dinâmicos específicos para cada uma das 5 novas APIs (ex: CPF/CNPJ, Outorgante/Outorgado, isn do e-CAC, serviços Sicalc/Pagtoweb/Sitfis, intervalo de datas de arrecadação, número do documento).
+  * Implementação de botões de atalho ("Preencher Dados de Teste") para carga rápida de massas de testes oficiais de cada serviço.
+  * Desenvolvimento de visualizações customizadas (Cards e Listas formatadas de forma premium com estilo HSL) para exibição formatada dos resultados simulados retornados pelo backend, além da visualização do JSON bruto correspondente.
+  * Solucionado erro de compilação do TypeScript no componente `SerproIntegracaoPanel.tsx` através da criação do estado `simMethod` para compartilhar de forma segura o método HTTP no painel de visualização da execução sandbox.
+
 ## v1.3.0 - Ambientes Sandbox & Refatoração SERPRO (09/06/2026)
 * **Asaas (Sandbox/Prod Keys)**:
   * Adicionado toggle visual de "Modo Sandbox (Testes)".

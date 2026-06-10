@@ -206,6 +206,11 @@ def serpro_config_get(db: Session = Depends(get_db)) -> dict[str, Any]:
         "sandboxMode": True,
         "apiRendaAtiva": True,
         "apiRestituicaoAtiva": False,
+        "apiProcuracoesAtiva": False,
+        "apiDarfAtiva": False,
+        "apiMensagensEcacAtiva": False,
+        "apiDebitosAtiva": False,
+        "apiDiagnosticoFiscalAtiva": False,
     }
     data = _json_or_default(raw, default)
     
@@ -448,11 +453,266 @@ def serpro_chamar_api(payload: dict[str, Any], db: Session = Depends(get_db)) ->
     sandbox_mode = bool(cfg.get("sandboxMode", True))
     c_key = str(cfg.get("consumerKey") or "").strip()
     has_creds = bool(cfg.get("consumerKey") and cfg.get("consumerSecret"))
+
+    # Extrair idSistema e idServico do payload se for um POST do Integra Contador
+    id_sistema = None
+    id_servico = None
+    parsed_body = body_data
+    if isinstance(body_data, str):
+        try:
+            parsed_body = json.loads(body_data)
+        except Exception:
+            pass
+    if isinstance(parsed_body, dict):
+        pedido_dados = parsed_body.get("pedidoDados")
+        if isinstance(pedido_dados, dict):
+            id_sistema = pedido_dados.get("idSistema")
+            id_servico = pedido_dados.get("idServico")
     
-    use_mock = c_key.lower().startswith("mock") or is_trial_token or is_restituicao_com_token or is_restituicao_sem_token or (sandbox_mode and not has_creds) or "12345678909" in endpoint or "11111111111" in endpoint
+    use_mock = (
+        c_key.lower().startswith("mock")
+        or is_trial_token
+        or is_restituicao_com_token
+        or is_restituicao_sem_token
+        or (sandbox_mode and not has_creds)
+        or "12345678909" in endpoint
+        or "11111111111" in endpoint
+        or id_sistema in ["PROCURACOES", "SICALC", "CAIXAPOSTAL", "PAGTOWEB", "SITFIS"]
+    )
     
     if use_mock:
-        # 1. Mocks de Restituição / Autorizações
+        # 1. Mocks de Integra Contador (PROCURACOES, SICALC, CAIXAPOSTAL, PAGTOWEB, SITFIS)
+        if id_sistema == "PROCURACOES":
+            return {
+                "ok": True,
+                "statusCode": 200,
+                "data": {
+                    "procuracoes": [
+                        {
+                            "outorgante": "99999999999999",
+                            "outorgado": "99999999999",
+                            "status": "ATIVA",
+                            "dataExpiracao": "2031-12-31",
+                            "sistemas": [
+                                { "nome": "Dossiê Digital de Atendimento", "quantidade": 5 },
+                                { "nome": "Declaração de Imposto de Renda - IRPF", "quantidade": 2 },
+                                { "nome": "Consulta Pendências Fiscais", "quantidade": 3 }
+                            ]
+                        },
+                        {
+                            "outorgante": "12345678909",
+                            "outorgado": "99999999999",
+                            "status": "ATIVA",
+                            "dataExpiracao": "2029-06-30",
+                            "sistemas": [
+                                { "nome": "Declaração de Imposto de Renda - IRPF", "quantidade": 1 },
+                                { "nome": "Caixa Postal / Mensagens e-CAC", "quantidade": 4 }
+                            ]
+                        }
+                    ]
+                }
+            }
+        elif id_sistema == "SICALC":
+            if id_servico == "CONSULTAAPOIORECEITAS52":
+                return {
+                    "ok": True,
+                    "statusCode": 200,
+                    "data": {
+                        "codigoReceita": "6106",
+                        "descricao": "COFINS - Sociedades Cooperativas",
+                        "tipoContribuinte": "PJ",
+                        "aliquota": "3.00%",
+                        "periodicidade": "Mensal"
+                    }
+                }
+            elif id_servico == "GERARDARFCODBARRA53":
+                return {
+                    "ok": True,
+                    "statusCode": 200,
+                    "data": {
+                        "status": "EMITIDO",
+                        "codigoReceita": "6106",
+                        "periodoApuracao": "05/2005",
+                        "vencimento": "2005-06-10T00:00:00",
+                        "dataConsolidacao": "2024-03-25T00:00:00",
+                        "valorPrincipal": 1000.00,
+                        "valorMulta": 100.00,
+                        "valorJuros": 50.00,
+                        "valorTotal": 1150.00,
+                        "linhaDigitavel": "856100000115 500000610630 102403251006 100000000007",
+                        "codigoBarras": "856100000115500000610630102403251006100000000007",
+                        "observacao": "Darf emitido com código de barras"
+                    }
+                }
+            else:
+                return {
+                    "ok": True,
+                    "statusCode": 200,
+                    "data": {
+                        "status": "CONSOLIDADO",
+                        "codigoReceita": "0190",
+                        "periodoApuracao": "12/2017",
+                        "vencimento": "2018-01-31T00:00:00",
+                        "dataConsolidacao": "2022-08-08T00:00:00",
+                        "valorPrincipal": 1000.00,
+                        "valorMulta": 200.00,
+                        "valorJuros": 150.00,
+                        "valorTotal": 1350.00,
+                        "linhaDigitavel": "856100000135 500000610630 102403251006 100000000007",
+                        "codigoBarras": "856100000135500000610630102403251006100000000007",
+                        "observacao": "Darf calculado de teste"
+                    }
+                }
+        elif id_sistema == "CAIXAPOSTAL":
+            if id_servico == "MSGDETALHAMENTO62":
+                return {
+                    "ok": True,
+                    "statusCode": 200,
+                    "data": {
+                        "isn": "0000082838",
+                        "assunto": "Aviso de Cobrança - Débitos Pendentes",
+                        "dataEnvio": "2026-05-12T10:30:00",
+                        "lida": True,
+                        "remetente": "Receita Federal",
+                        "texto": "Prezado Contribuinte, identificamos ausência de recolhimento de DARF correspondente ao período 01/2026. Solicitamos a regularização ou apresentação de justificativas em até 30 dias. Evite multas de mora.",
+                        "linkDocumento": "https://ecac.receita.fazenda.gov.br/documentos/isn0000082838.pdf"
+                    }
+                }
+            elif id_servico == "INNOVAMSG63":
+                return {
+                    "ok": True,
+                    "statusCode": 200,
+                    "data": {
+                        "temNovasMensagens": True,
+                        "quantidadeNaoLidas": 1
+                    }
+                }
+            else:
+                return {
+                    "ok": True,
+                    "statusCode": 200,
+                    "data": {
+                        "mensagens": [
+                            {
+                                "isn": "0000082838",
+                                "assunto": "Aviso de Cobrança - Débitos Pendentes",
+                                "dataEnvio": "2026-05-12T10:30:00",
+                                "lida": False,
+                                "remetente": "Receita Federal"
+                            },
+                            {
+                                "isn": "0000075210",
+                                "assunto": "Homologação de Opção pelo Simples Nacional",
+                                "dataEnvio": "2026-04-01T08:15:00",
+                                "lida": True,
+                                "remetente": "Receita Federal"
+                            },
+                            {
+                                "isn": "0000061902",
+                                "assunto": "Notificação de Lançamento IRPF 2025",
+                                "dataEnvio": "2025-10-15T14:00:00",
+                                "lida": True,
+                                "remetente": "Receita Federal"
+                            }
+                        ],
+                        "totalMensagens": 3
+                    }
+                }
+        elif id_sistema == "PAGTOWEB":
+            if id_servico == "CONTACONSDOCARRPG73":
+                return {
+                    "ok": True,
+                    "statusCode": 200,
+                    "data": {
+                        "totalDocumentos": 2,
+                        "valorAcumulado": 2350.00
+                    }
+                }
+            elif id_servico == "COMPARRECADACAO72":
+                return {
+                    "ok": True,
+                    "statusCode": 200,
+                    "data": {
+                        "comprovante": {
+                            "numeroDocumento": "99999999999999999",
+                            "codigoReceita": "0190",
+                            "contribuinteCpf": "99999999999",
+                            "contribuinteNome": "CONSELO TESTE DA SILVA",
+                            "periodoApuracao": "12/2024",
+                            "vencimento": "2025-01-31",
+                            "dataPagamento": "2025-01-15",
+                            "valorPrincipal": 1000.00,
+                            "valorMulta": 0.00,
+                            "valorJuros": 0.00,
+                            "valorTotal": 1000.00,
+                            "autenticacao": "BB.A98762.389172.930E",
+                            "mensagem": "Comprovante emitido com sucesso via Integra Contador SERPRO."
+                        }
+                    }
+                }
+            else:
+                return {
+                    "ok": True,
+                    "statusCode": 200,
+                    "data": {
+                        "pagamentos": [
+                            {
+                                "codigoReceita": "0190",
+                                "periodoApuracao": "2024-12-31",
+                                "dataArrecadacao": "2025-01-15T15:20:00",
+                                "valorTotal": 1350.00,
+                                "valorPrincipal": 1000.00,
+                                "valorMulta": 200.00,
+                                "valorJuros": 150.00,
+                                "autenticacaoBancaria": "FE3279183921AA08",
+                                "agenteArrecadador": "Banco do Brasil"
+                            },
+                            {
+                                "codigoReceita": "1394",
+                                "periodoApuracao": "2025-03-31",
+                                "dataArrecadacao": "2025-04-10T10:15:00",
+                                "valorTotal": 1000.00,
+                                "valorPrincipal": 1000.00,
+                                "valorMulta": 0.00,
+                                "valorJuros": 0.00,
+                                "autenticacaoBancaria": "BA9217382103EE99",
+                                "agenteArrecadador": "Itaú Unibanco"
+                            }
+                        ]
+                    }
+                }
+        elif id_sistema == "SITFIS":
+            if id_servico == "SOLICITARPROTOCOLO91":
+                return {
+                    "ok": True,
+                    "statusCode": 200,
+                    "data": {
+                        "protocoloRelatorio": "PRT-SITFIS-2026-992837482",
+                        "tempoEspera": 30,
+                        "mensagem": "A solicitação foi aceita. Aguarde o tempo de espera informado para consultar o relatório."
+                    }
+                }
+            else:
+                return {
+                    "ok": True,
+                    "statusCode": 200,
+                    "data": {
+                        "protocolo": "PRT-SITFIS-2026-992837482",
+                        "contribuinteCpf": "99999999999",
+                        "diagnostico": {
+                            "situacaoCadastral": "REGULAR",
+                            "debitosFiscais": [
+                                { "origem": "Receita Federal", "tributo": "IRPF/2024", "valor": 0.00, "status": "Sem Pendências" }
+                            ],
+                            "pendenciasCadastrais": [
+                                { "descricao": "Nenhuma pendência cadastral identificada." }
+                            ],
+                            "regularidadeFiscal": "CERTIDÃO NEGATIVA EMITIDA (CND)"
+                        }
+                    }
+                }
+
+        # 2. Mocks de Restituição / Autorizações
         if is_restituicao_sem_token or "11111111111" in endpoint:
             if "Autorizacoes" in endpoint:
                 return {
@@ -524,7 +784,7 @@ def serpro_chamar_api(payload: dict[str, Any], db: Session = Depends(get_db)) ->
                 }
             }
         
-        # 2. Mocks de Renda PF
+        # 3. Mocks de Renda PF
         elif is_trial_token or "renda" in endpoint or "Renda" in endpoint:
             return {
                 "ok": True,

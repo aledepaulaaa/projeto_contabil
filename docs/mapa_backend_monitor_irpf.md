@@ -29,7 +29,7 @@ O backend da sub-aplicação `MONITOR_IRPF` é construído com Python 3.12, Fast
 
 | Rota | Método | Descrição |
 |---|---|---|
-| `/api/integracoes/serpro/config` | GET / PUT | Ler/salvar credenciais, configurações e `sandboxMode` |
+| `/api/integracoes/serpro/config` | GET / PUT | Ler/salvar credenciais, configurações, `sandboxMode` e ativação das 5 APIs do Integra Contador |
 | `/api/integracoes/serpro/extrair-chave` | POST | Extrair RSA PKCS8 do certificado PFX armazenado |
 | `/api/integracoes/serpro/integra-contador/token` | POST | Autenticar via SAPI (mTLS) e obter access token |
 | `/api/integracoes/serpro/consulta-renda` | POST | Consultar renda do contribuinte (sandbox ou produção) |
@@ -38,7 +38,7 @@ O backend da sub-aplicação `MONITOR_IRPF` é construído com Python 3.12, Fast
 | `/api/integracoes/contador/testar-certificado` | POST | Verificar integridade e senha do PFX |
 
 > **Rotas Dinâmicas de Sandbox**: Dependendo da flag `sandboxMode` na configuração, o backend roteia dinamicamente os módulos: `renda-pf-trial/v1` vs `renda-pf/v1`, e `consulta-restituicao-trial/v1` vs `consulta-restituicao/v1`.
-> **Mock automático de Sandbox**: Módulo `/chamar` e `/consulta-renda` interceptam tokens conhecidos de demonstração (`06aef429-a981-3ec5-a1f8-71d38d86481e` para Renda, `nchRml3PnHfUNC6hxowNnqYMfqMETs8WbYIaCfOKRgKm` ou `mWLQjmHUVY9Thsf88NlJ0ta7YHRmC8ZyMEpxFAuj6zmA` para Restituição, e CPF `12345678909` ou `11111111111` para Autorizações) retornando dados mockados.
+> **Mock automático de Sandbox**: Módulo `/chamar` e `/consulta-renda` interceptam tokens conhecidos de demonstração (`06aef429-a981-3ec5-a1f8-71d38d86481e` para Renda, `nchRml3PnHfUNC6hxowNnqYMfqMETs8WbYIaCfOKRgKm` ou `mWLQjmHUVY9Thsf88NlJ0ta7YHRmC8ZyMEpxFAuj6zmA` para Restituição, CPF `12345678909` ou `11111111111` para Autorizações) assim como os sistemas de Integra Contador (`PROCURACOES`, `SICALC`, `CAIXAPOSTAL`, `PAGTOWEB` e `SITFIS`) retornando dados mockados oficiais de demonstração.
 > **Bypass de SAPI**: Se `consumerKey` começar com `"mock"`, ou se o modo sandbox estiver ativo sem chaves configuradas, a autenticação SAPI real é contornada com mock.
 
 ---

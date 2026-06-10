@@ -16,12 +16,14 @@ try:
     from app.routers.integracoes import (
         serpro_config_get,
         serpro_config_put,
-        serpro_extrair_chave
+        serpro_extrair_chave,
+        serpro_chamar_api
     )
 except ImportError:
     serpro_config_get = None
     serpro_config_put = None
     serpro_extrair_chave = None
+    serpro_chamar_api = None
 
 
 class TestSerproService(unittest.TestCase):
@@ -131,10 +133,20 @@ class TestSerproService(unittest.TestCase):
             "sandboxMode": False,
             "apiRendaAtiva": True,
             "apiRestituicaoAtiva": True,
+            "apiProcuracoesAtiva": True,
+            "apiDarfAtiva": True,
+            "apiMensagensEcacAtiva": True,
+            "apiDebitosAtiva": True,
+            "apiDiagnosticoFiscalAtiva": True,
         }
         res_put = serpro_config_put(payload, self.db)
         self.assertFalse(res_put["sandboxMode"])
         self.assertTrue(res_put["apiRestituicaoAtiva"])
+        self.assertTrue(res_put["apiProcuracoesAtiva"])
+        self.assertTrue(res_put["apiDarfAtiva"])
+        self.assertTrue(res_put["apiMensagensEcacAtiva"])
+        self.assertTrue(res_put["apiDebitosAtiva"])
+        self.assertTrue(res_put["apiDiagnosticoFiscalAtiva"])
 
         # Verifica no banco se as flags persistem
         from app.repositories.app_kv_repository import AppKvRepository
@@ -143,6 +155,53 @@ class TestSerproService(unittest.TestCase):
         self.assertFalse(config_salva.get("sandboxMode"))
         self.assertEqual(config_salva.get("baseUrl"), "https://gateway.apiserpro.serpro.gov.br/")
         self.assertTrue(config_salva.get("apiRestituicaoAtiva"))
+        self.assertTrue(config_salva.get("apiProcuracoesAtiva"))
+        self.assertTrue(config_salva.get("apiDarfAtiva"))
+        self.assertTrue(config_salva.get("apiMensagensEcacAtiva"))
+        self.assertTrue(config_salva.get("apiDebitosAtiva"))
+        self.assertTrue(config_salva.get("apiDiagnosticoFiscalAtiva"))
+
+    def test_novos_campos_serpro_defaults(self):
+        if serpro_config_get is None:
+            self.skipTest("Router não importado")
+        res = serpro_config_get(self.db)
+        self.assertIn("apiProcuracoesAtiva", res)
+        self.assertFalse(res["apiProcuracoesAtiva"])
+        self.assertFalse(res["apiDarfAtiva"])
+        self.assertFalse(res["apiMensagensEcacAtiva"])
+        self.assertFalse(res["apiDebitosAtiva"])
+        self.assertFalse(res["apiDiagnosticoFiscalAtiva"])
+
+    def test_mock_chamar_api_integra_contador(self):
+        if serpro_chamar_api is None:
+            self.skipTest("Router não importado")
+        
+        # Simular chamada para PROCURACOES
+        payload = {
+            "endpoint": "/Consultar",
+            "method": "POST",
+            "body": {
+                "pedidoDados": {
+                    "idSistema": "PROCURACOES",
+                    "idServico": "OBTERPROCURACAO41"
+                }
+            }
+        }
+        res = serpro_chamar_api(payload, self.db)
+        self.assertTrue(res["ok"])
+        self.assertEqual(res["statusCode"], 200)
+        self.assertIn("procuracoes", res["data"])
+        self.assertEqual(len(res["data"]["procuracoes"]), 2)
+
+        # Simular chamada para SICALC
+        payload["body"]["pedidoDados"] = {
+            "idSistema": "SICALC",
+            "idServico": "GERARDARFCODBARRA53"
+        }
+        res = serpro_chamar_api(payload, self.db)
+        self.assertTrue(res["ok"])
+        self.assertEqual(res["data"]["status"], "EMITIDO")
+        self.assertEqual(res["data"]["codigoReceita"], "6106")
 
 
 if __name__ == "__main__":

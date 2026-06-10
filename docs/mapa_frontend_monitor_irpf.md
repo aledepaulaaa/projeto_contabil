@@ -13,14 +13,14 @@ O frontend da sub-aplicação `MONITOR_IRPF` é desenvolvido com React, TypeScri
 
 * **`src/interfaces`**: Definições de tipos e interfaces TypeScript:
   * **Conta Azul** (`IContaAzulConfig.ts`): Tipagem reativa do estado de autenticação + toggle de APIs habilitadas.
-  * **SERPRO** (`ISerproConfig.ts`): Tipagem reativa para credenciais, certificados, chave privada e flag de sandbox do SERPRO.
+  * **SERPRO** (`ISerproConfig.ts`): Tipagem reativa para credenciais, certificados, chave privada, flag de sandbox e as 5 flags booleanas de APIs ativas (Procurações, DARF, Caixa Postal/Mensagens e-CAC, Pagamentos, Sitfis).
   * **Outros**: Interfaces para Asaas (`IAsaasConfig.ts` - incluindo sandboxMode e chaves segregadas), RFB (`IRfbInfosimplesConfig.ts`), Contador (`IContadorConfig.ts`), etc.
 * **`src/api`**: Cliente HTTP de comunicação com o backend (`client.ts`):
   * Métodos para Conta Azul, SERPRO, Asaas, RFB, declarações, clientes, DARF, etc.
   * Interfaces exportadas: `DadoRendaItem`, `ConsultaRendaResult`, `SerproChamarResult` (para chamadas e testes dinâmicos da SERPRO).
 * **`src/components`**: Painéis reutilizáveis e formulários de configuração:
   * **Conta Azul** (`ContaAzulIntegracaoPanel.tsx`): OAuth 2.0 + teste de conexão + toggle de API de Cobranças.
-  * **SERPRO** (`SerproIntegracaoPanel.tsx`): Configurações de credenciais, controle de sandbox, extração de chave RSA, e aba de testes interativa da Sandbox.
+  * **SERPRO** (`SerproIntegracaoPanel.tsx`): Configurações de credenciais, controle de sandbox, extração de chave RSA, checkboxes reativos para ativação individual de cada uma das 5 novas APIs, e aba de testes interativa da Sandbox suportando 8 módulos com formulários e visualização reativa de cards.
   * **RFB** (`RfbIntegracaoPanel.tsx`): Config InfoSimples / diagnóstico fiscal.
   * **Asaas** (`AsaasIntegracaoPanel.tsx`): Config de cobranças e chaves segregadas (produção vs sandbox).
   * **Contador** (`ContadorPanel.tsx`): Perfil + upload de certificado A1.

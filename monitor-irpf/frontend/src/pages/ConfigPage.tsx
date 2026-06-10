@@ -23,28 +23,17 @@ export type ConfigMenuId =
   | "pasta"
   | "integracoes"
   | "preferencias"
-  | "contador"
-  | "conta-azul"
-  | "asaas"
-  | "rfb"
-  | "serpro"
-  | "whatsapp";
+  | "contador";
 
-const INTEGRATION_TILES: ConfigMenuId[] = ["conta-azul", "asaas", "rfb", "serpro", "whatsapp"];
-
-function isIntegrationTile(id: ConfigMenuId): boolean {
-  return INTEGRATION_TILES.includes(id);
-}
+export type IntegrationId = "conta-azul" | "asaas" | "rfb" | "serpro" | "whatsapp";
 
 function tileIsActive(id: ConfigMenuId, focus: ConfigMenuId): boolean {
-  if (focus === id) return true;
-  if (id === "integracoes" && isIntegrationTile(focus)) return true;
-  return false;
+  return focus === id;
 }
 
 type TileDef =
-  | { id: ConfigMenuId; label: string; Icon: ComponentType<SVGProps<SVGSVGElement>> }
-  | { id: ConfigMenuId; label: string; brandLogoSrc: string };
+  | { id: string; label: string; Icon: ComponentType<SVGProps<SVGSVGElement>> }
+  | { id: string; label: string; brandLogoSrc: string };
 
 const ROW1: TileDef[] = [
   { id: "pasta", label: "Pasta IRPF", Icon: IconPastaIrpf },
@@ -53,7 +42,7 @@ const ROW1: TileDef[] = [
   { id: "contador", label: "Contador", Icon: IconContador },
 ];
 
-const ROW2: TileDef[] = [
+const INTEGRATION_LIST: TileDef[] = [
   { id: "conta-azul", label: "Conta Azul", brandLogoSrc: contaAzulLogo },
   { id: "asaas", label: "Asaas", brandLogoSrc: asaasLogo },
   { id: "rfb", label: "API RFB", Icon: IconSerpro },
@@ -82,6 +71,7 @@ type PreferenciasSub = "precificacao" | "checklists" | "outras";
 export function ConfigPage() {
   const [focus, setFocus] = useState<ConfigMenuId>("pasta");
   const [prefSub, setPrefSub] = useState<PreferenciasSub>("precificacao");
+  const [activeInteg, setActiveInteg] = useState<IntegrationId>("conta-azul");
 
   return (
     <>
@@ -99,30 +89,13 @@ export function ConfigPage() {
       <main className="content-area">
         <div className="content-card" style={{ marginBottom: "1.25rem" }}>
           <h3 style={{ marginBottom: "0.85rem" }}>Áreas</h3>
-          <div className="config-grid" style={{ marginBottom: "0.75rem" }}>
+          <div className="config-grid">
             {ROW1.map((t) => (
               <button
                 key={t.id}
                 type="button"
-                className={`config-tile${tileIsActive(t.id, focus) ? " active" : ""}`}
-                onClick={() => setFocus(t.id)}
-              >
-                <span className="config-tile-inner">
-                  <span className="config-tile-icon" aria-hidden>
-                    <ConfigTileIcon t={t} />
-                  </span>
-                  <span className="config-tile-label">{t.label}</span>
-                </span>
-              </button>
-            ))}
-          </div>
-          <div className="config-grid">
-            {ROW2.map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                className={`config-tile${tileIsActive(t.id, focus) ? " active" : ""}`}
-                onClick={() => setFocus(t.id)}
+                className={`config-tile${tileIsActive(t.id as ConfigMenuId, focus) ? " active" : ""}`}
+                onClick={() => setFocus(t.id as ConfigMenuId)}
               >
                 <span className="config-tile-inner">
                   <span className="config-tile-icon" aria-hidden>
@@ -137,24 +110,6 @@ export function ConfigPage() {
 
         {focus === "pasta" ? (
           <MonitorFoldersForm />
-        ) : focus === "asaas" ? (
-          <div className="content-card">
-            <h3>Asaas</h3>
-            <p className="monitor-hint" style={{ marginTop: 0 }}>
-              Integração com a API Asaas: API Key, dias até ao vencimento após gerar a cobrança e ativação. A chave fica
-              no servidor e não é devolvida no GET. Para criar cobranças, use <strong>Precificação e Cobrança</strong>.
-            </p>
-            <AsaasIntegracaoPanel />
-          </div>
-        ) : focus === "rfb" ? (
-          <div className="content-card">
-            <h3>API RFB</h3>
-            <p className="monitor-hint" style={{ marginTop: 0 }}>
-              Integração InfoSimples para diagnóstico fiscal (situação e pendências). Usa procuração outorgada por
-              contribuinte e certificado digital do contador.
-            </p>
-            <RfbIntegracaoPanel />
-          </div>
         ) : focus === "contador" ? (
           <div className="content-card">
             <h3>Contador</h3>
@@ -229,26 +184,104 @@ export function ConfigPage() {
               </p>
             )}
           </div>
-        ) : focus === "conta-azul" ? (
-          <div className="content-card">
-            <h3>Conta Azul</h3>
-            <ContaAzulIntegracaoPanel />
-          </div>
-        ) : focus === "serpro" ? (
-          <div className="content-card">
-            <h3>Serpro</h3>
-            <SerproIntegracaoPanel />
-          </div>
         ) : (
-          <div className="content-card">
-            <h3>
-              {ROW1.concat(ROW2).find((x) => x.id === focus)?.label ?? "Configuração"}
-            </h3>
-            <p className="monitor-hint">
-              Painel detalhado desta área pode ser ligado às rotas{" "}
-              <code className="mono-path">/api/integracoes/*</code> e às preferências guardadas em{" "}
-              <code className="mono-path">app_kv</code>.
-            </p>
+          <div className="integration-layout">
+            {/* Sidebar de Sub-menu para as Integrações */}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.4rem',
+              backgroundColor: 'var(--surface)',
+              border: '1px solid var(--border)',
+              borderRadius: '8px',
+              padding: '0.6rem'
+            }}>
+              <p style={{
+                margin: '0.4rem 0.6rem 0.6rem 0.6rem',
+                fontSize: '0.7rem',
+                fontWeight: 700,
+                color: 'var(--muted)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em'
+              }}>
+                Parceiros & APIs
+              </p>
+              {INTEGRATION_LIST.map((t) => {
+                const isActive = activeInteg === t.id;
+                return (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => setActiveInteg(t.id as IntegrationId)}
+                    className={`integration-menu-item${isActive ? " active" : ""}`}
+                    style={isActive ? {
+                      background: 'var(--info-bg)',
+                      color: 'var(--accent)',
+                    } : undefined}
+                  >
+                    <span style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      width: '22px',
+                      height: '22px',
+                      color: isActive ? 'var(--accent)' : 'var(--muted)',
+                      flexShrink: 0
+                    }}>
+                      <ConfigTileIcon t={t} />
+                    </span>
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {t.label}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Conteúdo da Integração Selecionada */}
+            <div className="content-card" style={{ margin: 0 }}>
+              {activeInteg === "conta-azul" ? (
+                <>
+                  <h3>Conta Azul</h3>
+                  <p className="monitor-hint" style={{ marginTop: 0 }}>
+                    Integração com o ERP Conta Azul: OAuth 2.0, sincronização de faturamento e exportação de clientes.
+                  </p>
+                  <ContaAzulIntegracaoPanel />
+                </>
+              ) : activeInteg === "asaas" ? (
+                <>
+                  <h3>Asaas</h3>
+                  <p className="monitor-hint" style={{ marginTop: 0 }}>
+                    Integração com a API Asaas: API Key, dias até ao vencimento após gerar a cobrança e ativação. A chave fica
+                    no servidor e não é devolvida no GET. Para criar cobranças, use <strong>Precificação e Cobrança</strong>.
+                  </p>
+                  <AsaasIntegracaoPanel />
+                </>
+              ) : activeInteg === "rfb" ? (
+                <>
+                  <h3>API RFB (InfoSimples)</h3>
+                  <p className="monitor-hint" style={{ marginTop: 0 }}>
+                    Integração InfoSimples para diagnóstico fiscal (situação e pendências). Usa procuração outorgada por
+                    contribuinte e certificado digital do contador.
+                  </p>
+                  <RfbIntegracaoPanel />
+                </>
+              ) : activeInteg === "serpro" ? (
+                <>
+                  <h3>Serpro</h3>
+                  <SerproIntegracaoPanel />
+                </>
+              ) : (
+                <>
+                  <h3>WhatsApp</h3>
+                  <p className="monitor-hint" style={{ marginTop: 0 }}>
+                    Configuração de disparos automáticos para cobrança e envio de guias via WhatsApp.
+                  </p>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--muted)', marginTop: '1rem' }}>
+                    Em breve: Integração nativa para alertas de pendências fiscais e envio de DARFs diretamente no WhatsApp do cliente.
+                  </p>
+                </>
+              )}
+            </div>
           </div>
         )}
       </main>
