@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.repositories.app_kv_repository import AppKvRepository
 from app.schemas.monitor import MonitorPathsUpdate
+from app.services.monitor_scan_service import MonitorScanService
 
 router = APIRouter(prefix="/monitor", tags=["monitor"])
 
@@ -88,10 +89,7 @@ def monitor_config_put(payload: dict, db: Session = Depends(get_db)) -> dict:
 
 @router.post("/scan")
 def monitor_scan(db: Session = Depends(get_db)) -> dict:
-    kv = AppKvRepository(db)
-    kv.upsert(_KV_LAST_SCAN, _utc_iso())
-    db.commit()
-    return {"ok": True, "last_scan_at": kv.get(_KV_LAST_SCAN)}
+    return MonitorScanService.sincronizar(db)
 
 
 @router.get("/snapshot")

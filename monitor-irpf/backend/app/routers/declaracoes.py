@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.schemas.declaracao import DeclaracaoCreate, DeclaracaoOut, DeclaracaoUpdate
 from app.services.declaracao_service import DeclaracaoService
+from app.services.monitor_scan_service import MonitorScanService
 
 router = APIRouter(prefix="/declaracoes", tags=["declaracoes"])
 
@@ -71,7 +72,7 @@ def delete_declaracao(declaracao_id: int, db: Session = Depends(get_db)):
 
 @router.post("/sincronizar-pasta-irpf")
 def sincronizar_pasta_irpf(db: Session = Depends(get_db)) -> dict:
-    return {"ok": True, "message": "Sincronização não reimplementada nesta versão reconstruída."}
+    return MonitorScanService.sincronizar(db)
 
 
 @router.post("/{declaracao_id}/abrir-local")

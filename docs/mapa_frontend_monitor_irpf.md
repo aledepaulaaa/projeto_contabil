@@ -48,7 +48,7 @@ O frontend da sub-aplicação `MONITOR_IRPF` é desenvolvido com React, TypeScri
 | `/diagnostico-fiscal` | `DiagnosticoFiscalPage` | Diagnóstico completo RFB por CPF |
 | `/mensagens-ecac` | `MensagensEcacPage` | Caixa de mensagens e-CAC por contribuinte |
 | `/insights` | `InsightsPage` | Relatórios analíticos por CPF |
-| `/configuracoes` | `ConfigPage` | Integrações + perfil do contador |
+| `/configuracoes` | `ConfigPage` | Painel de controle agrupado (Pasta IRPF, Integrações em sub-menu lateral, Preferências e Contador) |
 | `/enviar-documentos/:token` | `PortalClienteDocumentosPage` | Portal público de envio de documentos |
 
 ---
