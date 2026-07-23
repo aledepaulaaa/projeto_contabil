@@ -26,9 +26,14 @@ public class ProjetoContabilApplication {
             }
         });
 
-        if (System.getProperty("spring.profiles.active") == null) {
-            System.setProperty("spring.profiles.active", "dev");
+        String activeProfile = System.getenv("SPRING_PROFILES_ACTIVE");
+        if (activeProfile == null || activeProfile.isBlank()) {
+            activeProfile = System.getProperty("spring.profiles.active");
         }
+        if (activeProfile == null || activeProfile.isBlank()) {
+            activeProfile = "dev";
+        }
+        System.setProperty("spring.profiles.active", activeProfile);
 
         SpringApplication.run(ProjetoContabilApplication.class, args);
     }
