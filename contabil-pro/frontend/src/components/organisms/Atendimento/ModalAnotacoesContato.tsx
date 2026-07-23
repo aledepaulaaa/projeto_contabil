@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, MessageSquare, Plus, User, Clock, ShieldCheck } from 'lucide-react';
+import { X, MessageSquare, Plus, User, Clock } from 'lucide-react';
 import { Texto } from '../../atoms/Texto/Texto';
 import { Botao } from '../../atoms/Botao/Botao';
 import { apiClient } from '../../../services/apiClient';
@@ -14,18 +14,24 @@ interface Anotacao {
 }
 
 interface ModalAnotacoesContatoProps {
-  aberto: boolean;
-  onFechar: () => void;
+  aberto?: boolean;
+  isOpen?: boolean;
+  onFechar?: () => void;
+  onClose?: () => void;
   contatoId: string;
   nomeContato: string;
 }
 
 export const ModalAnotacoesContato: React.FC<ModalAnotacoesContatoProps> = ({
   aberto,
+  isOpen,
   onFechar,
+  onClose,
   contatoId,
   nomeContato
 }) => {
+  const isModalOpen = aberto ?? isOpen ?? false;
+  const handleClose = onFechar || onClose || (() => {});
   const [anotacoes, setAnotacoes] = useState<Anotacao[]>([]);
   const [novaAnotacao, setNovaAnotacao] = useState('');
   const [autorNome, setAutorNome] = useState(localStorage.getItem('app:user_name') || 'Atendente');
@@ -33,10 +39,10 @@ export const ModalAnotacoesContato: React.FC<ModalAnotacoesContatoProps> = ({
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (aberto && contatoId) {
+    if (isModalOpen && contatoId) {
       carregarAnotacoes();
     }
-  }, [aberto, contatoId]);
+  }, [isModalOpen, contatoId]);
 
   const carregarAnotacoes = async () => {
     setIsLoading(true);
@@ -77,7 +83,7 @@ export const ModalAnotacoesContato: React.FC<ModalAnotacoesContatoProps> = ({
     }
   };
 
-  if (!aberto) return null;
+  if (!isModalOpen) return null;
 
   return (
     <AnimatePresence>
@@ -98,7 +104,7 @@ export const ModalAnotacoesContato: React.FC<ModalAnotacoesContatoProps> = ({
                 <Texto variant="detalhe" className="text-slate-400">Contato: <span className="font-bold text-slate-700 dark:text-slate-200">{nomeContato}</span></Texto>
               </div>
             </div>
-            <button onClick={onFechar} className="p-2 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800">
+            <button onClick={handleClose} className="p-2 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800">
               <X size={18} />
             </button>
           </div>

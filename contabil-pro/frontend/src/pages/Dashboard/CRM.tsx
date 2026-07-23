@@ -9,7 +9,6 @@ import {
   Download,
   Edit3,
   History,
-  TrendingUp,
   TrendingDown,
   Check,
   Phone,

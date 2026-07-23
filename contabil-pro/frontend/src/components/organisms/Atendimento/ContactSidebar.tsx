@@ -7,6 +7,7 @@ import { ModalTransferenciaAtendimento } from './ModalTransferenciaAtendimento';
 import { WaitTimer } from '../../atoms/WaitTimer/WaitTimer';
 import { useAuthStore } from '../../../store/authStore';
 import { useDepartamentos } from '../../../hooks/useDepartamentos';
+import { ModalAnotacoesContato } from './ModalAnotacoesContato';
 
 interface Contato {
     id: string;
@@ -42,6 +43,7 @@ export const ContactSidebar: React.FC<ContactSidebarProps> = ({ onSelect, select
     const { departamentoId } = useAuthStore();
     const { getDeptoInfo } = useDepartamentos();
     const [transferModal, setTransferModal] = useState<{ isOpen: boolean; leadId?: string; leadNome?: string }>({ isOpen: false });
+    const [modalAnotacoes, setModalAnotacoes] = useState<{ isOpen: boolean; contatoId: string; nomeContato: string }>({ isOpen: false, contatoId: '', nomeContato: '' });
     
     
 
@@ -475,6 +477,14 @@ export const ContactSidebar: React.FC<ContactSidebarProps> = ({ onSelect, select
                 onClose={() => setTransferModal({ isOpen: false })}
                 onConfirm={handleTransferir}
                 leadNome={transferModal.leadNome || ''}
+            />
+
+            {/* Modal de Anotações do Contato */}
+            <ModalAnotacoesContato
+                isOpen={modalAnotacoes.isOpen}
+                onClose={() => setModalAnotacoes({ ...modalAnotacoes, isOpen: false })}
+                contatoId={modalAnotacoes.contatoId}
+                nomeContato={modalAnotacoes.nomeContato}
             />
         </div>
     );

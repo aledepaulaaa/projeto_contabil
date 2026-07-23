@@ -6,6 +6,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -18,7 +19,7 @@ public class TrialCheckFilter extends OncePerRequestFilter {
     private final EmpresaLocatariaRepository repository;
     private static final Set<String> EXEMPT_PATHS = Set.of("/api/assinaturas", "/api/configuracoes", "/api/auth");
 
-    public TrialCheckFilter(EmpresaLocatariaRepository repository) {
+    public TrialCheckFilter(@Lazy EmpresaLocatariaRepository repository) {
         this.repository = repository;
     }
 

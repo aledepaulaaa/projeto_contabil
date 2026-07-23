@@ -15,7 +15,6 @@ import {
   X,
   FileSignature,
   MessageSquare,
-  Database,
   UserCheck
 } from 'lucide-react';
 import { useLocation } from 'wouter';
