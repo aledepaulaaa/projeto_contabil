@@ -1,5 +1,15 @@
 # Histórico de Alterações — Backend (Projeto Contábil)
 
+## v3.12.0 - Resiliência de Conexão Cloud (RabbitMQ/Redis) e Proteção Port Scan Timeout (23/07/2026 17:20)
+* **Contexto**: Resolução da falha `Port scan timeout reached / Timed Out` no Render provocada por bloqueio de socket TCP ao tentar conectar sem timeout às variáveis opcionais de RabbitMQ e Redis.
+* **Resiliência e Timeouts Curtos em `application-prod.yml`**:
+  * Adicionados `connection-timeout: 3000ms` para RabbitMQ e `connect-timeout: 3000ms`, `timeout: 3000ms` para Redis.
+  * Adicionados fallbacks default seguros (`localhost:5672` e `redis://localhost:6379`), permitindo que a thread principal abra a porta Web do Tomcat instantaneamente sem aguardar 15 minutos de timeout.
+* **TDD & Validação**:
+  * Compilado e validado com sucesso (`BUILD SUCCESS`).
+
+---
+
 ## v3.11.0 - Resiliência de Configuração de E-mail (JavaMailSender) & Migração Flyway V27 (23/07/2026 16:52)
 * **Contexto**: Resolução da falha de inicialização de bean do Spring Boot em ambiente cloud (`UnsatisfiedDependencyException: No qualifying bean of type JavaMailSender`).
 * **Configuração Resiliente de E-mail (`MailConfig.java`)**:
