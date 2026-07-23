@@ -1,5 +1,16 @@
 # Histórico de Alterações — Backend (Projeto Contábil)
 
+## v3.10.0 - Migração Flyway V25 (Anotações de Contato) e Suporte ao Perfil Prod (23/07/2026 16:09)
+* **Contexto**: Resolução da falha de validação de schema do Hibernate em ambiente de produção/Render (`missing table [anotacoes_contato]`).
+* **Migração Flyway V25**:
+  * Criado o script `V25__criar_tabela_anotacoes_contato.sql` definindo as tabelas `anotacoes_contato` (com `id`, `contato_id`, `empresa_locataria_id`, `autor`, `setor`, `conteudo`, `criado_em`) e `anotacoes_contato_aud` para suporte ao Hibernate Envers.
+* **Leitura Dinâmica do Perfil Cloud**:
+  * Atualizado `ProjetoContabilApplication.java` para priorizar a variável de ambiente `SPRING_PROFILES_ACTIVE`, garantindo inicialização correta no perfil `prod` no Render.
+* **TDD & Validação**:
+  * Bateria de 62 testes JUnit 5 executada com sucesso (`BUILD SUCCESS`).
+
+---
+
 ## v3.9.0 - Estabilização de Rotas, Dashboard e Cascata de Exclusão no CRM (23/07/2026 15:02)
 * **Contexto**: Correção de exceções de persistência SQL no PostgreSQL, implementação de exclusão em cascata transacional para leads e limpeza de dados fictícios no Dashboard.
 * **Correções de Persistência JPA**:
