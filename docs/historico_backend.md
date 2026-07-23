@@ -1,5 +1,17 @@
 # Histórico de Alterações — Backend (Projeto Contábil)
 
+## v3.11.0 - Resiliência de Configuração de E-mail (JavaMailSender) & Migração Flyway V27 (23/07/2026 16:52)
+* **Contexto**: Resolução da falha de inicialização de bean do Spring Boot em ambiente cloud (`UnsatisfiedDependencyException: No qualifying bean of type JavaMailSender`).
+* **Configuração Resiliente de E-mail (`MailConfig.java`)**:
+  * Criada a classe `MailConfig.java` anotada com `@Configuration` e `@ConditionalOnMissingBean(JavaMailSender.class)`. Se as propriedades `spring.mail.*` não forem injetadas no ambiente cloud, o bean `JavaMailSender` é provido automaticamente com fallbacks seguros, evitando o travamento do container no boot.
+* **Migrações Flyway V26 e V27**:
+  * Criado o script `V26__criar_tabela_etapas_funil.sql` para suporte às etapas do funil de vendas do CRM.
+  * Criado o script `V27__add_colunas_automacao_e_mensagens_nao_lidas.sql` adicionando colunas de automação em `empresas_locatarias` e `leads`.
+* **TDD & Validação**:
+  * 62 de 62 testes JUnit 5 executados e aprovados (`BUILD SUCCESS`).
+
+---
+
 ## v3.10.0 - Migração Flyway V25 (Anotações de Contato) e Suporte ao Perfil Prod (23/07/2026 16:09)
 * **Contexto**: Resolução da falha de validação de schema do Hibernate em ambiente de produção/Render (`missing table [anotacoes_contato]`).
 * **Migração Flyway V25**:
