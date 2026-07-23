@@ -1,5 +1,18 @@
 # Histórico de Alterações — Backend (MONITOR_IRPF)
 
+## v1.5.0 - Leitura Recursiva Multidirecional de Declarações e Resiliência (23/07/2026 15:35)
+* **Contexto**: Aprimoramento da varredura (`MonitorScanService`) de pastas locais (`C:\ARQUIVOS_DECLARACOES`) para leitura recursiva dinâmica de declarações e recibos do IRPF nas pastas pai e subpastas (`gravadas/`, `transmitidas/`).
+* **Extração Resiliente de CPF e Extensões**:
+  * Adicionada a função `extract_cpf_from_file(file_path)` para extrair 11 dígitos numéricos do conteúdo dos arquivos `.dec`/`.rec` caso o nome do arquivo contenha pontuação ou prefixos customizados.
+  * Suporte expandido para varredura de múltiplas extensoes e formatos (`.dec`, `.rec`, `.bak`, `.dbk`, `.xml`).
+* **Processamento e Status**:
+  * Leitura automática de subpastas `gravadas` (marcando status como `GRAVADA`) e `transmitidas` (marcando status como `TRANSMITIDA` / `ENTREGUE`).
+  * Atualização da data do último scan (`monitor_last_scan_at_v1`) e retorno do resumo de criados e atualizados para o frontend.
+* **TDD & Validação**:
+  * 33 de 33 testes pytest executados com sucesso em 1.87s.
+
+---
+
 ## v1.4.0 - Integração das APIs "Integra Contador" (SERPRO) (10/06/2026)
 * **Modelo e Persistência de Configuração**:
   * Mapeamento dos 5 novos campos booleanos (`apiProcuracoesAtiva`, `apiDarfAtiva`, `apiMensagensEcacAtiva`, `apiDebitosAtiva` e `apiDiagnosticoFiscalAtiva`) com defaults como `False` no endpoint `GET /api/integracoes/serpro/config` e persistência reativa em banco SQLite no endpoint `PUT /api/integracoes/serpro/config`.

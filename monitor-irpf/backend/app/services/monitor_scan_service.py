@@ -63,6 +63,21 @@ def extract_receipt_number(file_path: Path) -> str | None:
     return None
 
 
+def extract_cpf_from_file(file_path: Path) -> str | None:
+    try:
+        content = file_path.read_bytes()[:10000]
+        text = content.decode("latin-1", errors="ignore")
+        match = re.search(r"\b(\d{11})\b", text)
+        if match:
+            return match.group(1)
+        match_fmt = re.search(r"(\d{3}\.\d{3}\.\d{3}-\d{2})", text)
+        if match_fmt:
+            return match_fmt.group(1).replace(".", "").replace("-", "")
+    except Exception:
+        pass
+    return None
+
+
 class MonitorScanService:
     @staticmethod
     def sincronizar(db: Session) -> dict:
@@ -102,7 +117,7 @@ class MonitorScanService:
                 if not file_path.is_file():
                     continue
                 ext_lower = file_path.suffix.lower()
-                if ext_lower not in (".dec", ".rec"):
+                if ext_lower not in (".dec", ".rec", ".bak", ".dbk", ".xml"):
                     continue
 
                 abs_path_str = str(file_path.resolve())
@@ -111,10 +126,20 @@ class MonitorScanService:
                 seen_filepaths.add(abs_path_str)
 
                 filename = file_path.name
+                cpf = None
                 match = re.match(r"^(\d{11})", filename)
                 if match:
                     cpf = match.group(1)
-                    is_rec = ext_lower == ".rec"
+                else:
+                    clean_name = filename.replace(".", "").replace("-", "")
+                    match_any = re.search(r"(\d{11})", clean_name)
+                    if match_any:
+                        cpf = match_any.group(1)
+                    else:
+                        cpf = extract_cpf_from_file(file_path)
+
+                if cpf:
+                    is_rec = ext_lower in (".rec", ".xml")
                     
                     path_parts_lower = [p.lower() for p in file_path.parts]
                     is_subpasta_gravada = "gravadas" in path_parts_lower or "gravada" in path_parts_lower
