@@ -6,6 +6,7 @@ import com.projetocontabil.core.usecases.empresa.AtualizarEmpresaUseCase;
 import com.projetocontabil.core.usecases.empresa.CriarEmpresaUseCase;
 import com.projetocontabil.core.usecases.empresa.ImportarEmpresasUseCase;
 import com.projetocontabil.core.usecases.empresa.ListarEmpresasUseCase;
+import com.projetocontabil.core.usecases.empresa.DeletarEmpresaUseCase;
 import com.projetocontabil.infra.tenancy.EmpresaLocatariaContext;
 import com.projetocontabil.interfaces.rest.dto.EmpresaRequest;
 import jakarta.validation.Valid;
@@ -29,6 +30,7 @@ public class EmpresaController {
     private final AtualizarEmpresaUseCase atualizarEmpresaUseCase;
     private final ListarEmpresasUseCase listarEmpresasUseCase;
     private final ImportarEmpresasUseCase importarEmpresasUseCase;
+    private final DeletarEmpresaUseCase deletarEmpresaUseCase;
 
     @PostMapping("/importar")
     public ResponseEntity<List<Map<String, Object>>> importar(@RequestParam("file") MultipartFile file)
@@ -84,6 +86,13 @@ public class EmpresaController {
                 .build());
 
         return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletar(@PathVariable UUID id) {
+        String locatariaId = EmpresaLocatariaContext.getEmpresaLocatariaId();
+        deletarEmpresaUseCase.executar(id, EmpresaLocatariaId.of(locatariaId));
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping

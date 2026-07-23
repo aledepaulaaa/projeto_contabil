@@ -1,5 +1,20 @@
 # Histórico de Alterações — Frontend (Projeto Contábil)
 
+## v3.10.0 - CRUD Completo de Clientes & Máscaras Dinâmicas CPF/CNPJ/Telefone (23/07/2026 17:45)
+* **Contexto**: Implementação da gestão interativa da carteira de clientes, modais de detalhes, edição, exclusão e formatação dinâmica de documentos.
+* **Máscaras Dinâmicas (`formatters.ts`)**:
+  * Criado o utilitário `formatters.ts` com as funções `formatCnpjCpf` (CPF `000.000.000-00` e CNPJ `00.000.000/0000-00`) e `formatTelefone` (`(00) 00000-0000` / `(00) 0000-0000`).
+  * Aplicada formatação em tempo real nos inputs dos modais de criação/edição e na tabela de clientes.
+* **Modais Interativos de Clientes (`Clientes.tsx`)**:
+  * **Modal de Detalhes**: Clique na linha da tabela ou no ícone de olho (`Eye`) exibe a ficha cadastral completa com informações financeiras e tributárias.
+  * **Modal de Edição**: Permite atualizar os dados do cliente e salvar via `PUT /api/empresas/{id}`.
+  * **Modal de Exclusão**: Confirmação visual para remover o cliente com segurança via `DELETE /api/empresas/{id}`.
+* **TDD & Validação**:
+  * Checagem de tipos `npx tsc --noEmit` aprovada com **0 erros**.
+  * Build de produção `npm run build` gerado com sucesso (`built in 3.74s`).
+
+---
+
 ## v3.9.0 - Estabilização de Contratos, Dashboard Sem Mocks e Limpeza SERPRO (23/07/2026 15:02)
 * **Contexto**: Correção de crash no módulo de Contratos, remoção de fallbacks fictícios no Dashboard e Clientes, e ocultação do módulo SERPRO.
 * **Módulo Contratos**:

@@ -8,6 +8,7 @@ A estrutura de diretórios do frontend React segue convenções modernas de divi
 * **`/src/pages`**: Contém as Views completas e páginas do projeto (ex: CRM, Clientes, Contratos, Onboarding, Atendimento, Processos, Alvarás, Rotinas, Perfil, Configuracoes).
 * **`/src/hooks`**: Custom hooks atuando como ViewModels (dentro do conceito de MVVM da arquitetura limpa), onde reside toda a lógica isolada de chamadas e estado de visualização (ex: `useChat`, `useEmpresas`, `useLeads`, `useContratos`, `useDashboard`, `useOnboarding`).
 * **`/src/services`**: Camada de comunicação pura com o backend via requisições HTTP (Axios client, ex: `SerproService`).
+* **`/src/utils`**: Utilitários de manipulação de dados e máscaras (ex: `formatters.ts` para CPF, CNPJ e Telefone).
 * **`/src/store`**: Gerenciamento de estado global da aplicação usando **Zustand** (autenticação, preferências de temas, etc.).
 
 ---

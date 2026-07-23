@@ -12,4 +12,5 @@ public interface EmpresaRepository {
     Optional<Empresa> buscarPorId(UUID id, EmpresaLocatariaId locatariaId);
     List<Empresa> listarPorLocataria(EmpresaLocatariaId locatariaId);
     Optional<Empresa> buscarPorIdentificacao(String identificacao, EmpresaLocatariaId locatariaId);
+    void deletar(UUID id, EmpresaLocatariaId locatariaId);
 }

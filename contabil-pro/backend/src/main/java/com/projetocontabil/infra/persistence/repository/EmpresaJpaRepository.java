@@ -10,4 +10,5 @@ public interface EmpresaJpaRepository extends JpaRepository<EmpresaJpaEntity, UU
     List<EmpresaJpaEntity> findByEmpresaLocatariaId(String empresaLocatariaId);
     Optional<EmpresaJpaEntity> findByIdAndEmpresaLocatariaId(UUID id, String empresaLocatariaId);
     Optional<EmpresaJpaEntity> findByIdentificacaoAndEmpresaLocatariaId(String identificacao, String empresaLocatariaId);
+    void deleteByIdAndEmpresaLocatariaId(UUID id, String empresaLocatariaId);
 }

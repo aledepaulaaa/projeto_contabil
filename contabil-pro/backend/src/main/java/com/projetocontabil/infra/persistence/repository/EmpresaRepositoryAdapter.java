@@ -51,6 +51,12 @@ public class EmpresaRepositoryAdapter implements EmpresaRepository {
                 .map(this::toDomain);
     }
 
+    @Override
+    @Transactional
+    public void deletar(UUID id, EmpresaLocatariaId locatariaId) {
+        jpaRepository.deleteByIdAndEmpresaLocatariaId(id, locatariaId.value());
+    }
+
     private Empresa toDomain(EmpresaJpaEntity entity) {
         Empresa empresa = Empresa.reconstituir(
                 entity.getId(),

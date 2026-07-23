@@ -1,5 +1,18 @@
 # Histórico de Alterações — Backend (Projeto Contábil)
 
+## v3.13.0 - Exclusão de Empresas/Clientes e Endpoint DELETE /api/empresas/{id} (23/07/2026 17:45)
+* **Contexto**: Suporte ao CRUD completo de Clientes com exclusão segura e isolamento Multi-tenant por `empresa_locataria_id`.
+* **Use Case & Repositórios (`DeletarEmpresaUseCase.java`)**:
+  * Adicionado o método `deletar(UUID id, EmpresaLocatariaId locatariaId)` na interface `EmpresaRepository.java` e implementado em `EmpresaRepositoryAdapter.java` via `EmpresaJpaRepository.deleteByIdAndEmpresaLocatariaId`.
+  * Criado o Use Case `DeletarEmpresaUseCase.java` para garantir exclusão transacional multi-tenant.
+* **Controller REST (`EmpresaController.java`)**:
+  * Adicionado o endpoint `@DeleteMapping("/{id}")`.
+* **TDD & Validação**:
+  * Criado o teste unitário `DeletarEmpresaUseCaseTest.java`.
+  * Executada a bateria de 63 testes JUnit 5 com **63/63 aprovados (`BUILD SUCCESS`)**.
+
+---
+
 ## v3.12.0 - Resiliência de Conexão Cloud (RabbitMQ/Redis) e Proteção Port Scan Timeout (23/07/2026 17:20)
 * **Contexto**: Resolução da falha `Port scan timeout reached / Timed Out` no Render provocada por bloqueio de socket TCP ao tentar conectar sem timeout às variáveis opcionais de RabbitMQ e Redis.
 * **Resiliência e Timeouts Curtos em `application-prod.yml`**:
