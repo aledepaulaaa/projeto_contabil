@@ -57,6 +57,8 @@ public class LeadController {
     private final com.projetocontabil.core.ports.driven.DepartamentoRepository departamentoRepository;
     private final com.projetocontabil.core.ports.driven.UsuarioRepository usuarioRepository;
     private final IniciarOnboardingUseCase iniciarOnboardingUseCase;
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private com.projetocontabil.infra.persistence.repository.AtendimentoJpaRepository atendimentoJpaRepository;
 
     public LeadController(LeadRepository leadRepository,
                          AtendimentoRepository atendimentoRepository,
@@ -390,10 +392,14 @@ public class LeadController {
     }
 
     @DeleteMapping("/{id}")
+    @Transactional
     public ResponseEntity<Void> excluir(@PathVariable UUID id) {
         var lead = leadRepository.findById(id);
         if (lead.isPresent()) {
             var l = lead.get();
+            if (atendimentoJpaRepository != null) {
+                atendimentoJpaRepository.deleteAllByLeadId(id);
+            }
             auditoriaRepository.salvar(AuditoriaAtividade.registrar(l.getEmpresaLocatariaId(), "admin", "LEAD_EXCLUIDO", 
                 "Lead " + l.getNomeContato() + " foi removido do sistema", null));
             leadRepository.deleteById(id);

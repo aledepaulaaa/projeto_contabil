@@ -1,5 +1,18 @@
 # Histórico de Alterações — Frontend (Projeto Contábil)
 
+## v3.9.0 - Estabilização de Contratos, Dashboard Sem Mocks e Limpeza SERPRO (23/07/2026 15:02)
+* **Contexto**: Correção de crash no módulo de Contratos, remoção de fallbacks fictícios no Dashboard e Clientes, e ocultação do módulo SERPRO.
+* **Módulo Contratos**:
+  * Declarado o estado `const [modalNovoContratoAberto, setModalNovoContratoAberto] = useState(false);` em `Contratos.tsx`, solucionando o crash de `ReferenceError`.
+* **Dashboard & Clientes**:
+  * Removidos valores mockados hardcodeados em `DashboardGrid.tsx` (`18000`, `450`, `8.4`, `-3.2`, `-1.5`).
+  * Adicionado tratamento com `try/catch` gracioso no método `getMetrics()` em `DashboardService.ts` para retornar dados zerados sem estourar erros no React.
+  * Limpos os mocks de fallback em `Clientes.tsx`.
+* **Desativação de Módulo**:
+  * Removido o item `Consulta SERPRO` do menu lateral (`BarraLateral.tsx`) e o roteamento interno (`Dashboard.tsx`).
+
+---
+
 ## v3.8.0 - UI Consulta SERPRO & ViewModel TDD (03/06/2026)
 * **Contexto**: Interface de consulta, controle de estados e visualização detalhada de renda do contribuinte via SERPRO.
 * **TDD & ViewModel**:

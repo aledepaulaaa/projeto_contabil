@@ -5,8 +5,8 @@ A estrutura de diretórios do frontend React segue convenções modernas de divi
 * **`/src/components/atoms`**: Componentes básicos e puramente estéticos (ex: `Botao`, `Texto`, `Card`).
 * **`/src/components/molecules`**: Componentes compostos de média complexidade (ex: `CardMetrica`, `WaitTimer`, `ResumoIAPanel`).
 * **`/src/components/organisms`**: Componentes complexos e funcionais que encapsulam múltiplos átomos e moléculas (ex: `TimelineLateral`, `OnboardingKanban`, `TabelaGenerica`, `ModalCadastroEmpresa`).
-* **`/src/pages`**: Contém as Views completas e páginas do projeto (ex: CRM, Onboarding, Kanban, Gestão, Processos, Alvarás, Rotinas, Serpro).
-* **`/src/hooks`**: Custom hooks atuando como ViewModels (dentro do conceito de MVVM da arquitetura limpa), onde reside toda a lógica isolada de chamadas e estado de visualização (ex: `useChat`, `useEmpresas`, `useLeads`, `useOnboarding`, `useConsultaRenda`).
+* **`/src/pages`**: Contém as Views completas e páginas do projeto (ex: CRM, Clientes, Contratos, Onboarding, Atendimento, Processos, Alvarás, Rotinas, Perfil, Configuracoes).
+* **`/src/hooks`**: Custom hooks atuando como ViewModels (dentro do conceito de MVVM da arquitetura limpa), onde reside toda a lógica isolada de chamadas e estado de visualização (ex: `useChat`, `useEmpresas`, `useLeads`, `useContratos`, `useDashboard`, `useOnboarding`).
 * **`/src/services`**: Camada de comunicação pura com o backend via requisições HTTP (Axios client, ex: `SerproService`).
 * **`/src/store`**: Gerenciamento de estado global da aplicação usando **Zustand** (autenticação, preferências de temas, etc.).
 

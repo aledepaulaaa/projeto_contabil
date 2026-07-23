@@ -14,7 +14,7 @@ class Declaracao(Base):
     ano_calendario: Mapped[int] = mapped_column(Integer, nullable=False)
     titular_nome: Mapped[str] = mapped_column(String(255), nullable=False)
     titular_cpf: Mapped[str | None] = mapped_column(String(14))
-    status: Mapped[str] = mapped_column(String(9), nullable=False)
+    status: Mapped[str] = mapped_column(String(32), nullable=False)
     data_entrega: Mapped[date | None] = mapped_column(Date)
     numero_recibo: Mapped[str | None] = mapped_column(String(64))
     caminho_arquivo_declaracao: Mapped[str | None] = mapped_column(String(1024))

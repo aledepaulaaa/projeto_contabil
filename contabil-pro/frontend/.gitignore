@@ -34,4 +34,6 @@ playwright-report
 /tests
 test-results
 /test-results
+resumo_tecnico.html
+generate_pdf.js
 

@@ -31,13 +31,14 @@ class GerarContratoUseCaseTest {
     @Mock private SignatureGateway signatureGateway;
     @Mock private NotificationService notificationService;
     @Mock private ContratoTemplateService templateService;
+    @Mock private com.projetocontabil.core.ports.driven.LeadRepository leadRepository;
 
     private GerarContratoUseCase useCase;
 
     @BeforeEach
     void setUp() {
         useCase = new GerarContratoUseCase(
-                contratoRepository, historicoRepository, signatureGateway, notificationService, templateService, null, null, null);
+                contratoRepository, historicoRepository, signatureGateway, notificationService, templateService, leadRepository, null, null);
     }
 
     @Test
@@ -56,13 +57,14 @@ class GerarContratoUseCaseTest {
                 any(), any(), any(), any(), any()))
                 .thenReturn("https://app.zapsign.com.br/verificar/oneclick/mock-123");
 
-        // Contrato.save retorna o contrato recebido
-        when(contratoRepository.save(any(Contrato.class)))
-                .thenAnswer(inv -> inv.getArgument(0));
+        var contratoMock = Contrato.criarParaGeracao(leadId, EmpresaLocatariaId.of(empresaId), nome, email);
+        when(contratoRepository.findByLeadId(leadId)).thenReturn(Optional.empty()).thenReturn(Optional.of(contratoMock));
+        when(contratoRepository.save(any(Contrato.class))).thenAnswer(inv -> inv.getArgument(0));
 
         // Histórico existe
         var historico = HistoricoVidaLead.criar(leadId, EmpresaLocatariaId.of(empresaId));
         when(historicoRepository.findByLeadId(leadId)).thenReturn(Optional.of(historico));
+        when(leadRepository.findById(leadId)).thenReturn(Optional.empty());
 
         // Executa
         useCase.executar(leadId, empresaId, nome, email);
@@ -91,6 +93,10 @@ class GerarContratoUseCaseTest {
 
         when(signatureGateway.createDocumentOneClick(any(), any(), any(), any(), any()))
                 .thenThrow(new RuntimeException("ZapSign offline"));
+
+        var contratoMock = Contrato.criarParaGeracao(leadId, EmpresaLocatariaId.of("tenant-test"), "Falha", "falha@test.com");
+        when(contratoRepository.findByLeadId(leadId)).thenReturn(Optional.empty()).thenReturn(Optional.of(contratoMock));
+        when(contratoRepository.save(any(Contrato.class))).thenAnswer(inv -> inv.getArgument(0));
 
         var historico = HistoricoVidaLead.criar(leadId, EmpresaLocatariaId.of("tenant-test"));
         when(historicoRepository.findByLeadId(leadId)).thenReturn(Optional.of(historico));

@@ -24,6 +24,9 @@ class GoogleAdsSyncServiceTest {
     @Mock
     private LeadRepository leadRepository;
 
+    @Mock
+    private com.projetocontabil.infra.messaging.NotificationService notificationService;
+
     @InjectMocks
     private GoogleAdsSyncService syncService;
 
@@ -45,6 +48,8 @@ class GoogleAdsSyncServiceTest {
         String googleLeadId = "g-456";
         when(leadRepository.findByGoogleLeadId(googleLeadId))
                 .thenReturn(Optional.empty());
+        when(leadRepository.save(any()))
+                .thenAnswer(inv -> inv.getArgument(0));
 
         syncService.saveExternalLead("tenant-1", "Maria", "maria@email.com", null, googleLeadId);
 

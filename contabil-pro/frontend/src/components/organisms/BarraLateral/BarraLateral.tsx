@@ -15,7 +15,8 @@ import {
   X,
   FileSignature,
   MessageSquare,
-  Database
+  Database,
+  UserCheck
 } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { useTheme } from '../../../contexts/ThemeContext';
@@ -83,13 +84,13 @@ export const BarraLateral: React.FC<BarraLateralProps> = ({ isOpen, onClose }) =
   const menuItems = [
     { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['ADMIN', 'GESTOR', 'OPERADOR'] },
     { path: '/dashboard/crm', label: 'CRM / Leads', icon: Users, roles: ['ADMIN', 'GESTOR'] },
+    { path: '/dashboard/clientes', label: 'Clientes', icon: UserCheck, roles: ['ADMIN', 'GESTOR', 'OPERADOR'] },
     { path: '/dashboard/contratos', label: 'Contratos', icon: FileSignature, roles: ['ADMIN', 'GESTOR'] },
     { path: '/dashboard/atendimento', label: 'Atendimento', icon: MessageSquare, roles: ['ADMIN', 'GESTOR', 'OPERADOR'] },
     { path: '/dashboard/onboarding', label: 'Onboarding', icon: Rocket, roles: ['ADMIN', 'GESTOR'] },
     { path: '/dashboard/rotinas', label: 'Rotinas', icon: Calendar, roles: ['ADMIN', 'GESTOR', 'OPERADOR'] },
     { path: '/dashboard/alvaras', label: 'Alvarás', icon: FileText, roles: ['ADMIN', 'GESTOR'] },
     { path: '/dashboard/processos', label: 'Processos', icon: Briefcase, roles: ['ADMIN', 'GESTOR'] },
-    { path: '/dashboard/serpro', label: 'Consulta SERPRO', icon: Database, roles: ['ADMIN', 'GESTOR', 'OPERADOR'] },
   ].filter(item => item.roles.includes(userRole.toUpperCase()));
 
   const sidebarVariants = {

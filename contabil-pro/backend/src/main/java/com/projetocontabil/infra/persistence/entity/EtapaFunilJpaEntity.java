@@ -10,26 +10,28 @@ import org.hibernate.envers.Audited;
 import java.util.UUID;
 
 @Entity
-@Table(name = "empresa_contatos")
+@Table(name = "etapas_funil")
 @Audited
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ContatoEmpresaJpaEntity {
+public class EtapaFunilJpaEntity {
 
     @Id
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "empresa_id")
-    private EmpresaJpaEntity empresa;
+    @Column(name = "empresa_locataria_id", nullable = false)
+    private String empresaLocatariaId;
 
+    @Column(nullable = false)
+    private String chave;
+
+    @Column(nullable = false)
     private String nome;
-    private String cargo;
-    private String departamento;
-    private String celular;
-    private String email;
-    @Transient
-    private boolean cliente = false;
+
+    @Column(nullable = false)
+    private Integer ordem;
+
+    private String cor;
 }

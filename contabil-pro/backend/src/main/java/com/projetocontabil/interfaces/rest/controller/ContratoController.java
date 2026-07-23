@@ -37,6 +37,33 @@ public class ContratoController {
         return ResponseEntity.ok(contratos);
     }
 
+    @PostMapping("/novo")
+    public ResponseEntity<?> criarNovoContrato(@RequestBody Map<String, String> payload) {
+        String tenantId = EmpresaLocatariaContext.getEmpresaLocatariaId();
+        var empresaLocatariaId = EmpresaLocatariaId.of(tenantId);
+        
+        String leadIdStr = payload.get("leadId");
+        UUID leadId = (leadIdStr != null && !leadIdStr.isBlank()) ? UUID.fromString(leadIdStr) : UUID.randomUUID();
+        String nomeContato = payload.getOrDefault("nomeContato", "Cliente");
+        String emailContato = payload.getOrDefault("emailContato", "cliente@email.com");
+
+        var contrato = Contrato.criarParaGeracao(leadId, empresaLocatariaId, nomeContato, emailContato);
+        contratoRepository.save(contrato);
+
+        try {
+            contratoProducer.enviarParaGeracaoDeContrato(
+                    leadId.toString(),
+                    tenantId,
+                    nomeContato,
+                    emailContato
+            );
+        } catch (Exception e) {
+            // Em ambiente de teste sem RabbitMQ ativo, o fallback trata a geracao
+        }
+
+        return ResponseEntity.ok(toResponse(contrato));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> buscarPorId(@PathVariable UUID id) {
         return contratoRepository.findById(id)

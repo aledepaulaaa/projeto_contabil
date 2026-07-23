@@ -11,7 +11,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -27,13 +28,26 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 public class SerproControllerTDDTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private ConsultarRendaSerproUseCase consultarRendaSerproUseCase;
+
+    @MockitoBean
+    private org.springframework.messaging.simp.SimpMessagingTemplate messagingTemplate;
+
+    @MockitoBean
+    private org.springframework.amqp.rabbit.core.RabbitTemplate rabbitTemplate;
+
+    @MockitoBean
+    private org.springframework.mail.javamail.JavaMailSender mailSender;
+
+    @MockitoBean
+    private org.springframework.web.client.RestTemplate restTemplate;
 
     private final String empresaId = UUID.randomUUID().toString();
     private final String tokenCompartilhamento = "dUMZ7AZvTnhFjhPZOJTMfm0pb2jLu9s2PzYfndPMc4tl";

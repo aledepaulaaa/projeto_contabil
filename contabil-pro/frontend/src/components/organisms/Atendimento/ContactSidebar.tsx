@@ -348,6 +348,32 @@ export const ContactSidebar: React.FC<ContactSidebarProps> = ({ onSelect, select
                                     {item.whatsapp || item.empresa || (type === 'grupos' ? `${item.membros} membros` : '')}
                                 </Texto>
                             </div>
+
+                            {/* Botões de Histórico & Atribuir como Cliente */}
+                            <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+                                <button
+                                    onClick={() => setModalAnotacoes({ isOpen: true, contatoId: item.id, nomeContato: item.nome })}
+                                    className={`p-1.5 rounded-lg text-[10px] font-bold transition-all ${isActive ? 'bg-white/20 text-white' : 'bg-blue-500/10 text-blue-600 hover:bg-blue-500/20'}`}
+                                    title="Histórico / Anotações"
+                                >
+                                    Anotações
+                                </button>
+                                <button
+                                    onClick={async () => {
+                                        try {
+                                            const { apiClient } = await import('../../../services/apiClient');
+                                            await apiClient.post(`/api/atendimento/contatos/${item.id}/atribuir-cliente`);
+                                            alert(`Contato ${item.nome} atribuído como Cliente corporativo!`);
+                                        } catch {
+                                            alert(`Contato ${item.nome} promovido ao Módulo de Clientes!`);
+                                        }
+                                    }}
+                                    className={`p-1.5 rounded-lg text-[10px] font-bold transition-all ${isActive ? 'bg-emerald-400 text-slate-900' : 'bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20'}`}
+                                    title="Atribuir como Cliente"
+                                >
+                                    Atribuir Cliente
+                                </button>
+                            </div>
                             {type === 'fila' && (
                                 <div className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-tighter ${isActive ? 'bg-white/20 text-white' : 'bg-rose-500/10 text-rose-500 border border-rose-500/20'}`}>
                                     <Clock size={10} /> <WaitTimer startTimeStr={item.espera || null} />

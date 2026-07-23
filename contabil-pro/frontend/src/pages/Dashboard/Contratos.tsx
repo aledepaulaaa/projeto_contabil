@@ -18,6 +18,7 @@ import { Texto } from '../../components/atoms/Texto/Texto';
 import { Card } from '../../components/atoms/Card/Card';
 import { Botao } from '../../components/atoms/Botao/Botao';
 import { useContratos } from '../../hooks/useContratos';
+import { ModalNovoContrato } from '../../components/organisms/Contratos/ModalNovoContrato';
 
 const statusConfig: Record<string, { label: string; color: string; bgColor: string; icon: React.ReactNode }> = {
   GERANDO: {
@@ -94,6 +95,7 @@ export const Contratos: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [cancelModal, setCancelModal] = useState<{ id: string; nome: string } | null>(null);
   const [motivoCancelamento, setMotivoCancelamento] = useState('');
+  const [modalNovoContratoAberto, setModalNovoContratoAberto] = useState(false);
 
   const filteredContratos = contratos.filter(c => {
     const matchesSearch =
@@ -139,10 +141,21 @@ export const Contratos: React.FC = () => {
             Gestão inteligente de contratos de prestação de serviços
           </Texto>
         </div>
-        <Botao variant="outline" className="flex items-center gap-2" onClick={refreshContratos}>
-          <RefreshCw size={16} /> Atualizar
-        </Botao>
+        <div className="flex items-center gap-3">
+          <Botao variant="primary" className="flex items-center gap-2 bg-violet-600 hover:bg-violet-700" onClick={() => setModalNovoContratoAberto(true)}>
+            <FileSignature size={16} /> Novo Contrato
+          </Botao>
+          <Botao variant="outline" className="flex items-center gap-2" onClick={refreshContratos}>
+            <RefreshCw size={16} /> Atualizar
+          </Botao>
+        </div>
       </div>
+
+      <ModalNovoContrato
+        aberto={modalNovoContratoAberto}
+        onFechar={() => setModalNovoContratoAberto(false)}
+        onSucesso={() => refreshContratos()}
+      />
 
       {/* Métricas */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

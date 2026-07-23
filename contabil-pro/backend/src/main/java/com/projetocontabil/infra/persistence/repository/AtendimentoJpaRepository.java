@@ -29,4 +29,6 @@ public interface AtendimentoJpaRepository extends JpaRepository<AtendimentoJpaEn
     long countByEmpresaLocatariaIdAndStatus(String empresaLocatariaId, StatusAtendimento status);
 
     void deleteAllByEmpresaLocatariaId(String empresaLocatariaId);
+
+    void deleteAllByLeadId(UUID leadId);
 }

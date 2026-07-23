@@ -40,6 +40,7 @@ import { Usuario } from "../interfaces/IUsuario";
 const STATUS_LABEL: Record<string, string> = {
   rascunho: "Rascunho",
   em_edicao: "Em edição",
+  gravada: "Gravada (Aguardando Envio)",
   entregue: "Transmitida",
 };
 

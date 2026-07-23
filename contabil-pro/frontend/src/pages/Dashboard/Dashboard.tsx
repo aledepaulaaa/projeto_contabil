@@ -14,7 +14,7 @@ import { Processos } from './Processos';
 import { Perfil } from './Perfil';
 import { AlterarSenha } from './AlterarSenha';
 import { Configuracoes } from './Configuracoes';
-import { Serpro } from './Serpro';
+import { Clientes } from './Clientes';
 import { FloatingHistoryIndicator } from '../../components/molecules/FloatingHistoryIndicator/FloatingHistoryIndicator';
 
 export const Dashboard: React.FC = () => {
@@ -27,6 +27,8 @@ export const Dashboard: React.FC = () => {
         return <ResumoDashboard />;
       case '/dashboard/crm':
         return <CRM />;
+      case '/dashboard/clientes':
+        return <Clientes />;
       case '/dashboard/atendimento':
         return <Atendimento />;
       case '/dashboard/contratos':
@@ -45,8 +47,6 @@ export const Dashboard: React.FC = () => {
         return <AlterarSenha />;
       case '/dashboard/configuracoes':
         return <Configuracoes />;
-      case '/dashboard/serpro':
-        return <Serpro />;
       default:
         return <ResumoDashboard />;
     }

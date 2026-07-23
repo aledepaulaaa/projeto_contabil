@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Loader2, AlertCircle, FileSignature } from 'lucide-react';
+import { X, Loader2, AlertCircle, FileSignature, Users } from 'lucide-react';
 import { Texto } from '../../atoms/Texto/Texto';
 import { LeadTable } from './LeadTable';
 import type { LeadResponse } from '../../../hooks/useLeads';
@@ -9,7 +9,7 @@ import { ModalAssinaturaContrato } from '../CRM/ModalAssinaturaContrato';
 interface StageLeadsModalProps {
   aberto: boolean;
   onFechar: () => void;
-  etapa: { id: string; label: string; color: string; icon: any } | null;
+  etapa: { id: string; label: string; color?: string; icon?: any } | null;
   leads: LeadResponse[];
   isLoading: boolean;
   onView: (lead: LeadResponse) => void;
@@ -61,6 +61,8 @@ export const StageLeadsModal: React.FC<StageLeadsModalProps> = ({
 
   if (!aberto || !etapa) return null;
 
+  const IconeEtapa = etapa.icon || Users;
+
   return (
     <>
     <AnimatePresence>
@@ -81,8 +83,8 @@ export const StageLeadsModal: React.FC<StageLeadsModalProps> = ({
           {/* Header */}
           <div className="p-6 border-b border-slate-100 dark:border-slate-900 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
             <div className="flex items-center gap-4">
-              <div className={`p-3 rounded-2xl bg-white dark:bg-slate-900 shadow-sm border border-slate-100 dark:border-slate-800 ${etapa.color}`}>
-                <etapa.icon size={24} />
+              <div className={`p-3 rounded-2xl bg-white dark:bg-slate-900 shadow-sm border border-slate-100 dark:border-slate-800 ${etapa.color || 'text-blue-600'}`}>
+                <IconeEtapa size={24} />
               </div>
               <div>
                 <Texto variant="titulo" className="text-xl">{etapa.label}</Texto>

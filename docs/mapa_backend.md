@@ -11,9 +11,9 @@ O backend da aplicação é estruturado seguindo os princípios de Clean Archite
 ---
 
 ## 2. Componentes Críticos & Lógica de Negócio
-* **CRM & Atendimento**: Centraliza a entrada do cliente via chat e leads. Possui métricas sofisticadas, separação de Abas (Fila vs Chats ativos) guiadas pelo `LeadController` e `AtendimentoMetricsController`.
-* **Onboarding & Gestão de Empresas**: Gerencia a transição de leads convertidos para empresas ativas. Inclui cadastro detalhado (contatos/endereços), importação massiva e gestão de regimes tributários via `EmpresaController`.
-* **Consulta Renda Contribuinte (SERPRO)**: Caso de uso `ConsultarRendaSerproUseCase` e controller `SerproController` isolados por locatária (`X-EmpresaLocataria-Id`).
+* **CRM & Atendimento**: Centraliza a entrada do cliente via chat e leads. Possui métricas sofisticadas, separação de Abas (Fila vs Chats ativos) guiadas pelo `LeadController` e `AtendimentoMetricsController`. Exclusão de leads realizada via transação `@Transactional` com limpeza prévia cascata em `AtendimentoJpaRepository` para preservação da integridade de chave estrangeira (`fk_atendimento_lead`).
+* **Onboarding & Gestão de Empresas**: Gerencia a transição de leads convertidos para empresas ativas. Inclui cadastro detalhado (contatos/endereços), importação massiva e gestão de regimes tributários via `EmpresaController` e DTOs/Entidades sanitizadas para PostgreSQL (`ContatoEmpresaJpaEntity` com anotação `@Transient` em propriedades voláteis).
+* **Dashboard & BI Financeiro**: Rota `/api/dashboard/metrics` em `DashboardController.java` operando com cálculo dinâmico de LTV, CAC, Churn e Faturamento baseados estritamente na base real de contratos e leads do locatário.
 * **Multi-tenancy Rigoroso**: Isolamento lógico estrito através de `empresa_locataria_id` (via `EmpresaLocatariaContext` ThreadLocal) em todas as tabelas e consultas de dados.
 
 ---

@@ -103,6 +103,53 @@ public class AtendimentoGestaoController {
         }
     }
 
+    private final com.projetocontabil.infra.persistence.repository.AnotacaoContatoJpaRepository anotacaoContatoJpaRepository;
+    private final com.projetocontabil.infra.persistence.repository.ContatoEmpresaJpaRepository contatoEmpresaJpaRepository;
+
+    @GetMapping("/contatos/{contatoId}/anotacoes")
+    public ResponseEntity<java.util.List<com.projetocontabil.infra.persistence.entity.AnotacaoContatoJpaEntity>> listarAnotacoes(@PathVariable UUID contatoId) {
+        var anotacoes = anotacaoContatoJpaRepository.findAllByContatoIdOrderByCriadoEmDesc(contatoId);
+        return ResponseEntity.ok(anotacoes);
+    }
+
+    @PostMapping("/contatos/{contatoId}/anotacoes")
+    public ResponseEntity<com.projetocontabil.infra.persistence.entity.AnotacaoContatoJpaEntity> criarAnotacao(
+            @PathVariable UUID contatoId,
+            @RequestBody java.util.Map<String, String> payload,
+            @RequestHeader(value = "X-EmpresaLocataria-Id", required = false) String tenantHeader) {
+
+        String tenantId = (tenantHeader != null && !tenantHeader.isBlank()) ? tenantHeader : com.projetocontabil.infra.tenancy.EmpresaLocatariaContext.getEmpresaLocatariaId();
+        String autor = payload.getOrDefault("autor", "Atendente");
+        String setor = payload.getOrDefault("setor", "Atendimento");
+        String conteudo = payload.getOrDefault("conteudo", "");
+
+        var nova = new com.projetocontabil.infra.persistence.entity.AnotacaoContatoJpaEntity(
+                UUID.randomUUID(),
+                contatoId,
+                tenantId,
+                autor,
+                setor,
+                conteudo,
+                java.time.LocalDateTime.now()
+        );
+
+        var salva = anotacaoContatoJpaRepository.save(nova);
+        return ResponseEntity.ok(salva);
+    }
+
+    @PostMapping("/contatos/{contatoId}/atribuir-cliente")
+    public ResponseEntity<java.util.Map<String, Object>> atribuirCliente(
+            @PathVariable UUID contatoId,
+            @RequestHeader(value = "X-EmpresaLocataria-Id", required = false) String tenantHeader) {
+
+        contatoEmpresaJpaRepository.findById(contatoId).ifPresent(contato -> {
+            contato.setCliente(true);
+            contatoEmpresaJpaRepository.save(contato);
+        });
+
+        return ResponseEntity.ok(java.util.Map.of("ok", true, "mensagem", "Contato atribuído como cliente corporativo com sucesso."));
+    }
+
     @Data
     public static class TransferRequest {
         private String leadId;

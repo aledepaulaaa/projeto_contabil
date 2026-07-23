@@ -90,51 +90,63 @@ class MonitorScanService:
                 "message": "Nenhuma pasta configurada para monitoramento. Aceda a Configurações."
             }
 
-        # 2. Varredura de arquivos
+        # 2. Varredura recursiva de arquivos (.dec e .rec)
         scanned_files = []
+        seen_filepaths = set()
         for path_str in paths_to_scan:
             path = Path(path_str)
             if not path.exists() or not path.is_dir():
                 continue
             
-            # Buscar recursivamente todos os arquivos .dec e .rec
-            for ext in ("*.dec", "*.rec"):
-                for file_path in path.rglob(ext):
-                    filename = file_path.name
-                    # Regex para identificar CPF e anos
-                    match = re.match(r"^(\d{11})", filename)
-                    if match:
-                        cpf = match.group(1)
-                        is_rec = ext == "*.rec"
-                        
-                        # Extrair o ano do nome do arquivo (ex: IRPF-2026-2025)
-                        # O ano-calendário é tipicamente o segundo ano na string
-                        year_matches = re.findall(r"\b(20\d{2})\b", filename)
-                        if len(year_matches) >= 2:
-                            ano_calendario = int(year_matches[1])
-                        elif len(year_matches) == 1:
-                            ano_exercicio = int(year_matches[0])
-                            ano_calendario = ano_exercicio - 1
-                        else:
-                            # Fallback para o ano anterior à modificação do arquivo
-                            try:
-                                mtime_year = datetime.fromtimestamp(file_path.stat().st_mtime).year
-                                ano_calendario = mtime_year - 1
-                            except Exception:
-                                ano_calendario = datetime.now().year - 1
-                                
+            for file_path in path.rglob("*"):
+                if not file_path.is_file():
+                    continue
+                ext_lower = file_path.suffix.lower()
+                if ext_lower not in (".dec", ".rec"):
+                    continue
+
+                abs_path_str = str(file_path.resolve())
+                if abs_path_str in seen_filepaths:
+                    continue
+                seen_filepaths.add(abs_path_str)
+
+                filename = file_path.name
+                match = re.match(r"^(\d{11})", filename)
+                if match:
+                    cpf = match.group(1)
+                    is_rec = ext_lower == ".rec"
+                    
+                    path_parts_lower = [p.lower() for p in file_path.parts]
+                    is_subpasta_gravada = "gravadas" in path_parts_lower or "gravada" in path_parts_lower
+                    is_subpasta_transmitida = "transmitidas" in path_parts_lower or "transmitida" in path_parts_lower
+
+                    year_matches = re.findall(r"\b(20\d{2})\b", filename)
+                    if len(year_matches) >= 2:
+                        ano_calendario = int(year_matches[1])
+                    elif len(year_matches) == 1:
+                        ano_exercicio = int(year_matches[0])
+                        ano_calendario = ano_exercicio - 1
+                    else:
                         try:
-                            mtime = file_path.stat().st_mtime
+                            mtime_year = datetime.fromtimestamp(file_path.stat().st_mtime).year
+                            ano_calendario = mtime_year - 1
                         except Exception:
-                            mtime = 0.0
+                            ano_calendario = datetime.now().year - 1
                             
-                        scanned_files.append({
-                            "cpf": cpf,
-                            "ano_calendario": ano_calendario,
-                            "is_rec": is_rec,
-                            "file_path": file_path,
-                            "mtime": mtime
-                        })
+                    try:
+                        mtime = file_path.stat().st_mtime
+                    except Exception:
+                        mtime = 0.0
+                        
+                    scanned_files.append({
+                        "cpf": cpf,
+                        "ano_calendario": ano_calendario,
+                        "is_rec": is_rec,
+                        "is_subpasta_gravada": is_subpasta_gravada,
+                        "is_subpasta_transmitida": is_subpasta_transmitida,
+                        "file_path": file_path,
+                        "mtime": mtime
+                    })
 
         if not scanned_files:
             # Atualizar o último scan mesmo que nada tenha sido encontrado
@@ -161,11 +173,13 @@ class MonitorScanService:
             if d.titular_cpf:
                 existing_decls[(d.titular_cpf, d.ano_calendario)] = d
 
-        # 3. Processar arquivos
+        # 3. Processar arquivos e atualizar status conforme subpasta (gravadas/ / transmitidas/)
         for item in scanned_files:
             cpf = item["cpf"]
             ano = item["ano_calendario"]
             is_rec = item["is_rec"]
+            is_sub_gravada = item["is_subpasta_gravada"]
+            is_sub_trans = item["is_subpasta_transmitida"]
             file_path = item["file_path"]
             mtime = item["mtime"]
             
@@ -184,11 +198,13 @@ class MonitorScanService:
                     if not nome:
                         nome = f"CPF {cpf}"
 
+                initial_status = "entregue" if (is_rec or is_sub_trans) else ("gravada" if is_sub_gravada else "em_edicao")
+
                 decl = Declaracao(
                     ano_calendario=ano,
                     titular_nome=nome,
                     titular_cpf=cpf,
-                    status="em_edicao",
+                    status=initial_status,
                     resultado_fiscal="nao_informado",
                     valor_imposto_ou_restituicao=Decimal("0.00"),
                     created_at=datetime.now(),
@@ -201,29 +217,33 @@ class MonitorScanService:
             else:
                 atualizados += 1
 
-            # Atualizar caminhos específicos
-            if is_rec:
-                decl.caminho_arquivo_recibo = str(file_path.resolve())
+            # Atualizar caminhos e status
+            if is_rec or is_sub_trans:
                 decl.status = "entregue"
-                
-                # Extrair número do recibo
-                num_recibo = extract_receipt_number(file_path)
-                if num_recibo:
-                    decl.numero_recibo = num_recibo
-                
-                # Definir data de entrega
-                try:
-                    decl.data_entrega = datetime.fromtimestamp(mtime).date()
-                except Exception:
-                    decl.data_entrega = datetime.now().date()
+                if is_rec:
+                    decl.caminho_arquivo_recibo = str(file_path.resolve())
+                    # Extrair número do recibo
+                    num_recibo = extract_receipt_number(file_path)
+                    if num_recibo:
+                        decl.numero_recibo = num_recibo
+                    
+                    # Definir data de entrega
+                    try:
+                        decl.data_entrega = datetime.fromtimestamp(mtime).date()
+                    except Exception:
+                        decl.data_entrega = datetime.now().date()
+            elif is_sub_gravada:
+                decl.caminho_arquivo_declaracao = str(file_path.resolve())
+                if decl.status != "transmitida":
+                    decl.status = "gravada"
             else:
                 decl.caminho_arquivo_declaracao = str(file_path.resolve())
-                
-                # Se não temos o nome correto e o arquivo dec foi escaneado, tenta extrair
-                if decl.titular_nome.startswith("CPF ") or not decl.titular_nome:
-                    nome_extraido = extract_taxpayer_name(file_path, cpf)
-                    if nome_extraido:
-                        decl.titular_nome = nome_extraido
+
+            # Se não temos o nome correto e o arquivo dec foi escaneado, tenta extrair
+            if decl.titular_nome.startswith("CPF ") or not decl.titular_nome:
+                nome_extraido = extract_taxpayer_name(file_path, cpf)
+                if nome_extraido:
+                    decl.titular_nome = nome_extraido
 
             decl.updated_at = datetime.now()
 

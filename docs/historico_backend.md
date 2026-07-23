@@ -1,5 +1,17 @@
 # Histórico de Alterações — Backend (Projeto Contábil)
 
+## v3.9.0 - Estabilização de Rotas, Dashboard e Cascata de Exclusão no CRM (23/07/2026 15:02)
+* **Contexto**: Correção de exceções de persistência SQL no PostgreSQL, implementação de exclusão em cascata transacional para leads e limpeza de dados fictícios no Dashboard.
+* **Correções de Persistência JPA**:
+  * Adicionada a anotação `@Transient` na propriedade `cliente` de `ContatoEmpresaJpaEntity.java`, solucionando a exceção PostgreSQL `column c1_0.cliente does not exist` na rota `GET /api/empresas`.
+* **Cascata Transacional no CRM**:
+  * Adicionado o método `deleteAllByLeadId` em `AtendimentoJpaRepository.java`.
+  * Atualizada a rota `@DeleteMapping("/{id}")` em `LeadController.java` com `@Transactional` para remover atendimentos vinculados antes de deletar o lead, evitando a falha de chave estrangeira `fk_atendimento_lead`.
+* **Cálculo de Dados Reais no Dashboard**:
+  * Refatorado `DashboardController.java` para eliminar dados fictícios hardcodeados (R$ 1.500 de ticket, R$ 4.500 de marketing e 12,5% de variação). O cálculo de LTV, CAC e Faturamento agora reflete estritamente os contratos e leads reais da locatária.
+
+---
+
 ## v3.8.0 - Integração SERPRO & Compartilha Receita (03/06/2026)
 * **Contexto**: Integração da API Consulta Renda da Receita Federal (SERPRO) para acesso e descriptografia assimétrica de dados fiscais sob consentimento.
 * **Segurança e Criptografia (RSA)**:

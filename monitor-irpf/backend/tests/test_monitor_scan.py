@@ -104,11 +104,37 @@ class TestMonitorScan(unittest.TestCase):
         # José Souza (CPF 98765432101)
         d2 = decls[1]
         self.assertEqual(d2.titular_cpf, "98765432101")
-        self.assertEqual(d2.titular_nome, "JOSE SOUZA")  # Nome extraído heuristicamente do arquivo .dec
+        self.assertEqual(d2.titular_nome, "JOSE SOUZA")
         self.assertEqual(d2.ano_calendario, 2025)
-        self.assertEqual(d2.status, "em_edicao")  # Mantém em_edicao por não ter arquivo .rec correspondente
+        self.assertEqual(d2.status, "em_edicao")
         self.assertEqual(d2.caminho_arquivo_declaracao, str(dec2_path.resolve()))
         self.assertIsNone(d2.caminho_arquivo_recibo)
+
+    def test_scan_subpastas_gravadas_e_transmitidas(self):
+        """Verifica se arquivos dentro de subpastas gravadas/ e transmitidas/ assumem o status correto."""
+        self.kv.upsert("irpf_govbox_roots_v1", json.dumps([str(self.temp_path)]))
+        
+        dir_gravadas = self.temp_path / "gravadas"
+        dir_transmitidas = self.temp_path / "transmitidas"
+        dir_gravadas.mkdir()
+        dir_transmitidas.mkdir()
+
+        file_gravada = dir_gravadas / "11122233344-IRPF-2026-2025-original.dec"
+        file_gravada.write_bytes(b"Header11122233344\x00\x00CARLOS SILVA\x00\x00")
+
+        file_trans = dir_transmitidas / "55566677788-IRPF-2026-2025-original.dec"
+        file_trans.write_bytes(b"Header55566677788\x00\x00MARIA OLIVEIRA\x00\x00")
+
+        res = MonitorScanService.sincronizar(self.db)
+        self.assertTrue(res["ok"])
+
+        d_gravada = self.db.scalars(select(Declaracao).where(Declaracao.titular_cpf == "11122233344")).first()
+        self.assertIsNotNone(d_gravada)
+        self.assertEqual(d_gravada.status, "gravada")
+
+        d_trans = self.db.scalars(select(Declaracao).where(Declaracao.titular_cpf == "55566677788")).first()
+        self.assertIsNotNone(d_trans)
+        self.assertEqual(d_trans.status, "entregue")
 
 
 if __name__ == "__main__":

@@ -9,6 +9,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -19,6 +20,18 @@ public class WhatsAppWebhookControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockitoBean
+    private org.springframework.messaging.simp.SimpMessagingTemplate messagingTemplate;
+
+    @MockitoBean
+    private org.springframework.amqp.rabbit.core.RabbitTemplate rabbitTemplate;
+
+    @MockitoBean
+    private org.springframework.mail.javamail.JavaMailSender mailSender;
+
+    @MockitoBean
+    private org.springframework.web.client.RestTemplate restTemplate;
 
     @Test
     @WithMockUser(username = "admin")

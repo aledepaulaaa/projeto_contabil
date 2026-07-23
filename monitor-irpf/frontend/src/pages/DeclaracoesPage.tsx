@@ -26,6 +26,7 @@ import { Usuario } from "../interfaces/IUsuario";
 const STATUS_LABEL: Record<string, string> = {
   rascunho: "Rascunho",
   em_edicao: "Em edição",
+  gravada: "Gravada (Aguardando Envio)",
   entregue: "Transmitida",
 };
 
@@ -318,6 +319,7 @@ export function DeclaracoesPage() {
             >
               <option value="">Todos os status</option>
               <option value="em_edicao">Em edição</option>
+              <option value="gravada">Gravada (Aguardando Envio)</option>
               <option value="entregue">Transmitida</option>
               <option value="rascunho">Rascunho</option>
             </select>

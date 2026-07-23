@@ -47,6 +47,9 @@ public class AuthProfileTDDTest {
     private EmpresaLocatariaRepository empresaRepository;
 
     @MockitoBean
+    private com.projetocontabil.core.ports.driven.DepartamentoRepository departamentoRepository;
+
+    @MockitoBean
     private PasswordEncoder passwordEncoder;
 
     @Autowired
