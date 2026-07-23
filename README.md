@@ -101,5 +101,3 @@ Todos os relatórios técnicos estão em [`docs/`](./docs):
 | `plano_escalabilidade_monitor_IRPF.md` | Estratégia de migração para PostgreSQL multi-tenant |
 
 ---
-
-*Mantido pelo time de Advanced Agentic Coding — 2026*
